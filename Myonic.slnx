@@ -2,5 +2,5 @@
   <Project Path="Myonic.Core/Myonic.Core.csproj" Id="b6c8d1c0-96e1-44a1-a35c-19b08a06555b" />
   <Project Path="Myonic.Data/Myonic.Data.csproj" Id="5deacc6e-d668-4f6d-88ba-f2cb659b4792" />
   <Project Path="Myonic.Tests/Myonic.Tests.csproj" Id="6ca6e36d-69f8-4e67-a525-76ec149cbfc0" />
-  <Project Path="Myonic/Myonic.csproj" />
+  <Project Path="Myonic.App/Myonic.App.csproj" />
 </Solution>
