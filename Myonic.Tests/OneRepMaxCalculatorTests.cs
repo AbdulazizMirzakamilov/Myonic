@@ -25,6 +25,17 @@ public class OneRepMaxCalculatorTests
         Assert.Equal(120.0, result, 4);
     }
 
+    [Theory]
+    [InlineData(OneRepMaxFormula.Lander, 125.1)]
+    [InlineData(OneRepMaxFormula.Lombardi, 123.1)]
+    [InlineData(OneRepMaxFormula.Mayhew, 126.3)]
+    [InlineData(OneRepMaxFormula.Wathan, 127.7)]
+    public void OtherFormulas_100kg_x8(OneRepMaxFormula formula, double expected)
+    {
+        var result = OneRepMaxCalculator.Calculate(formula, 100, 8);
+        Assert.Equal(expected, result, 1);
+    }
+
     [Fact]
     public void OneRep_ReturnsWeightForAllFormulas()
     {
