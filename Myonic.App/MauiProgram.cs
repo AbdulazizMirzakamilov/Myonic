@@ -32,6 +32,15 @@ namespace Myonic
             builder.Services.AddTransient<ExercisesPage>();
             builder.Services.AddTransient<ExerciseEditPage>();
 
+            builder.Services.AddSingleton<ITrainingProgramRepository, TrainingProgramRepository>();
+
+            builder.Services.AddTransient<ProgramsViewModel>();
+            builder.Services.AddTransient<ProgramEditViewModel>();
+            builder.Services.AddTransient<WorkoutEditViewModel>();
+            builder.Services.AddTransient<ProgramsPage>();
+            builder.Services.AddTransient<ProgramEditPage>();
+            builder.Services.AddTransient<WorkoutEditPage>();
+
             return builder.Build();
         }
     }

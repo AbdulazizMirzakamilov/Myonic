@@ -3,13 +3,17 @@
     x:Class="Myonic.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Myonic"
     xmlns:pages="clr-namespace:Myonic.Pages"
     Title="Myonic">
 
-    <ShellContent
-        Title="Упражнения"
-        ContentTemplate="{DataTemplate pages:ExercisesPage}"
-        Route="ExercisesPage" />
-
+    <TabBar>
+        <ShellContent
+            Title="Программы"
+            ContentTemplate="{DataTemplate pages:ProgramsPage}"
+            Route="ProgramsPage" />
+        <ShellContent
+            Title="Упражнения"
+            ContentTemplate="{DataTemplate pages:ExercisesPage}"
+            Route="ExercisesPage" />
+    </TabBar>
 </Shell>

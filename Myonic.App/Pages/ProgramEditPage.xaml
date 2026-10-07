@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Myonic.Pages.ProgramEditPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Myonic.ViewModels"
+    Title="{Binding Title}"
+    x:DataType="vm:ProgramEditViewModel">
+
+    <Grid
+        Padding="16"
+        RowDefinitions="Auto,Auto,*"
+        RowSpacing="8">
+
+        <VerticalStackLayout Spacing="8">
+            <Label Text="Название" />
+            <Entry Placeholder="Например, Upper / Lower" Text="{Binding Name}" />
+
+            <Label Margin="0,8,0,0" Text="Описание" />
+            <Editor HeightRequest="80" Text="{Binding Description}" />
+
+            <Button
+                Margin="0,8,0,0"
+                Command="{Binding SaveCommand}"
+                Text="Сохранить" />
+            <Button
+                BackgroundColor="Firebrick"
+                Command="{Binding DeleteCommand}"
+                IsVisible="{Binding IsExisting}"
+                Text="Удалить программу" />
+        </VerticalStackLayout>
+
+        <Grid
+            Grid.Row="1"
+            Margin="0,12,0,0"
+            ColumnDefinitions="*,Auto"
+            IsVisible="{Binding IsExisting}">
+            <Label
+                FontAttributes="Bold"
+                FontSize="18"
+                Text="Тренировки"
+                VerticalOptions="Center" />
+            <Button
+                Grid.Column="1"
+                Command="{Binding AddWorkoutCommand}"
+                Text="Добавить" />
+        </Grid>
+
+        <CollectionView
+            Grid.Row="2"
+            IsVisible="{Binding IsExisting}"
+            ItemsSource="{Binding Workouts}">
+            <CollectionView.EmptyView>
+                <Label
+                    Margin="0,16"
+                    HorizontalOptions="Center"
+                    Text="Тренировок пока нет" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:WorkoutListItem">
+                    <Border
+                        Margin="0,4"
+                        Padding="12"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200},
+                                                 Dark={StaticResource Gray600}}"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProgramEditViewModel}}, Path=OpenWorkoutCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="2">
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                Text="{Binding Name}" />
+                            <Label
+                                FontSize="12"
+                                Opacity="0.7"
+                                Text="{Binding DayText}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

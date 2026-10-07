@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             xmlns:repo="clr-namespace:Myonic.Core.Repositories;assembly=Myonic.Core"
+             x:Class="Myonic.Pages.ProgramsPage"
+             x:DataType="vm:ProgramsViewModel"
+             Title="Программы">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Добавить" Command="{Binding AddCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <CollectionView Margin="12" ItemsSource="{Binding Programs}">
+        <CollectionView.EmptyView>
+            <Label Text="Программ пока нет. Нажмите «Добавить»."
+                   HorizontalOptions="Center" Margin="0,32" />
+        </CollectionView.EmptyView>
+
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="repo:ProgramSummary">
+                <Border Padding="12" Margin="0,4" StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                        StrokeShape="RoundRectangle 8">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProgramsViewModel}}, Path=OpenCommand}"
+                            CommandParameter="{Binding .}" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
+                        <Label Text="{Binding WorkoutCount, StringFormat='Тренировок: {0}'}"
+                               FontSize="12" Opacity="0.7" />
+                    </VerticalStackLayout>
+                </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
