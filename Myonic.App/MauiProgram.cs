@@ -2,6 +2,8 @@
 using Myonic.Core.Repositories;
 using Myonic.Data;
 using Myonic.Data.Repositories;
+using Myonic.Pages;
+using Myonic.ViewModels;
 
 namespace Myonic
 {
@@ -25,6 +27,10 @@ namespace Myonic
             builder.Services.AddSingleton(_ => new MyonicDatabase(
                 Path.Combine(FileSystem.AppDataDirectory, "myonic.db3")));
             builder.Services.AddSingleton<IExerciseRepository, ExerciseRepository>();
+            builder.Services.AddTransient<ExercisesViewModel>();
+            builder.Services.AddTransient<ExerciseEditViewModel>();
+            builder.Services.AddTransient<ExercisesPage>();
+            builder.Services.AddTransient<ExerciseEditPage>();
 
             return builder.Build();
         }

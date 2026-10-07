@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Myonic.Pages.ExercisesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Myonic.ViewModels"
+    Title="Упражнения"
+    x:DataType="vm:ExercisesViewModel">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding AddCommand}" Text="Добавить" />
+    </ContentPage.ToolbarItems>
+
+    <Grid
+        Padding="12"
+        RowDefinitions="Auto,*"
+        RowSpacing="8">
+        <SearchBar Placeholder="Поиск упражнения" Text="{Binding SearchText}" />
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Exercises}">
+            <CollectionView.EmptyView>
+                <Label
+                    Margin="0,32"
+                    HorizontalOptions="Center"
+                    Text="Ничего не найдено" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ExerciseListItem">
+                    <Border
+                        Margin="0,4"
+                        Padding="12"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200},
+                                                 Dark={StaticResource Gray600}}"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisesViewModel}}, Path=OpenCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="2">
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                Text="{Binding Name}" />
+                            <Label
+                                FontSize="12"
+                                Opacity="0.7"
+                                Text="{Binding TypeText}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
