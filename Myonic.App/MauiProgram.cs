@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Myonic.Core.Repositories;
 using Myonic.Data;
+using Myonic.Data.Repositories;
 
 namespace Myonic
 {
@@ -22,6 +24,7 @@ namespace Myonic
 
             builder.Services.AddSingleton(_ => new MyonicDatabase(
                 Path.Combine(FileSystem.AppDataDirectory, "myonic.db3")));
+            builder.Services.AddSingleton<IExerciseRepository, ExerciseRepository>();
 
             return builder.Build();
         }
