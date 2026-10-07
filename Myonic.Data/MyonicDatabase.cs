@@ -1,5 +1,4 @@
-﻿// MyonicDatabase.cs
-using Myonic.Core.Models;
+﻿using Myonic.Core.Models;
 using Myonic.Data.Migrations;
 using SQLite;
 
