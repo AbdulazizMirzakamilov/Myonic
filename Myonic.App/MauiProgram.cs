@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Myonic.Data;
 
 namespace Myonic
 {
@@ -18,6 +19,9 @@ namespace Myonic
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
+
+            builder.Services.AddSingleton(_ => new MyonicDatabase(
+                Path.Combine(FileSystem.AppDataDirectory, "myonic.db3")));
 
             return builder.Build();
         }
