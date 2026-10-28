@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.ExercisePickerPage"
+             x:DataType="vm:ExercisePickerViewModel"
+             Title="Выбор упражнения">
+
+    <Grid RowDefinitions="Auto,*" Padding="12" RowSpacing="8">
+        <SearchBar Placeholder="Поиск упражнения" Text="{Binding SearchText}" />
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Exercises}">
+            <CollectionView.EmptyView>
+                <Label Text="Ничего не найдено" HorizontalOptions="Center" Margin="0,32" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ExerciseListItem">
+                    <Border Padding="12" Margin="0,4" StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                            StrokeShape="RoundRectangle 8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=SelectCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
+                            <Label Text="{Binding TypeText}" FontSize="12" Opacity="0.7" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

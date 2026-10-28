@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.ProgramExerciseEditPage"
+             x:DataType="vm:ProgramExerciseEditViewModel"
+             Title="Параметры упражнения">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="8">
+            <Label Text="{Binding ExerciseName}" FontAttributes="Bold" FontSize="20" />
+
+            <Label Text="Подходы" Margin="0,8,0,0" />
+            <Entry Text="{Binding SetsText}" Keyboard="Numeric" Placeholder="Например, 4" />
+
+            <Label Text="Повторения" />
+            <Entry Text="{Binding RepsText}" Keyboard="Numeric" Placeholder="Например, 8" />
+
+            <Label Text="Целевой вес, кг (необязательно)" />
+            <Entry Text="{Binding WeightText}" Keyboard="Numeric" Placeholder="Можно оставить пустым" />
+
+            <Label Text="RPE 1-10 (необязательно)" />
+            <Entry Text="{Binding RpeText}" Keyboard="Numeric" Placeholder="Например, 8" />
+
+            <Label Text="Отдых, секунд (необязательно)" />
+            <Entry Text="{Binding RestText}" Keyboard="Numeric" Placeholder="Например, 120" />
+
+            <Label Text="Заметки" />
+            <Editor Text="{Binding Notes}" HeightRequest="100" />
+
+            <Button Text="Сохранить" Command="{Binding SaveCommand}" Margin="0,16,0,0" />
+            <Button Text="Убрать из тренировки" Command="{Binding DeleteCommand}"
+                    IsVisible="{Binding IsExisting}" BackgroundColor="Firebrick" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,18 +1,31 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
+using Myonic.Pages;
 
 namespace Myonic.ViewModels;
+
+public record PlannedExerciseItem(int Id, string Title, string PlanText);
 
 public partial class WorkoutEditViewModel : ObservableObject, IQueryAttributable
 {
     private readonly ITrainingProgramRepository _repository;
+    private readonly IProgramExerciseRepository _exerciseRepository;
     private ProgramWorkout? _workout;
 
-    public WorkoutEditViewModel(ITrainingProgramRepository repository) => _repository = repository;
+    public WorkoutEditViewModel(
+        ITrainingProgramRepository repository,
+        IProgramExerciseRepository exerciseRepository)
+    {
+        _repository = repository;
+        _exerciseRepository = exerciseRepository;
+    }
 
     public IReadOnlyList<string> DayOptions => WeekdayHelper.Options;
+
+    public ObservableCollection<PlannedExerciseItem> Exercises { get; } = [];
 
     [ObservableProperty] private string _name = string.Empty;
     [ObservableProperty] private int _dayIndex;
@@ -27,6 +40,51 @@ public partial class WorkoutEditViewModel : ObservableObject, IQueryAttributable
 
         Name = _workout.Name;
         DayIndex = WeekdayHelper.ToIndex(_workout.DefaultDayOfWeek);
+
+        await LoadExercisesAsync();
+    }
+
+    [RelayCommand]
+    private async Task LoadExercisesAsync()
+    {
+        if (_workout is null) return;
+
+        var items = await _exerciseRepository.GetByWorkoutAsync(_workout.Id);
+
+        Exercises.Clear();
+        for (var i = 0; i < items.Count; i++)
+        {
+            var e = items[i];
+            Exercises.Add(new PlannedExerciseItem(
+                e.Id,
+                $"{i + 1}. {e.ExerciseName}",
+                PlanTextFormatter.Format(e.Sets, e.Reps, e.Weight, e.Rpe, e.RestSeconds)));
+        }
+    }
+
+    [RelayCommand]
+    private Task AddExerciseAsync()
+    {
+        if (_workout is null) return Task.CompletedTask;
+        return Shell.Current.GoToAsync($"{nameof(ExercisePickerPage)}?workoutId={_workout.Id}");
+    }
+
+    [RelayCommand]
+    private Task OpenExerciseAsync(PlannedExerciseItem item) =>
+        Shell.Current.GoToAsync($"{nameof(ProgramExerciseEditPage)}?id={item.Id}");
+
+    [RelayCommand]
+    private async Task MoveUpAsync(PlannedExerciseItem item)
+    {
+        await _exerciseRepository.MoveAsync(item.Id, -1);
+        await LoadExercisesAsync();
+    }
+
+    [RelayCommand]
+    private async Task MoveDownAsync(PlannedExerciseItem item)
+    {
+        await _exerciseRepository.MoveAsync(item.Id, +1);
+        await LoadExercisesAsync();
     }
 
     [RelayCommand]
