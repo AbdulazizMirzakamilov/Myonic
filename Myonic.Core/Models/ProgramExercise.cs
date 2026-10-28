@@ -1,4 +1,4 @@
-﻿namespace Myonic.Core.Models;
+namespace Myonic.Core.Models;
 
 public class ProgramExercise
 {
@@ -9,8 +9,10 @@ public class ProgramExercise
 
     public int Sets { get; set; }
     public int Reps { get; set; }
+    public int? RepsMax { get; set; }
     public double? Weight { get; set; }
     public double? Rpe { get; set; }
+    public double? RpeMax { get; set; }
     public int? RestSeconds { get; set; }
     public string? Notes { get; set; }
 }

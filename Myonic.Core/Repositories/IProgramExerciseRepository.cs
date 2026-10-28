@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 
 namespace Myonic.Core.Repositories;
 
@@ -12,8 +12,10 @@ public class ProgramExerciseDetails
     public int Order { get; set; }
     public int Sets { get; set; }
     public int Reps { get; set; }
+    public int? RepsMax { get; set; }
     public double? Weight { get; set; }
     public double? Rpe { get; set; }
+    public double? RpeMax { get; set; }
     public int? RestSeconds { get; set; }
     public string? Notes { get; set; }
 }

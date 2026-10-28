@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 
 namespace Myonic.Data.Repositories;
@@ -15,7 +15,7 @@ public sealed class ProgramExerciseRepository : IProgramExerciseRepository
         return await db.QueryAsync<ProgramExerciseDetails>(
             """
             SELECT pe.Id, pe.ProgramWorkoutId, pe.ExerciseId, e.Name AS ExerciseName,
-                   pe."Order" AS "Order", pe.Sets, pe.Reps, pe.Weight, pe.Rpe,
+                   pe."Order" AS "Order", pe.Sets, pe.Reps, pe.RepsMax, pe.Weight, pe.Rpe, pe.RpeMax,
                    pe.RestSeconds, pe.Notes
             FROM ProgramExercise pe
             JOIN Exercise e ON e.Id = pe.ExerciseId
@@ -91,13 +91,39 @@ public sealed class ProgramExerciseRepository : IProgramExerciseRepository
     {
         if (item.Sets <= 0)
             throw new ArgumentException("Количество подходов должно быть больше нуля.");
+
         if (item.Reps <= 0)
             throw new ArgumentException("Количество повторений должно быть больше нуля.");
+
+        if (item.RepsMax is not null && item.RepsMax <= item.Reps)
+            throw new ArgumentException("Максимальное количество повторений должно быть строго больше минимального.");
+
         if (item.Weight is < 0)
             throw new ArgumentException("Вес не может быть отрицательным.");
-        if (item.Rpe is < 1 or > 10)
-            throw new ArgumentException("RPE должен быть от 1 до 10.");
+
+        if (item.Rpe is not null && !IsValidRpe(item.Rpe.Value))
+            throw new ArgumentException("RPE должен быть от 5.5 до 10 с шагом 0.5 (например: 6, 6.5, 7, 7.5...).");
+
+        if (item.RpeMax is not null)
+        {
+            if (item.Rpe is null)
+                throw new ArgumentException("Нельзя указать верхний RPE без нижнего.");
+
+            if (!IsValidRpe(item.RpeMax.Value))
+                throw new ArgumentException("Верхний RPE должен быть от 5.5 до 10 с шагом 0.5.");
+
+            if (item.RpeMax <= item.Rpe)
+                throw new ArgumentException("Верхний RPE должен быть строго больше нижнего.");
+        }
+
         if (item.RestSeconds is < 0)
             throw new ArgumentException("Время отдыха не может быть отрицательным.");
+    }
+
+    private static bool IsValidRpe(double rpe)
+    {
+        if (rpe is < 5.5 or > 10.0) return false;
+        var doubled = rpe * 2.0;
+        return Math.Abs(doubled - Math.Round(doubled)) < 1e-6;
     }
 }
