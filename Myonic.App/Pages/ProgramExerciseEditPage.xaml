@@ -7,25 +7,33 @@
              Title="Параметры упражнения">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="8">
+        <VerticalStackLayout Padding="16" Spacing="10">
             <Label Text="{Binding ExerciseName}" FontAttributes="Bold" FontSize="20" />
 
-            <Label Text="Подходы" Margin="0,8,0,0" />
+            <Label Text="Подходы" Margin="0,4,0,0" />
             <Entry Text="{Binding SetsText}" Keyboard="Numeric" Placeholder="Например, 4" />
 
-            <Label Text="Повторения" />
-            <Entry Text="{Binding RepsText}" Keyboard="Numeric" Placeholder="Например, 8" />
+            <Label Text="Повторения (от — до)" Margin="0,4,0,0" />
+            <Grid ColumnDefinitions="*,Auto,*">
+                <Entry Grid.Column="0" Text="{Binding RepsText}" Keyboard="Numeric" Placeholder="От (напр. 8)" />
+                <Label Grid.Column="1" Text="—" VerticalOptions="Center" HorizontalOptions="Center" Margin="8,0" />
+                <Entry Grid.Column="2" Text="{Binding RepsMaxText}" Keyboard="Numeric" Placeholder="До (напр. 12)" />
+            </Grid>
 
-            <Label Text="Целевой вес, кг (необязательно)" />
+            <Label Text="Целевой вес, кг (необязательно)" Margin="0,4,0,0" />
             <Entry Text="{Binding WeightText}" Keyboard="Numeric" Placeholder="Можно оставить пустым" />
 
-            <Label Text="RPE 1-10 (необязательно)" />
-            <Entry Text="{Binding RpeText}" Keyboard="Numeric" Placeholder="Например, 8" />
+            <Label Text="RPE (5.5 – 10 с шагом 0.5, необязательно)" Margin="0,4,0,0" />
+            <Grid ColumnDefinitions="*,Auto,*">
+                <Entry Grid.Column="0" Text="{Binding RpeText}" Keyboard="Numeric" Placeholder="От (напр. 8)" />
+                <Label Grid.Column="1" Text="—" VerticalOptions="Center" HorizontalOptions="Center" Margin="8,0" />
+                <Entry Grid.Column="2" Text="{Binding RpeMaxText}" Keyboard="Numeric" Placeholder="До (напр. 9)" />
+            </Grid>
 
-            <Label Text="Отдых, секунд (необязательно)" />
+            <Label Text="Отдых, секунд (необязательно)" Margin="0,4,0,0" />
             <Entry Text="{Binding RestText}" Keyboard="Numeric" Placeholder="Например, 120" />
 
-            <Label Text="Заметки" />
+            <Label Text="Заметки" Margin="0,4,0,0" />
             <Editor Text="{Binding Notes}" HeightRequest="100" />
 
             <Button Text="Сохранить" Command="{Binding SaveCommand}" Margin="0,16,0,0" />

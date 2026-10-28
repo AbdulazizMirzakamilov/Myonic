@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
@@ -58,7 +58,7 @@ public partial class WorkoutEditViewModel : ObservableObject, IQueryAttributable
             Exercises.Add(new PlannedExerciseItem(
                 e.Id,
                 $"{i + 1}. {e.ExerciseName}",
-                PlanTextFormatter.Format(e.Sets, e.Reps, e.Weight, e.Rpe, e.RestSeconds)));
+                PlanTextFormatter.Format(e.Sets, e.Reps, e.RepsMax, e.Weight, e.Rpe, e.RpeMax, e.RestSeconds)));
         }
     }
 

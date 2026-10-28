@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
@@ -26,8 +26,10 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
     [ObservableProperty] private string _exerciseName = string.Empty;
     [ObservableProperty] private string _setsText = string.Empty;
     [ObservableProperty] private string _repsText = string.Empty;
+    [ObservableProperty] private string _repsMaxText = string.Empty;
     [ObservableProperty] private string _weightText = string.Empty;
     [ObservableProperty] private string _rpeText = string.Empty;
+    [ObservableProperty] private string _rpeMaxText = string.Empty;
     [ObservableProperty] private string _restText = string.Empty;
     [ObservableProperty] private string? _notes;
     [ObservableProperty] private bool _isExisting;
@@ -43,8 +45,10 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
             _exerciseId = _item.ExerciseId;
             SetsText = _item.Sets.ToString();
             RepsText = _item.Reps.ToString();
+            RepsMaxText = _item.RepsMax?.ToString() ?? string.Empty;
             WeightText = _item.Weight?.ToString("0.##") ?? string.Empty;
             RpeText = _item.Rpe?.ToString("0.#") ?? string.Empty;
+            RpeMaxText = _item.RpeMax?.ToString("0.#") ?? string.Empty;
             RestText = _item.RestSeconds?.ToString() ?? string.Empty;
             Notes = _item.Notes;
             IsExisting = true;
@@ -79,6 +83,17 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
             return;
         }
 
+        int? repsMax = null;
+        if (!string.IsNullOrWhiteSpace(RepsMaxText))
+        {
+            if (!int.TryParse(RepsMaxText, out var rm) || rm <= reps)
+            {
+                await ShowErrorAsync("Максимальное число повторений должно быть целым числом строго больше минимального.");
+                return;
+            }
+            repsMax = rm;
+        }
+
         double? weight = null;
         if (!string.IsNullOrWhiteSpace(WeightText))
         {
@@ -93,12 +108,33 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
         double? rpe = null;
         if (!string.IsNullOrWhiteSpace(RpeText))
         {
-            if (!TryParseDouble(RpeText, out var r) || r < 1 || r > 10)
+            if (!TryParseDouble(RpeText, out var r) || !IsValidRpe(r))
             {
-                await ShowErrorAsync("RPE: число от 1 до 10.");
+                await ShowErrorAsync("RPE: число от 5.5 до 10 с шагом 0.5 (например: 6, 6.5, 7, 7.5...).");
                 return;
             }
             rpe = r;
+        }
+
+        double? rpeMax = null;
+        if (!string.IsNullOrWhiteSpace(RpeMaxText))
+        {
+            if (rpe is null)
+            {
+                await ShowErrorAsync("Нельзя указать верхний RPE без нижнего.");
+                return;
+            }
+            if (!TryParseDouble(RpeMaxText, out var rm) || !IsValidRpe(rm))
+            {
+                await ShowErrorAsync("Верхний RPE: число от 5.5 до 10 с шагом 0.5.");
+                return;
+            }
+            if (rm <= rpe.Value)
+            {
+                await ShowErrorAsync("Верхний RPE должен быть строго больше нижнего.");
+                return;
+            }
+            rpeMax = rm;
         }
 
         int? rest = null;
@@ -122,8 +158,10 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
                     ExerciseId = _exerciseId,
                     Sets = sets,
                     Reps = reps,
+                    RepsMax = repsMax,
                     Weight = weight,
                     Rpe = rpe,
+                    RpeMax = rpeMax,
                     RestSeconds = rest,
                     Notes = Notes
                 });
@@ -132,8 +170,10 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
             {
                 _item.Sets = sets;
                 _item.Reps = reps;
+                _item.RepsMax = repsMax;
                 _item.Weight = weight;
                 _item.Rpe = rpe;
+                _item.RpeMax = rpeMax;
                 _item.RestSeconds = rest;
                 _item.Notes = Notes;
                 await _repository.UpdateAsync(_item);
@@ -158,6 +198,13 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
 
         await _repository.DeleteAsync(_item.Id);
         await Shell.Current.GoToAsync("..");
+    }
+
+    private static bool IsValidRpe(double rpe)
+    {
+        if (rpe is < 5.5 or > 10.0) return false;
+        var doubled = rpe * 2.0;
+        return Math.Abs(doubled - Math.Round(doubled)) < 1e-6;
     }
 
     // Принимаем и запятую, и точку
