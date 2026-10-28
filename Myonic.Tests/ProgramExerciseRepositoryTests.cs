@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 using Myonic.Data;
 using Myonic.Data.Repositories;
 
@@ -58,7 +58,7 @@ public class ProgramExerciseRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetByWorkout_ReturnsExerciseNameAndPlan()
+    public async Task GetByWorkout_ReturnsExerciseNameAndPlanWithRanges()
     {
         await _repo.AddAsync(new ProgramExercise
         {
@@ -66,8 +66,10 @@ public class ProgramExerciseRepositoryTests : IAsyncLifetime
             ExerciseId = _benchId,
             Sets = 4,
             Reps = 8,
+            RepsMax = 12,
             Weight = 80,
-            Rpe = 8,
+            Rpe = 7.5,
+            RpeMax = 9.0,
             RestSeconds = 120,
             Notes = "Пауза на груди"
         });
@@ -77,20 +79,30 @@ public class ProgramExerciseRepositoryTests : IAsyncLifetime
         Assert.Equal("Жим лёжа", item.ExerciseName);
         Assert.Equal(4, item.Sets);
         Assert.Equal(8, item.Reps);
+        Assert.Equal(12, item.RepsMax);
         Assert.Equal(80.0, item.Weight);
-        Assert.Equal(8.0, item.Rpe);
+        Assert.Equal(7.5, item.Rpe);
+        Assert.Equal(9.0, item.RpeMax);
         Assert.Equal(120, item.RestSeconds);
         Assert.Equal("Пауза на груди", item.Notes);
     }
 
     [Theory]
-    [InlineData(0, 8, null, null, null)]
-    [InlineData(3, 0, null, null, null)]
-    [InlineData(3, 8, -5.0, null, null)]
-    [InlineData(3, 8, null, 0.5, null)]
-    [InlineData(3, 8, null, 11.0, null)]
-    [InlineData(3, 8, null, null, -1)]
-    public async Task Add_InvalidValues_Throw(int sets, int reps, double? weight, double? rpe, int? rest)
+    [InlineData(0, 8, null, null, null, null, null)]        // Sets <= 0
+    [InlineData(3, 0, null, null, null, null, null)]        // Reps <= 0
+    [InlineData(3, 8, 8, null, null, null, null)]           // RepsMax == Reps
+    [InlineData(3, 8, 6, null, null, null, null)]           // RepsMax < Reps
+    [InlineData(3, 8, null, -5.0, null, null, null)]        // Negative weight
+    [InlineData(3, 8, null, null, 5.0, null, null)]         // Rpe < 5.5
+    [InlineData(3, 8, null, null, 7.3, null, null)]         // Rpe not half step
+    [InlineData(3, 8, null, null, 10.5, null, null)]        // Rpe > 10.0
+    [InlineData(3, 8, null, null, null, 8.0, null)]         // RpeMax without Rpe
+    [InlineData(3, 8, null, null, 8.0, 8.0, null)]          // RpeMax == Rpe
+    [InlineData(3, 8, null, null, 8.5, 8.0, null)]          // RpeMax < Rpe
+    [InlineData(3, 8, null, null, 7.0, 8.3, null)]          // RpeMax not half step
+    [InlineData(3, 8, null, null, null, null, -1)]          // Negative rest
+    public async Task Add_InvalidValues_Throw(
+        int sets, int reps, int? repsMax, double? weight, double? rpe, double? rpeMax, int? rest)
     {
         await Assert.ThrowsAsync<ArgumentException>(() => _repo.AddAsync(new ProgramExercise
         {
@@ -98,10 +110,35 @@ public class ProgramExerciseRepositoryTests : IAsyncLifetime
             ExerciseId = _benchId,
             Sets = sets,
             Reps = reps,
+            RepsMax = repsMax,
             Weight = weight,
             Rpe = rpe,
+            RpeMax = rpeMax,
             RestSeconds = rest
         }));
+    }
+
+    [Theory]
+    [InlineData(5.5, null)]
+    [InlineData(6.0, 7.5)]
+    [InlineData(8.5, 9.0)]
+    [InlineData(9.5, 10.0)]
+    public async Task Add_ValidRpe_Succeeds(double rpe, double? rpeMax)
+    {
+        var id = await _repo.AddAsync(new ProgramExercise
+        {
+            ProgramWorkoutId = _workoutId,
+            ExerciseId = _benchId,
+            Sets = 3,
+            Reps = 8,
+            Rpe = rpe,
+            RpeMax = rpeMax
+        });
+
+        var loaded = await _repo.GetAsync(id);
+        Assert.NotNull(loaded);
+        Assert.Equal(rpe, loaded.Rpe);
+        Assert.Equal(rpeMax, loaded.RpeMax);
     }
 
     [Fact]
@@ -111,12 +148,18 @@ public class ProgramExerciseRepositoryTests : IAsyncLifetime
         var item = (await _repo.GetAsync(id))!;
         item.Sets = 5;
         item.Weight = 77.5;
+        item.RepsMax = 10;
+        item.Rpe = 7.5;
+        item.RpeMax = 8.5;
 
         await _repo.UpdateAsync(item);
 
         var loaded = (await _repo.GetAsync(id))!;
         Assert.Equal(5, loaded.Sets);
         Assert.Equal(77.5, loaded.Weight);
+        Assert.Equal(10, loaded.RepsMax);
+        Assert.Equal(7.5, loaded.Rpe);
+        Assert.Equal(8.5, loaded.RpeMax);
     }
 
     [Fact]
