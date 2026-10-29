@@ -18,6 +18,12 @@ namespace Myonic
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                })
+                .ConfigureMauiHandlers(handlers =>
+                {
+#if ANDROID
+                    handlers.AddHandler(typeof(Shell), typeof(Myonic.Platforms.Android.CustomShellRenderer));
+#endif
                 });
 
 #if DEBUG
@@ -72,6 +78,10 @@ namespace Myonic
             builder.Services.AddSingleton<IWorkoutScheduleRepository, WorkoutScheduleRepository>();
             builder.Services.AddTransient<ScheduleViewModel>();
             builder.Services.AddTransient<SchedulePage>();
+
+            // Profile
+            builder.Services.AddTransient<ProfileViewModel>();
+            builder.Services.AddTransient<ProfilePage>();
 
             return builder.Build();
         }
