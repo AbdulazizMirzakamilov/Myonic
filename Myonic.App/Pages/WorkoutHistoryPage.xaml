@@ -3,8 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              x:Class="Myonic.Pages.WorkoutHistoryPage"
+             x:Name="HistoryPage"
              x:DataType="vm:WorkoutHistoryViewModel"
-             Title="История тренировок">
+             Title="История тренировок"
+             BackgroundColor="{StaticResource KineticCanvas}">
 
     <Grid Padding="16">
         <!-- Empty state -->
@@ -13,10 +15,12 @@
                              HorizontalOptions="Center"
                              Spacing="8">
             <Label Text="История пока пуста"
+                   TextColor="{StaticResource KineticText}"
                    FontFamily="OpenSansSemibold"
                    FontSize="18"
                    HorizontalTextAlignment="Center" />
             <Label Text="Завершённые тренировки будут отображаться здесь."
+                   TextColor="{StaticResource KineticTextMuted}"
                    FontSize="13"
                    HorizontalTextAlignment="Center" />
         </VerticalStackLayout>
@@ -25,25 +29,46 @@
         <CollectionView ItemsSource="{Binding PastSessions}" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:PastWorkoutItem">
-                    <Grid Padding="12,14" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" Margin="0,4">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="{Binding Title}"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="16" />
-                            <Label Grid.Column="1"
-                                   Text="{Binding DurationText}"
-                                   FontSize="13" />
-                        </Grid>
+                    <Border BackgroundColor="{StaticResource KineticSurface}"
+                            Stroke="{StaticResource KineticBorder}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="16"
+                            Margin="0,0,0,10">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference HistoryPage}, Path=BindingContext.OpenSessionDetailCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
 
-                        <Label Grid.Row="1"
-                               Text="{Binding DateText}"
-                               FontSize="12" />
+                        <VerticalStackLayout Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Title}"
+                                       TextColor="{StaticResource KineticText}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="16" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding DurationText}"
+                                       TextColor="{StaticResource KineticEmerald}"
+                                       FontSize="13"
+                                       FontAttributes="Bold" />
+                            </Grid>
 
-                        <Label Grid.Row="2"
-                               Text="{Binding SummaryText}"
-                               FontSize="13"
-                               FontFamily="OpenSansSemibold" />
-                    </Grid>
+                            <Label Text="{Binding DateText}"
+                                   TextColor="{StaticResource KineticTextMuted}"
+                                   FontSize="12" />
+
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                                <Label Text="{Binding SummaryText}"
+                                       TextColor="{StaticResource KineticTextSecondary}"
+                                       FontSize="13" />
+                                <Label Grid.Column="1"
+                                       Text="Разбор →"
+                                       TextColor="{StaticResource KineticVolt}"
+                                       FontSize="12"
+                                       FontAttributes="Bold" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

@@ -300,9 +300,11 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         if (!confirm) return;
 
         StopTimer();
-        await _repository.FinishSessionAsync(_sessionId);
-        await Shell.Current.DisplayAlertAsync("Отличная работа!", "Тренировка успешно сохранена в истории.", "OK");
+        var finishedSessionId = _sessionId;
+        await _repository.FinishSessionAsync(finishedSessionId);
+        await Shell.Current.DisplayAlertAsync("Отличная работа!", "Тренировка завершена! Открываем итоги тренировки.", "OK");
         await Shell.Current.GoToAsync("//SchedulePage");
+        await Shell.Current.GoToAsync($"{nameof(WorkoutSessionDetailPage)}?sessionId={finishedSessionId}");
     }
 
     [RelayCommand]
