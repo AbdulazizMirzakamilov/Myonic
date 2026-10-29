@@ -4,24 +4,45 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Myonic.Pages"
-    Title="Myonic">
+    Title="Myonic"
+    BackgroundColor="{StaticResource KineticCanvas}"
+    Shell.BackgroundColor="{StaticResource KineticCanvas}"
+    Shell.ForegroundColor="{StaticResource KineticText}"
+    Shell.TitleColor="{StaticResource KineticText}"
+    Shell.TabBarBackgroundColor="{StaticResource KineticCanvas}"
+    Shell.TabBarForegroundColor="{StaticResource KineticVolt}"
+    Shell.TabBarTitleColor="{StaticResource KineticVolt}"
+    Shell.TabBarUnselectedColor="{StaticResource KineticTextMuted}">
 
     <TabBar>
         <ShellContent
-            Title="График"
+            Title="ГРАФИК"
+            Icon="tab_schedule.svg"
             ContentTemplate="{DataTemplate pages:SchedulePage}"
             Route="SchedulePage" />
+
         <ShellContent
-            Title="Программы"
+            Title="ТРЕНИНГ"
+            Icon="tab_workout.svg"
             ContentTemplate="{DataTemplate pages:ProgramsPage}"
             Route="ProgramsPage" />
+
         <ShellContent
-            Title="Упражнения"
-            ContentTemplate="{DataTemplate pages:ExercisesPage}"
-            Route="ExercisesPage" />
+            Title="АНАЛИЗ"
+            Icon="tab_analysis.svg"
+            ContentTemplate="{DataTemplate pages:WorkoutHistoryPage}"
+            Route="WorkoutHistoryPage" />
+
         <ShellContent
-            Title="1ПМ"
+            Title="1RM"
+            Icon="tab_calc.svg"
             ContentTemplate="{DataTemplate pages:OneRepMaxPage}"
             Route="OneRepMaxPage" />
+
+        <ShellContent
+            Title="ПРОФИЛЬ"
+            Icon="tab_profile.svg"
+            ContentTemplate="{DataTemplate pages:ProfilePage}"
+            Route="ProfilePage" />
     </TabBar>
 </Shell>

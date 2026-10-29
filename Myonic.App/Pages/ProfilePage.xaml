@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.ProfilePage"
+             x:DataType="vm:ProfileViewModel"
+             Title="Профиль"
+             BackgroundColor="{StaticResource KineticCanvas}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
+
+            <!-- Athlete Profile Header Card -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" VerticalOptions="Center">
+                    <!-- Avatar Badge -->
+                    <Border BackgroundColor="{StaticResource KineticWell}"
+                            Stroke="{StaticResource KineticVolt}"
+                            StrokeThickness="2"
+                            StrokeShape="RoundRectangle 26"
+                            WidthRequest="52"
+                            HeightRequest="52"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <Label Text="M"
+                               TextColor="{StaticResource KineticVolt}"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Атлет Myonic"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="19"
+                               FontAttributes="Bold" />
+                        <Label Text="Силовые тренировки • RPE трекинг"
+                               TextColor="{StaticResource KineticTextMuted}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Overall Stats 3-Column Card -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16,14">
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <!-- Completed Workouts -->
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                        <Label Text="{Binding CompletedWorkoutsCount}"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="ТРЕНИРОВОК"
+                               TextColor="{StaticResource KineticTextMuted}"
+                               FontSize="10"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- PR Records -->
+                    <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="3">
+                        <Label Text="{Binding PersonalRecordsCount}"
+                               TextColor="{StaticResource KineticVolt}"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="РЕКОРДОВ"
+                               TextColor="{StaticResource KineticVolt}"
+                               FontSize="10"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- Programs -->
+                    <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="3">
+                        <Label Text="{Binding ProgramsCount}"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="ПРОГРАММ"
+                               TextColor="{StaticResource KineticTextMuted}"
+                               FontSize="10"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Quick Access Sections Header -->
+            <Label Text="РАЗДЕЛЫ И БАЗА"
+                   TextColor="{StaticResource KineticTextMuted}"
+                   FontSize="12"
+                   FontAttributes="Bold"
+                   Margin="4,6,0,0" />
+
+            <!-- Exercise Library Menu Item -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenExercisesCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="🏋️‍♂️" FontSize="20" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="База упражнений"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="Категории, история подходов и техника"
+                               TextColor="{StaticResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Personal Records Hall of Fame -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenPersonalRecordsCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="🏆" FontSize="20" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Зал славы и рекорды (PR)"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="1RM, 5RM, максимальный рабочий вес"
+                               TextColor="{StaticResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Workout History & Plan/Fact -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenWorkoutHistoryCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="📈" FontSize="20" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="История всех тренировок"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="Сводка, разбор план / факт"
+                               TextColor="{StaticResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- About Myonic App -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenAboutCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="⚙️" FontSize="20" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="О приложении Myonic"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="Версия 1.0 • .NET 10 MAUI"
+                               TextColor="{StaticResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

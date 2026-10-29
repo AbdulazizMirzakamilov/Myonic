@@ -6,6 +6,7 @@ namespace Myonic
         {
             InitializeComponent();
             Routing.RegisterRoute(nameof(Pages.ExerciseDetailPage), typeof(Pages.ExerciseDetailPage));
+            Routing.RegisterRoute(nameof(Pages.ExercisesPage), typeof(Pages.ExercisesPage));
             Routing.RegisterRoute(nameof(Pages.PersonalRecordsPage), typeof(Pages.PersonalRecordsPage));
             Routing.RegisterRoute(nameof(Pages.ExerciseEditPage), typeof(Pages.ExerciseEditPage));
             Routing.RegisterRoute(nameof(Pages.ProgramEditPage), typeof(Pages.ProgramEditPage));
