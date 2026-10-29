@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.ProgramExerciseEditPage"
+             x:DataType="vm:ProgramExerciseEditViewModel"
+             Title="Параметры упражнения">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,16,16,36" Spacing="16">
+
+            <!-- Exercise Title -->
+            <Label Text="{Binding ExerciseName}"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="22" />
+
+            <!-- Sets -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Количество подходов" FontFamily="OpenSansSemibold" />
+                <Entry Text="{Binding SetsText}" Keyboard="Numeric" Placeholder="Например, 4" />
+            </VerticalStackLayout>
+
+            <!-- Reps & RepsMax -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Повторения (от — до)" FontFamily="OpenSansSemibold" />
+                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12">
+                    <Entry Text="{Binding RepsText}" Keyboard="Numeric" Placeholder="От (напр. 8)" />
+                    <Label Grid.Column="1" Text="—" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Entry Grid.Column="2" Text="{Binding RepsMaxText}" Keyboard="Numeric" Placeholder="До (напр. 12)" />
+                </Grid>
+                <Label Text="Оставьте поле «До» пустым, если нужно точное число повторений."
+                       FontSize="12" />
+            </VerticalStackLayout>
+
+            <!-- Weight -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Целевой вес, кг (необязательно)" FontFamily="OpenSansSemibold" />
+                <Entry Text="{Binding WeightText}" Keyboard="Numeric" Placeholder="Например, 80" />
+            </VerticalStackLayout>
+
+            <!-- RPE & RPE Max -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Целевой RPE (необязательно)" FontFamily="OpenSansSemibold" />
+                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12">
+                    <Entry Text="{Binding RpeText}" Keyboard="Numeric" Placeholder="От (напр. 7.5)" />
+                    <Label Grid.Column="1" Text="—" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Entry Grid.Column="2" Text="{Binding RpeMaxText}" Keyboard="Numeric" Placeholder="До (напр. 8.5)" />
+                </Grid>
+                <Label Text="Шкала от 5.5 до 10 с шагом 0.5 (например, 8 или диапазон 8–9)."
+                       FontSize="12" />
+            </VerticalStackLayout>
+
+            <!-- Rest -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Отдых между подходами, сек (необязательно)" FontFamily="OpenSansSemibold" />
+                <Entry Text="{Binding RestText}" Keyboard="Numeric" Placeholder="Например, 90 или 120" />
+            </VerticalStackLayout>
+
+            <!-- Notes -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Заметка (необязательно)" FontFamily="OpenSansSemibold" />
+                <Editor Text="{Binding Notes}" Placeholder="Например, пауза в нижней точке 1 сек..." AutoSize="TextChanges" HeightRequest="80" />
+            </VerticalStackLayout>
+
+            <!-- Save button -->
+            <Button Text="Сохранить параметры"
+                    Command="{Binding SaveCommand}"
+                    Margin="0,8,0,0" />
+
+            <!-- Delete button -->
+            <Button Text="Убрать из тренировки"
+                    Command="{Binding DeleteCommand}"
+                    IsVisible="{Binding IsExisting}"
+                    Margin="0,8,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

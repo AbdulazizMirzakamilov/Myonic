@@ -1,4 +1,4 @@
-﻿namespace Myonic
+namespace Myonic
 {
     public partial class AppShell : Shell
     {
@@ -8,6 +8,7 @@
             Routing.RegisterRoute(nameof(Pages.ExerciseEditPage), typeof(Pages.ExerciseEditPage));
             Routing.RegisterRoute(nameof(Pages.ProgramEditPage), typeof(Pages.ProgramEditPage));
             Routing.RegisterRoute(nameof(Pages.WorkoutEditPage), typeof(Pages.WorkoutEditPage));
+            Routing.RegisterRoute(nameof(Pages.ProgramExerciseEditPage), typeof(Pages.ProgramExerciseEditPage));
         }
     }
 }
