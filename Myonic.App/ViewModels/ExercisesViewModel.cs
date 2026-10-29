@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
@@ -47,5 +47,5 @@ public partial class ExercisesViewModel : ObservableObject
 
     [RelayCommand]
     private Task OpenAsync(ExerciseListItem item) =>
-        Shell.Current.GoToAsync($"{nameof(ExerciseEditPage)}?id={item.Id}");
+        Shell.Current.GoToAsync($"{nameof(ExerciseDetailPage)}?id={item.Id}");
 }

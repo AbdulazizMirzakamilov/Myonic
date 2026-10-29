@@ -60,9 +60,12 @@
                                 Padding="16">
                             <VerticalStackLayout Spacing="12">
 
-                                <!-- Exercise header & plan + Delete Exercise Button -->
+                                <!-- Exercise header & plan + View History + Delete Exercise Button -->
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                     <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                        <VerticalStackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding ViewHistoryCommand}" />
+                                        </VerticalStackLayout.GestureRecognizers>
                                         <Label Text="{Binding ExerciseName}"
                                                TextColor="{StaticResource KineticVolt}"
                                                FontSize="17"
@@ -72,20 +75,31 @@
                                                FontSize="13" />
                                     </VerticalStackLayout>
 
-                                    <Button Grid.Column="1"
-                                            Text="✕"
-                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.RemoveExerciseCommand}"
-                                            CommandParameter="{Binding .}"
-                                            BackgroundColor="{StaticResource KineticWell}"
-                                            TextColor="{StaticResource KineticTextMuted}"
-                                            BorderColor="{StaticResource KineticBorderSubtle}"
-                                            BorderWidth="1"
-                                            CornerRadius="8"
-                                            Padding="0"
-                                            HeightRequest="32"
-                                            WidthRequest="32"
-                                            FontSize="14"
-                                            VerticalOptions="Start" />
+                                    <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                        <Button Text="История"
+                                                Command="{Binding ViewHistoryCommand}"
+                                                BackgroundColor="{StaticResource KineticWell}"
+                                                TextColor="{StaticResource KineticIceBlue}"
+                                                BorderColor="{StaticResource KineticBorderSubtle}"
+                                                BorderWidth="1"
+                                                CornerRadius="8"
+                                                Padding="10,0"
+                                                HeightRequest="32"
+                                                FontSize="11"
+                                                FontAttributes="Bold" />
+                                        <Button Text="✕"
+                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.RemoveExerciseCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="{StaticResource KineticWell}"
+                                                TextColor="{StaticResource KineticTextMuted}"
+                                                BorderColor="{StaticResource KineticBorderSubtle}"
+                                                BorderWidth="1"
+                                                CornerRadius="8"
+                                                Padding="0"
+                                                HeightRequest="32"
+                                                WidthRequest="32"
+                                                FontSize="14" />
+                                    </HorizontalStackLayout>
                                 </Grid>
 
                                 <!-- Completed sets list (BindableLayout) -->

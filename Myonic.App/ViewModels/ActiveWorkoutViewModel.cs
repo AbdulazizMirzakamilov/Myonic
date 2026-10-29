@@ -33,6 +33,7 @@ public partial class ActiveExerciseViewModel : ObservableObject
     private readonly IWorkoutSessionRepository _repository;
 
     public int WorkoutExerciseId { get; init; }
+    public int ExerciseId { get; init; }
     public int Order { get; init; }
     public string ExerciseName { get; init; } = string.Empty;
     public string PlanText { get; init; } = string.Empty;
@@ -54,6 +55,7 @@ public partial class ActiveExerciseViewModel : ObservableObject
     {
         _repository = repository;
         WorkoutExerciseId = detail.WorkoutExerciseId;
+        ExerciseId = detail.ExerciseId;
         Order = detail.Order;
         ExerciseName = detail.ExerciseName;
         PlanText = detail.PlanText;
@@ -147,6 +149,13 @@ public partial class ActiveExerciseViewModel : ObservableObject
         {
             Sets[i].SetNumber = i + 1;
         }
+    }
+
+    [RelayCommand]
+    public async Task ViewHistoryAsync()
+    {
+        if (ExerciseId > 0)
+            await Shell.Current.GoToAsync($"{nameof(ExerciseDetailPage)}?id={ExerciseId}");
     }
 }
 

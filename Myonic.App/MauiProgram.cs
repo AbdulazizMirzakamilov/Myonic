@@ -31,8 +31,10 @@ namespace Myonic
             builder.Services.AddSingleton<IExerciseRepository, ExerciseRepository>();
             builder.Services.AddTransient<ExercisesViewModel>();
             builder.Services.AddTransient<ExerciseEditViewModel>();
+            builder.Services.AddTransient<ExerciseDetailViewModel>();
             builder.Services.AddTransient<ExercisesPage>();
             builder.Services.AddTransient<ExerciseEditPage>();
+            builder.Services.AddTransient<ExerciseDetailPage>();
 
             // Training Programs & Workouts
             builder.Services.AddSingleton<ITrainingProgramRepository, TrainingProgramRepository>();
