@@ -1,12 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Myonic.Services;
 
 namespace Myonic
 {
     public partial class App : Application
     {
-        public App()
+        private readonly IThemeService _themeService;
+
+        public App(IThemeService themeService)
         {
             InitializeComponent();
+            _themeService = themeService;
+            _themeService.Initialize();
         }
 
         protected override Window CreateWindow(IActivationState? activationState)

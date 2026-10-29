@@ -6,7 +6,7 @@
              x:DataType="vm:ActiveWorkoutViewModel"
              x:Name="ThisPage"
              Title="{Binding Title}"
-             BackgroundColor="{StaticResource KineticCanvas}">
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,14,16,40" Spacing="16">

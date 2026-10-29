@@ -5,14 +5,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Myonic.Pages"
     Title="Myonic"
-    BackgroundColor="{StaticResource KineticCanvas}"
-    Shell.BackgroundColor="{StaticResource KineticCanvas}"
-    Shell.ForegroundColor="{StaticResource KineticText}"
-    Shell.TitleColor="{StaticResource KineticText}"
-    Shell.TabBarBackgroundColor="{StaticResource KineticCanvas}"
-    Shell.TabBarForegroundColor="{StaticResource KineticVolt}"
-    Shell.TabBarTitleColor="{StaticResource KineticVolt}"
-    Shell.TabBarUnselectedColor="{StaticResource KineticTextMuted}">
+    BackgroundColor="{DynamicResource KineticCanvas}"
+    Shell.BackgroundColor="{DynamicResource KineticCanvas}"
+    Shell.ForegroundColor="{DynamicResource KineticText}"
+    Shell.TitleColor="{DynamicResource KineticText}"
+    Shell.TabBarBackgroundColor="{DynamicResource KineticCanvas}"
+    Shell.TabBarForegroundColor="{DynamicResource KineticVolt}"
+    Shell.TabBarTitleColor="{DynamicResource KineticVolt}"
+    Shell.TabBarUnselectedColor="{DynamicResource KineticTextMuted}">
 
     <TabBar>
         <ShellContent

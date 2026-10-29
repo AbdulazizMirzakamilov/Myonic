@@ -7,7 +7,7 @@
     x:Name="ThisPage"
     Title="Упражнения"
     x:DataType="vm:ExercisesViewModel"
-    BackgroundColor="{StaticResource KineticCanvas}">
+    BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding OpenRecordsCommand}" Text="Рекорды 🏆" />

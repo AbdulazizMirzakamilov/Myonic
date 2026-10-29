@@ -5,21 +5,21 @@
              x:Class="Myonic.Pages.ProfilePage"
              x:DataType="vm:ProfileViewModel"
              Title="Профиль"
-             BackgroundColor="{StaticResource KineticCanvas}">
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
 
             <!-- Athlete Profile Header Card -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 16"
                     Padding="16">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" VerticalOptions="Center">
                     <!-- Avatar Badge -->
-                    <Border BackgroundColor="{StaticResource KineticWell}"
-                            Stroke="{StaticResource KineticVolt}"
+                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="{DynamicResource KineticVolt}"
                             StrokeThickness="2"
                             StrokeShape="RoundRectangle 26"
                             WidthRequest="52"
@@ -27,7 +27,7 @@
                             HorizontalOptions="Center"
                             VerticalOptions="Center">
                         <Label Text="M"
-                               TextColor="{StaticResource KineticVolt}"
+                               TextColor="{DynamicResource KineticVolt}"
                                FontSize="22"
                                FontAttributes="Bold"
                                HorizontalOptions="Center"
@@ -36,19 +36,19 @@
 
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                         <Label Text="Атлет Myonic"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="19"
                                FontAttributes="Bold" />
                         <Label Text="Силовые тренировки • RPE трекинг"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12" />
                     </VerticalStackLayout>
                 </Grid>
             </Border>
 
             <!-- Overall Stats 3-Column Card -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 16"
                     Padding="16,14">
@@ -56,12 +56,12 @@
                     <!-- Completed Workouts -->
                     <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
                         <Label Text="{Binding CompletedWorkoutsCount}"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="20"
                                FontAttributes="Bold"
                                HorizontalTextAlignment="Center" />
                         <Label Text="ТРЕНИРОВОК"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="10"
                                FontAttributes="Bold"
                                HorizontalTextAlignment="Center" />
@@ -70,12 +70,12 @@
                     <!-- PR Records -->
                     <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="3">
                         <Label Text="{Binding PersonalRecordsCount}"
-                               TextColor="{StaticResource KineticVolt}"
+                               TextColor="{DynamicResource KineticVolt}"
                                FontSize="20"
                                FontAttributes="Bold"
                                HorizontalTextAlignment="Center" />
                         <Label Text="РЕКОРДОВ"
-                               TextColor="{StaticResource KineticVolt}"
+                               TextColor="{DynamicResource KineticVolt}"
                                FontSize="10"
                                FontAttributes="Bold"
                                HorizontalTextAlignment="Center" />
@@ -84,12 +84,12 @@
                     <!-- Programs -->
                     <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="3">
                         <Label Text="{Binding ProgramsCount}"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="20"
                                FontAttributes="Bold"
                                HorizontalTextAlignment="Center" />
                         <Label Text="ПРОГРАММ"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="10"
                                FontAttributes="Bold"
                                HorizontalTextAlignment="Center" />
@@ -99,14 +99,14 @@
 
             <!-- Quick Access Sections Header -->
             <Label Text="РАЗДЕЛЫ И БАЗА"
-                   TextColor="{StaticResource KineticTextMuted}"
+                   TextColor="{DynamicResource KineticTextMuted}"
                    FontSize="12"
                    FontAttributes="Bold"
                    Margin="4,6,0,0" />
 
             <!-- Exercise Library Menu Item -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16,14">
@@ -117,20 +117,20 @@
                     <Label Text="🏋️‍♂️" FontSize="20" VerticalOptions="Center" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                         <Label Text="База упражнений"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="15"
                                FontAttributes="Bold" />
                         <Label Text="Категории, история подходов и техника"
-                               TextColor="{StaticResource KineticTextSecondary}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="12" />
                     </VerticalStackLayout>
-                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
                 </Grid>
             </Border>
 
             <!-- Personal Records Hall of Fame -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16,14">
@@ -141,20 +141,20 @@
                     <Label Text="🏆" FontSize="20" VerticalOptions="Center" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                         <Label Text="Зал славы и рекорды (PR)"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="15"
                                FontAttributes="Bold" />
                         <Label Text="1RM, 5RM, максимальный рабочий вес"
-                               TextColor="{StaticResource KineticTextSecondary}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="12" />
                     </VerticalStackLayout>
-                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
                 </Grid>
             </Border>
 
             <!-- Workout History & Plan/Fact -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16,14">
@@ -165,20 +165,51 @@
                     <Label Text="📈" FontSize="20" VerticalOptions="Center" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                         <Label Text="История всех тренировок"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="15"
                                FontAttributes="Bold" />
                         <Label Text="Сводка, разбор план / факт"
-                               TextColor="{StaticResource KineticTextSecondary}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="12" />
                     </VerticalStackLayout>
-                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Settings Header -->
+            <Label Text="НАСТРОЙКИ"
+                   TextColor="{DynamicResource KineticTextMuted}"
+                   FontSize="12"
+                   FontAttributes="Bold"
+                   Margin="4,6,0,0" />
+
+            <!-- App Settings Menu Item -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenSettingsCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="⚙️" FontSize="20" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Настройки приложения"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="Тема оформления, светлый фон, единицы веса"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
                 </Grid>
             </Border>
 
             <!-- About Myonic App -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16,14">
@@ -186,17 +217,17 @@
                     <TapGestureRecognizer Command="{Binding OpenAboutCommand}" />
                 </Border.GestureRecognizers>
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
-                    <Label Text="⚙️" FontSize="20" VerticalOptions="Center" />
+                    <Label Text="ℹ️" FontSize="20" VerticalOptions="Center" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                         <Label Text="О приложении Myonic"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="15"
                                FontAttributes="Bold" />
                         <Label Text="Версия 1.0 • .NET 10 MAUI"
-                               TextColor="{StaticResource KineticTextSecondary}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="12" />
                     </VerticalStackLayout>
-                    <Label Grid.Column="2" Text="›" TextColor="{StaticResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
                 </Grid>
             </Border>
 

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
@@ -402,25 +402,25 @@
 
         <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
-        <Setter Property="BackgroundColor" Value="{StaticResource KineticCanvas}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource KineticCanvas}" />
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
-        <Setter Property="Shell.BackgroundColor" Value="{StaticResource KineticCanvas}" />
-        <Setter Property="Shell.ForegroundColor" Value="{StaticResource KineticText}" />
-        <Setter Property="Shell.TitleColor" Value="{StaticResource KineticText}" />
-        <Setter Property="Shell.DisabledColor" Value="{StaticResource KineticTextMuted}" />
-        <Setter Property="Shell.UnselectedColor" Value="{StaticResource KineticTextMuted}" />
+        <Setter Property="Shell.BackgroundColor" Value="{DynamicResource KineticCanvas}" />
+        <Setter Property="Shell.ForegroundColor" Value="{DynamicResource KineticText}" />
+        <Setter Property="Shell.TitleColor" Value="{DynamicResource KineticText}" />
+        <Setter Property="Shell.DisabledColor" Value="{DynamicResource KineticTextMuted}" />
+        <Setter Property="Shell.UnselectedColor" Value="{DynamicResource KineticTextMuted}" />
         <Setter Property="Shell.NavBarHasShadow" Value="False" />
-        <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource KineticCanvas}" />
-        <Setter Property="Shell.TabBarForegroundColor" Value="{StaticResource KineticVolt}" />
-        <Setter Property="Shell.TabBarTitleColor" Value="{StaticResource KineticVolt}" />
-        <Setter Property="Shell.TabBarUnselectedColor" Value="{StaticResource KineticTextMuted}" />
+        <Setter Property="Shell.TabBarBackgroundColor" Value="{DynamicResource KineticCanvas}" />
+        <Setter Property="Shell.TabBarForegroundColor" Value="{DynamicResource KineticVolt}" />
+        <Setter Property="Shell.TabBarTitleColor" Value="{DynamicResource KineticVolt}" />
+        <Setter Property="Shell.TabBarUnselectedColor" Value="{DynamicResource KineticTextMuted}" />
     </Style>
 
     <Style x:Key="VoltButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource KineticVolt}" />
-        <Setter Property="TextColor" Value="{StaticResource KineticVoltText}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+        <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="CornerRadius" Value="12" />
@@ -429,26 +429,26 @@
     </Style>
 
     <Style x:Key="SecondaryActionButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource KineticWell}" />
-        <Setter Property="TextColor" Value="{StaticResource KineticText}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource KineticWell}" />
+        <Setter Property="TextColor" Value="{DynamicResource KineticText}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="CornerRadius" Value="10" />
-        <Setter Property="BorderColor" Value="{StaticResource KineticBorder}" />
+        <Setter Property="BorderColor" Value="{DynamicResource KineticBorder}" />
         <Setter Property="BorderWidth" Value="1" />
         <Setter Property="HeightRequest" Value="44" />
     </Style>
 
     <Style TargetType="NavigationPage">
-        <Setter Property="BarBackgroundColor" Value="{StaticResource KineticCanvas}" />
-        <Setter Property="BarTextColor" Value="{StaticResource KineticText}" />
-        <Setter Property="IconColor" Value="{StaticResource KineticVolt}" />
+        <Setter Property="BarBackgroundColor" Value="{DynamicResource KineticCanvas}" />
+        <Setter Property="BarTextColor" Value="{DynamicResource KineticText}" />
+        <Setter Property="IconColor" Value="{DynamicResource KineticVolt}" />
     </Style>
 
     <Style TargetType="TabbedPage">
-        <Setter Property="BarBackgroundColor" Value="{StaticResource KineticCanvas}" />
-        <Setter Property="BarTextColor" Value="{StaticResource KineticVolt}" />
-        <Setter Property="UnselectedTabColor" Value="{StaticResource KineticTextMuted}" />
-        <Setter Property="SelectedTabColor" Value="{StaticResource KineticVolt}" />
+        <Setter Property="BarBackgroundColor" Value="{DynamicResource KineticCanvas}" />
+        <Setter Property="BarTextColor" Value="{DynamicResource KineticVolt}" />
+        <Setter Property="UnselectedTabColor" Value="{DynamicResource KineticTextMuted}" />
+        <Setter Property="SelectedTabColor" Value="{DynamicResource KineticVolt}" />
     </Style>
 
 </ResourceDictionary>

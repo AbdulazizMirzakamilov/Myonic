@@ -14,6 +14,7 @@ namespace Myonic
             Routing.RegisterRoute(nameof(Pages.ProgramExerciseEditPage), typeof(Pages.ProgramExerciseEditPage));
             Routing.RegisterRoute(nameof(Pages.ActiveWorkoutPage), typeof(Pages.ActiveWorkoutPage));
             Routing.RegisterRoute(nameof(Pages.WorkoutSessionDetailPage), typeof(Pages.WorkoutSessionDetailPage));
+            Routing.RegisterRoute(nameof(Pages.SettingsPage), typeof(Pages.SettingsPage));
         }
     }
 }

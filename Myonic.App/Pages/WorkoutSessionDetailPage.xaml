@@ -5,7 +5,7 @@
              x:Class="Myonic.Pages.WorkoutSessionDetailPage"
              x:DataType="vm:WorkoutSessionDetailViewModel"
              Title="Итоги тренировки"
-             BackgroundColor="{StaticResource KineticCanvas}">
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,14,16,40" Spacing="16">

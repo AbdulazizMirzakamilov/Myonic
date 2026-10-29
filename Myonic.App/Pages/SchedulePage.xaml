@@ -8,7 +8,7 @@
              x:DataType="vm:ScheduleViewModel"
              x:Name="ThisPage"
              Title="График"
-             BackgroundColor="{StaticResource KineticCanvas}">
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ContentPage.Resources>
         <ResourceDictionary>

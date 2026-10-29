@@ -73,6 +73,12 @@ public partial class ProfileViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public async Task OpenSettingsAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(SettingsPage));
+    }
+
+    [RelayCommand]
     public async Task OpenOneRepMaxAsync()
     {
         await Shell.Current.GoToAsync("//OneRepMaxPage");

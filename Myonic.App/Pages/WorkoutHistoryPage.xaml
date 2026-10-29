@@ -6,7 +6,7 @@
              x:Name="HistoryPage"
              x:DataType="vm:WorkoutHistoryViewModel"
              Title="История тренировок"
-             BackgroundColor="{StaticResource KineticCanvas}">
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <Grid Padding="16">
         <!-- Empty state -->
