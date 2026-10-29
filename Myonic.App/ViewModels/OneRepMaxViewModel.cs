@@ -12,19 +12,17 @@ public sealed class FormulaResultItem
     public string ValueText { get; init; } = string.Empty;
 }
 
-public sealed class PercentageItem
-{
-    public string PercentageText { get; init; } = string.Empty;
-    public string WeightText { get; init; } = string.Empty;
-}
-
 public partial class OneRepMaxViewModel : ObservableObject
 {
+    public const double MinWeight = 20.0;
+    public const double MaxWeight = 500.0;
+
+    // --- 1RM Calculation ---
     [ObservableProperty]
     private string _weightText = "100";
 
     [ObservableProperty]
-    private int _selectedRepsIndex = 4; // defaults to 5 reps
+    private int _selectedRepsIndex = 4; // 5 reps by default
 
     [ObservableProperty]
     private string _averageText = "—";
@@ -35,30 +33,64 @@ public partial class OneRepMaxViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLowAccuracy;
 
+    [ObservableProperty]
+    private string? _errorMessage;
+
     public List<int> RepOptions { get; } = Enumerable.Range(1, 12).ToList();
-
     public ObservableCollection<FormulaResultItem> FormulaResults { get; } = [];
-    public ObservableCollection<PercentageItem> Percentages { get; } = [];
 
-    public OneRepMaxViewModel()
+    // --- Percentage Calculation ---
+    [ObservableProperty]
+    private string _percentWeightText = "100";
+
+    [ObservableProperty]
+    private int _baseTypeIndex = 0; // 0: 1RM, 1: 5RM
+
+    public List<string> BaseTypeOptions { get; } = ["От 1ПМ", "От 5ПМ"];
+
+    [ObservableProperty]
+    private string _percentageText = "80";
+
+    [ObservableProperty]
+    private int _selectedPresetPercentIndex = 6; // 80%
+
+    public List<string> PresetPercentOptions { get; } =
+        ["50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%", "100%"];
+
+    partial void OnSelectedPresetPercentIndexChanged(int value)
     {
-        Calculate();
+        if (value >= 0 && value < PresetPercentOptions.Count)
+        {
+            PercentageText = PresetPercentOptions[value].Replace("%", string.Empty);
+        }
     }
 
-    partial void OnWeightTextChanged(string value) => Calculate();
-    partial void OnSelectedRepsIndexChanged(int value) => Calculate();
+    [ObservableProperty]
+    private string? _percentResultText;
+
+    [ObservableProperty]
+    private string? _percentDetailText;
+
+    [ObservableProperty]
+    private bool _hasPercentResult;
 
     [RelayCommand]
-    public void Calculate()
+    public async Task CalculateAsync()
     {
+        ErrorMessage = null;
         var cleanWeight = (WeightText ?? string.Empty).Replace(',', '.').Trim();
-        if (!double.TryParse(cleanWeight, NumberStyles.Float, CultureInfo.InvariantCulture, out var weight) || weight <= 0)
+
+        if (!double.TryParse(cleanWeight, NumberStyles.Float, CultureInfo.InvariantCulture, out var weight))
         {
             HasResult = false;
-            FormulaResults.Clear();
-            Percentages.Clear();
-            AverageText = "—";
-            IsLowAccuracy = false;
+            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите корректное числовое значение веса.", "OK");
+            return;
+        }
+
+        if (weight < MinWeight || weight > MaxWeight)
+        {
+            HasResult = false;
+            await Shell.Current.DisplayAlertAsync("Ограничение по весу", $"Вес должен быть в диапазоне от {MinWeight:0} до {MaxWeight:0} кг.", "OK");
             return;
         }
 
@@ -82,24 +114,62 @@ public partial class OneRepMaxViewModel : ObservableObject
 
             AverageText = $"{result.Average:0.#} кг";
             IsLowAccuracy = result.IsLowAccuracy;
-
-            Percentages.Clear();
-            int[] percents = [95, 90, 85, 80, 75, 70, 65, 60, 50];
-            foreach (var p in percents)
-            {
-                Percentages.Add(new PercentageItem
-                {
-                    PercentageText = $"{p}%",
-                    WeightText = $"{result.Average * (p / 100.0):0.#} кг"
-                });
-            }
-
             HasResult = true;
+
+            // Auto-fill percentage base weight with calculated average 1RM for user's convenience
+            PercentWeightText = result.Average.ToString("0.#", CultureInfo.InvariantCulture);
+            BaseTypeIndex = 0; // 1RM
         }
-        catch
+        catch (Exception ex)
         {
             HasResult = false;
+            await Shell.Current.DisplayAlertAsync("Ошибка", ex.Message, "OK");
         }
+    }
+
+    [RelayCommand]
+    public void SelectPresetPercentage(int index)
+    {
+        if (index >= 0 && index < PresetPercentOptions.Count)
+        {
+            SelectedPresetPercentIndex = index;
+            var numStr = PresetPercentOptions[index].Replace("%", string.Empty);
+            PercentageText = numStr;
+        }
+    }
+
+    [RelayCommand]
+    public async Task CalculatePercentageAsync()
+    {
+        var cleanWeight = (PercentWeightText ?? string.Empty).Replace(',', '.').Trim();
+        if (!double.TryParse(cleanWeight, NumberStyles.Float, CultureInfo.InvariantCulture, out var weight))
+        {
+            HasPercentResult = false;
+            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите вес для расчёта процентов.", "OK");
+            return;
+        }
+
+        if (weight < MinWeight || weight > MaxWeight)
+        {
+            HasPercentResult = false;
+            await Shell.Current.DisplayAlertAsync("Ограничение по весу", $"Базовый вес должен быть от {MinWeight:0} до {MaxWeight:0} кг.", "OK");
+            return;
+        }
+
+        var cleanPercent = (PercentageText ?? string.Empty).Replace(',', '.').Replace('%', ' ').Trim();
+        if (!double.TryParse(cleanPercent, NumberStyles.Float, CultureInfo.InvariantCulture, out var percent) || percent <= 0 || percent > 150)
+        {
+            HasPercentResult = false;
+            await Shell.Current.DisplayAlertAsync("Ошибка", "Процент должен быть числом от 1 до 150%.", "OK");
+            return;
+        }
+
+        var baseType = BaseTypeIndex == 1 ? "5ПМ" : "1ПМ";
+        var calculatedWeight = weight * (percent / 100.0);
+
+        PercentResultText = $"{calculatedWeight:0.##} кг";
+        PercentDetailText = $"{percent:0.#}% от {weight:0.##} кг ({baseType})";
+        HasPercentResult = true;
     }
 
     private static string GetFormulaDisplayName(OneRepMaxFormula formula) => formula switch
