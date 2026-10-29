@@ -6,6 +6,7 @@
              xmlns:conv="clr-namespace:Myonic.Converters"
              x:Class="Myonic.Pages.SchedulePage"
              x:DataType="vm:ScheduleViewModel"
+             x:Name="ThisPage"
              Title="График"
              BackgroundColor="{StaticResource KineticCanvas}">
 
@@ -115,7 +116,7 @@
                                         StrokeShape="RoundRectangle 10"
                                         Padding="2,8">
                                     <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, Path=SelectDayCommand}"
+                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
                                                               CommandParameter="{Binding .}" />
                                     </Border.GestureRecognizers>
                                     <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
@@ -334,7 +335,7 @@
 
                                     <!-- Large Volt Start Button -->
                                     <Button Text="НАЧАТЬ ТРЕНИРОВКУ"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, Path=StartPlannedWorkoutCommand}"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.StartPlannedWorkoutCommand}"
                                             CommandParameter="{Binding .}"
                                             Style="{StaticResource VoltButton}" />
                                 </VerticalStackLayout>

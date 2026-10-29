@@ -4,100 +4,179 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Myonic.ViewModels"
+    x:Name="ThisPage"
     Title="Тренировка"
-    x:DataType="vm:WorkoutEditViewModel">
+    x:DataType="vm:WorkoutEditViewModel"
+    BackgroundColor="{StaticResource KineticCanvas}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16,16,16,36" Spacing="16">
+        <VerticalStackLayout Padding="16,16,16,40" Spacing="16">
 
-            <!-- Workout info -->
-            <VerticalStackLayout Spacing="6">
-                <Label Text="Название тренировки" FontFamily="OpenSansSemibold" />
-                <Entry Placeholder="Например, Грудь + трицепс" Text="{Binding Name}" />
-            </VerticalStackLayout>
+            <!-- Workout info card -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16">
+                <VerticalStackLayout Spacing="14">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Название тренировки"
+                               TextColor="{StaticResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Entry Placeholder="Например, Верх тела А"
+                               PlaceholderColor="{StaticResource KineticTextMuted}"
+                               TextColor="{StaticResource KineticText}"
+                               BackgroundColor="{StaticResource KineticWell}"
+                               Text="{Binding Name}"
+                               HeightRequest="44" />
+                    </VerticalStackLayout>
 
-            <VerticalStackLayout Spacing="6">
-                <Label Text="День недели по умолчанию" FontFamily="OpenSansSemibold" />
-                <Picker ItemsSource="{Binding DayOptions}" SelectedIndex="{Binding DayIndex}" />
-            </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="День недели по умолчанию"
+                               TextColor="{StaticResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Border BackgroundColor="{StaticResource KineticWell}"
+                                Stroke="{StaticResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="8,2">
+                            <Picker ItemsSource="{Binding DayOptions}"
+                                    SelectedIndex="{Binding DayIndex}"
+                                    TextColor="{StaticResource KineticText}"
+                                    TitleColor="{StaticResource KineticTextMuted}" />
+                        </Border>
+                    </VerticalStackLayout>
 
-            <Button Command="{Binding SaveCommand}" Text="Сохранить параметры" />
+                    <Button Command="{Binding SaveCommand}"
+                            Text="Сохранить параметры"
+                            Style="{StaticResource VoltButton}"
+                            HeightRequest="46"
+                            FontSize="14" />
+                </VerticalStackLayout>
+            </Border>
 
-            <!-- Exercises list -->
-            <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+            <!-- Exercises list header -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0" VerticalOptions="Center">
                 <Label Text="Упражнения"
-                       FontFamily="OpenSansSemibold"
+                       TextColor="{StaticResource KineticText}"
                        FontSize="18"
+                       FontAttributes="Bold"
                        VerticalOptions="Center" />
                 <Button Grid.Column="1"
                         Text="+ Добавить"
                         Command="{Binding AddExerciseCommand}"
-                        Padding="12,6" />
+                        Style="{StaticResource SecondaryActionButton}"
+                        HeightRequest="38"
+                        Padding="14,0"
+                        FontSize="13"
+                        FontAttributes="Bold" />
             </Grid>
 
+            <!-- Exercises CollectionView -->
             <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout Padding="24" Spacing="6" HorizontalOptions="Center">
-                        <Label Text="Упражнений пока нет"
-                               FontFamily="OpenSansSemibold"
-                               HorizontalTextAlignment="Center" />
-                        <Label Text="Нажмите «+ Добавить», чтобы выбрать упражнения из библиотеки."
-                               FontSize="12"
-                               HorizontalTextAlignment="Center" />
-                    </VerticalStackLayout>
+                    <Border BackgroundColor="{StaticResource KineticSurface}"
+                            Stroke="{StaticResource KineticBorder}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="24">
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="Упражнений пока нет"
+                                   TextColor="{StaticResource KineticText}"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="Нажмите «+ Добавить», чтобы выбрать упражнения из библиотеки."
+                                   TextColor="{StaticResource KineticTextMuted}"
+                                   FontSize="13"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:PlannedExerciseItem">
-                        <Grid Padding="12" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Margin="0,4">
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutEditViewModel}}, Path=OpenExerciseCommand}"
-                                    CommandParameter="{Binding .}" />
-                            </Grid.GestureRecognizers>
+                        <Border BackgroundColor="{StaticResource KineticSurface}"
+                                Stroke="{StaticResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12,10"
+                                Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenExerciseCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
 
-                            <!-- Order number -->
-                            <Label Text="{Binding OrderText}"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="15"
-                                   VerticalOptions="Center"
-                                   WidthRequest="24" />
+                                <!-- Order number -->
+                                <Border BackgroundColor="{StaticResource KineticWell}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        WidthRequest="28"
+                                        HeightRequest="28"
+                                        VerticalOptions="Center">
+                                    <Label Text="{Binding OrderText}"
+                                           TextColor="{StaticResource KineticVolt}"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalTextAlignment="Center" />
+                                </Border>
 
-                            <!-- Title and Plan -->
-                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                <Label Text="{Binding Title}"
-                                       FontFamily="OpenSansSemibold"
-                                       FontSize="15" />
-                                <Label Text="{Binding PlanText}"
-                                       FontSize="12" />
-                            </VerticalStackLayout>
+                                <!-- Title and Plan -->
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding Title}"
+                                           TextColor="{StaticResource KineticText}"
+                                           FontSize="15"
+                                           FontAttributes="Bold"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding PlanText}"
+                                           TextColor="{StaticResource KineticTextSecondary}"
+                                           FontSize="12" />
+                                </VerticalStackLayout>
 
-                            <!-- Move Up and Down buttons -->
-                            <Button Grid.Column="2"
-                                    Text="▲"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutEditViewModel}}, Path=MoveUpCommand}"
-                                    CommandParameter="{Binding .}"
-                                    Padding="8,4"
-                                    WidthRequest="36"
-                                    HeightRequest="36" />
-                            <Button Grid.Column="3"
-                                    Text="▼"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutEditViewModel}}, Path=MoveDownCommand}"
-                                    CommandParameter="{Binding .}"
-                                    Padding="8,4"
-                                    WidthRequest="36"
-                                    HeightRequest="36" />
-                        </Grid>
+                                <!-- Move Up and Down buttons -->
+                                <Button Grid.Column="2"
+                                        Text="▲"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.MoveUpCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource SecondaryActionButton}"
+                                        Padding="0"
+                                        WidthRequest="34"
+                                        HeightRequest="34"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+                                <Button Grid.Column="3"
+                                        Text="▼"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.MoveDownCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource SecondaryActionButton}"
+                                        Padding="0"
+                                        WidthRequest="34"
+                                        HeightRequest="34"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
             <!-- Delete Workout -->
             <Button
-                BackgroundColor="Firebrick"
+                BackgroundColor="{StaticResource KineticWell}"
+                TextColor="{StaticResource KineticCrimson}"
+                BorderColor="{StaticResource KineticCrimson}"
+                BorderWidth="1"
+                CornerRadius="10"
+                HeightRequest="44"
+                FontSize="13"
                 Command="{Binding DeleteCommand}"
                 Text="Удалить тренировку"
-                Margin="0,16,0,0" />
+                Margin="0,12,0,0" />
 
         </VerticalStackLayout>
     </ScrollView>

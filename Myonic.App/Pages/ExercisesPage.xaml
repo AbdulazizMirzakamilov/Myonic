@@ -4,8 +4,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Myonic.ViewModels"
+    x:Name="ThisPage"
     Title="Упражнения"
-    x:DataType="vm:ExercisesViewModel">
+    x:DataType="vm:ExercisesViewModel"
+    BackgroundColor="{StaticResource KineticCanvas}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding AddCommand}" Text="Добавить" />
@@ -30,21 +32,22 @@
                     <Border
                         Margin="0,4"
                         Padding="12"
-                        Stroke="{AppThemeBinding Light={StaticResource Gray200},
-                                                 Dark={StaticResource Gray600}}"
+                        Stroke="{StaticResource KineticBorderSubtle}"
                         StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1">
+                        StrokeThickness="1"
+                        BackgroundColor="{StaticResource KineticWell}">
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisesViewModel}}, Path=OpenCommand}" CommandParameter="{Binding .}" />
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenCommand}" CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
                         <VerticalStackLayout Spacing="2">
                             <Label
                                 FontAttributes="Bold"
                                 FontSize="16"
+                                TextColor="{StaticResource KineticText}"
                                 Text="{Binding Name}" />
                             <Label
                                 FontSize="12"
-                                Opacity="0.7"
+                                TextColor="{StaticResource KineticTextSecondary}"
                                 Text="{Binding TypeText}" />
                         </VerticalStackLayout>
                     </Border>

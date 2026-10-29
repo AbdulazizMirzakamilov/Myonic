@@ -16,6 +16,7 @@ public partial class ExercisePickerViewModel : ObservableObject
 
     public ObservableCollection<Exercise> FilteredExercises { get; } = [];
 
+    public Func<Exercise, Task>? ExerciseSelectedAsync { get; set; }
     public event Action<Exercise>? ExerciseSelected;
 
     public ExercisePickerViewModel(IExerciseRepository repository)
@@ -50,7 +51,16 @@ public partial class ExercisePickerViewModel : ObservableObject
     public async Task SelectExerciseAsync(Exercise exercise)
     {
         if (exercise == null) return;
-        ExerciseSelected?.Invoke(exercise);
+
+        if (ExerciseSelectedAsync != null)
+        {
+            await ExerciseSelectedAsync.Invoke(exercise);
+        }
+        else
+        {
+            ExerciseSelected?.Invoke(exercise);
+        }
+
         await Shell.Current.Navigation.PopModalAsync();
     }
 

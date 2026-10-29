@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Myonic.ViewModels"
+    x:Name="ThisPage"
     Title="{Binding Title}"
     x:DataType="vm:ProgramEditViewModel">
 
@@ -72,7 +73,7 @@
                         StrokeThickness="1">
                         <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                             <Grid.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProgramEditViewModel}}, Path=OpenWorkoutCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenWorkoutCommand}" CommandParameter="{Binding .}" />
                             </Grid.GestureRecognizers>
 
                             <VerticalStackLayout Spacing="2" VerticalOptions="Center">
@@ -88,7 +89,7 @@
 
                             <Button Grid.Column="1"
                                     Text="▶ Старт"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProgramEditViewModel}}, Path=StartWorkoutCommand}"
+                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.StartWorkoutCommand}"
                                     CommandParameter="{Binding .}"
                                     Padding="12,6"
                                     VerticalOptions="Center" />

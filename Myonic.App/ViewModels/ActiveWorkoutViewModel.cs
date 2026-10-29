@@ -153,6 +153,7 @@ public partial class ActiveExerciseViewModel : ObservableObject
 public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IWorkoutSessionRepository _repository;
+    private readonly IServiceProvider _serviceProvider;
     private IDispatcherTimer? _timer;
     private DateTime _startedAt;
     private int _sessionId;
@@ -165,9 +166,12 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
     public ObservableCollection<ActiveExerciseViewModel> Exercises { get; } = [];
 
-    public ActiveWorkoutViewModel(IWorkoutSessionRepository repository)
+    public ActiveWorkoutViewModel(
+        IWorkoutSessionRepository repository,
+        IServiceProvider serviceProvider)
     {
         _repository = repository;
+        _serviceProvider = serviceProvider;
     }
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -225,12 +229,9 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
     [RelayCommand]
     public async Task AddExerciseAsync()
     {
-        var picker = IPlatformApplication.Current?.Services.GetService<ExercisePickerPage>()
-                     ?? Application.Current?.Handler?.MauiContext?.Services.GetService<ExercisePickerPage>();
-        if (picker == null) return;
-
+        var picker = _serviceProvider.GetRequiredService<ExercisePickerPage>();
         var vm = (ExercisePickerViewModel)picker.BindingContext;
-        vm.ExerciseSelected += async exercise =>
+        vm.ExerciseSelectedAsync = async exercise =>
         {
             var detail = await _repository.AddExerciseToSessionAsync(_sessionId, exercise.Id);
             Exercises.Add(new ActiveExerciseViewModel(_repository, detail));

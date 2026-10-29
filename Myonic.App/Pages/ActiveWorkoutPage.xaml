@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              x:Class="Myonic.Pages.ActiveWorkoutPage"
              x:DataType="vm:ActiveWorkoutViewModel"
+             x:Name="ThisPage"
              Title="{Binding Title}"
              BackgroundColor="{StaticResource KineticCanvas}">
 
@@ -51,7 +52,8 @@
             <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:ActiveExerciseViewModel">
-                        <Border BackgroundColor="{StaticResource KineticSurface}"
+                        <Border x:Name="ExerciseCard"
+                                BackgroundColor="{StaticResource KineticSurface}"
                                 Stroke="{StaticResource KineticBorder}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 14"
@@ -73,7 +75,7 @@
 
                                     <Button Grid.Column="1"
                                             Text="✕"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ActiveWorkoutViewModel}}, Path=RemoveExerciseCommand}"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.RemoveExerciseCommand}"
                                             CommandParameter="{Binding .}"
                                             BackgroundColor="{StaticResource KineticWell}"
                                             TextColor="{StaticResource KineticTextMuted}"
@@ -105,7 +107,7 @@
                                                            VerticalOptions="Center" />
                                                     <Button Grid.Column="1"
                                                             Text="✕"
-                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ActiveExerciseViewModel}}, Path=DeleteSetCommand}"
+                                                            Command="{Binding Source={x:Reference ExerciseCard}, Path=BindingContext.DeleteSetCommand}"
                                                             CommandParameter="{Binding .}"
                                                             BackgroundColor="Transparent"
                                                             TextColor="{StaticResource KineticCrimson}"

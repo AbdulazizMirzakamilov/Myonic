@@ -92,16 +92,17 @@ public partial class WorkoutEditViewModel : ObservableObject, IQueryAttributable
         var pickerPage = _serviceProvider.GetRequiredService<ExercisePickerPage>();
         if (pickerPage.BindingContext is ExercisePickerViewModel pickerVm)
         {
-            pickerVm.ExerciseSelected += async (selectedExercise) =>
+            pickerVm.ExerciseSelectedAsync = async (selectedExercise) =>
             {
-                await Shell.Current.GoToAsync(
-                    nameof(ProgramExerciseEditPage),
-                    new Dictionary<string, object>
-                    {
-                        ["workoutId"] = _workout.Id,
-                        ["exerciseId"] = selectedExercise.Id,
-                        ["exerciseName"] = selectedExercise.Name
-                    });
+                var pe = new ProgramExercise
+                {
+                    ProgramWorkoutId = _workout.Id,
+                    ExerciseId = selectedExercise.Id,
+                    Sets = 3,
+                    Reps = 8
+                };
+                await _exerciseRepository.AddAsync(pe);
+                await LoadExercisesAsync();
             };
         }
 
