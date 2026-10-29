@@ -94,60 +94,309 @@
                 </HorizontalStackLayout>
             </Grid>
 
-            <!-- Weekly Calendar Strip (FlexLayout with BindableLayout - Zero Nested RecyclerViews) -->
+            <!-- Weekly Calendar Strip (7 Columns Grid: 100% stable, no FlexLayout clipping, zero lag) -->
             <Border BackgroundColor="{StaticResource KineticSurface}"
                     Stroke="{StaticResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="6,8">
-                <FlexLayout BindableLayout.ItemsSource="{Binding WeekDays}"
-                            JustifyContent="SpaceBetween"
-                            AlignItems="Center">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="vm:CalendarDayItem">
-                            <Border StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
-                                    Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
-                                    BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
-                                    StrokeShape="RoundRectangle 10"
-                                    WidthRequest="44"
-                                    Padding="2,8">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
-                                                          CommandParameter="{Binding .}" />
-                                </Border.GestureRecognizers>
-                                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
-                                    <Label Text="{Binding DayName}"
-                                           FontSize="11"
-                                           FontAttributes="Bold"
-                                           HorizontalTextAlignment="Center"
-                                           TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="4">
 
-                                    <Label Text="{Binding DayNumber}"
-                                           FontSize="16"
-                                           FontAttributes="Bold"
-                                           HorizontalTextAlignment="Center"
-                                           TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                    <!-- Day 0 (ПН) -->
+                    <Border Grid.Column="0"
+                            BindingContext="{Binding Day0}"
+                            x:DataType="vm:CalendarDayItem"
+                            StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="2,8"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding DayName}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                            <Grid HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="✔"
+                                       IsVisible="{Binding HasCompletedWorkout}"
+                                       TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                                <Ellipse WidthRequest="6"
+                                         HeightRequest="6"
+                                         Fill="{StaticResource KineticIceBlue}"
+                                         IsVisible="{Binding HasPlannedWorkout}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
 
-                                    <Grid HeightRequest="16" HorizontalOptions="Center">
-                                        <Label Text="✔"
-                                               IsVisible="{Binding HasCompletedWorkout}"
-                                               TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
-                                               FontSize="12"
-                                               FontAttributes="Bold"
-                                               HorizontalTextAlignment="Center" />
+                    <!-- Day 1 (ВТ) -->
+                    <Border Grid.Column="1"
+                            BindingContext="{Binding Day1}"
+                            x:DataType="vm:CalendarDayItem"
+                            StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="2,8"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding DayName}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                            <Grid HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="✔"
+                                       IsVisible="{Binding HasCompletedWorkout}"
+                                       TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                                <Ellipse WidthRequest="6"
+                                         HeightRequest="6"
+                                         Fill="{StaticResource KineticIceBlue}"
+                                         IsVisible="{Binding HasPlannedWorkout}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
 
-                                        <Ellipse WidthRequest="6"
-                                                 HeightRequest="6"
-                                                 Fill="{StaticResource KineticIceBlue}"
-                                                 IsVisible="{Binding HasPlannedWorkout}"
-                                                 HorizontalOptions="Center"
-                                                 VerticalOptions="Center" />
-                                    </Grid>
-                                </VerticalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </FlexLayout>
+                    <!-- Day 2 (СР) -->
+                    <Border Grid.Column="2"
+                            BindingContext="{Binding Day2}"
+                            x:DataType="vm:CalendarDayItem"
+                            StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="2,8"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding DayName}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                            <Grid HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="✔"
+                                       IsVisible="{Binding HasCompletedWorkout}"
+                                       TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                                <Ellipse WidthRequest="6"
+                                         HeightRequest="6"
+                                         Fill="{StaticResource KineticIceBlue}"
+                                         IsVisible="{Binding HasPlannedWorkout}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Day 3 (ЧТ) -->
+                    <Border Grid.Column="3"
+                            BindingContext="{Binding Day3}"
+                            x:DataType="vm:CalendarDayItem"
+                            StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="2,8"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding DayName}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                            <Grid HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="✔"
+                                       IsVisible="{Binding HasCompletedWorkout}"
+                                       TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                                <Ellipse WidthRequest="6"
+                                         HeightRequest="6"
+                                         Fill="{StaticResource KineticIceBlue}"
+                                         IsVisible="{Binding HasPlannedWorkout}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Day 4 (ПТ) -->
+                    <Border Grid.Column="4"
+                            BindingContext="{Binding Day4}"
+                            x:DataType="vm:CalendarDayItem"
+                            StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="2,8"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding DayName}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                            <Grid HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="✔"
+                                       IsVisible="{Binding HasCompletedWorkout}"
+                                       TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                                <Ellipse WidthRequest="6"
+                                         HeightRequest="6"
+                                         Fill="{StaticResource KineticIceBlue}"
+                                         IsVisible="{Binding HasPlannedWorkout}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Day 5 (СБ) -->
+                    <Border Grid.Column="5"
+                            BindingContext="{Binding Day5}"
+                            x:DataType="vm:CalendarDayItem"
+                            StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="2,8"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding DayName}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                            <Grid HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="✔"
+                                       IsVisible="{Binding HasCompletedWorkout}"
+                                       TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                                <Ellipse WidthRequest="6"
+                                         HeightRequest="6"
+                                         Fill="{StaticResource KineticIceBlue}"
+                                         IsVisible="{Binding HasPlannedWorkout}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Day 6 (ВС) -->
+                    <Border Grid.Column="6"
+                            BindingContext="{Binding Day6}"
+                            x:DataType="vm:CalendarDayItem"
+                            StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="2,8"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding DayName}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+                            <Grid HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="✔"
+                                       IsVisible="{Binding HasCompletedWorkout}"
+                                       TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                                <Ellipse WidthRequest="6"
+                                         HeightRequest="6"
+                                         Fill="{StaticResource KineticIceBlue}"
+                                         IsVisible="{Binding HasPlannedWorkout}"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                </Grid>
             </Border>
 
             <!-- Quick Start Action Bar (Independence from Programs tab) -->

@@ -9,14 +9,37 @@ namespace Myonic.ViewModels;
 
 public sealed class CalendarDayItem : ObservableObject
 {
+    private DateTime _date;
+    private string _dayName = string.Empty;
+    private string _dayNumber = string.Empty;
+    private bool _isToday;
     private bool _isSelected;
     private bool _hasCompletedWorkout;
     private bool _hasPlannedWorkout;
 
-    public DateTime Date { get; init; }
-    public string DayName { get; init; } = string.Empty;
-    public string DayNumber { get; init; } = string.Empty;
-    public bool IsToday { get; init; }
+    public DateTime Date
+    {
+        get => _date;
+        set => SetProperty(ref _date, value);
+    }
+
+    public string DayName
+    {
+        get => _dayName;
+        set => SetProperty(ref _dayName, value);
+    }
+
+    public string DayNumber
+    {
+        get => _dayNumber;
+        set => SetProperty(ref _dayNumber, value);
+    }
+
+    public bool IsToday
+    {
+        get => _isToday;
+        set => SetProperty(ref _isToday, value);
+    }
 
     public bool IsSelected
     {
@@ -95,12 +118,28 @@ public partial class ScheduleViewModel : ObservableObject
     public ObservableCollection<DayCompletedSessionItem> CompletedSessions { get; } = [];
     public ObservableCollection<PlannedWorkoutSummary> PlannedWorkouts { get; } = [];
 
+    public CalendarDayItem Day0 { get; } = new();
+    public CalendarDayItem Day1 { get; } = new();
+    public CalendarDayItem Day2 { get; } = new();
+    public CalendarDayItem Day3 { get; } = new();
+    public CalendarDayItem Day4 { get; } = new();
+    public CalendarDayItem Day5 { get; } = new();
+    public CalendarDayItem Day6 { get; } = new();
+
     public ScheduleViewModel(
         IWorkoutSessionRepository sessionRepo,
         IWorkoutScheduleRepository scheduleRepo)
     {
         _sessionRepo = sessionRepo;
         _scheduleRepo = scheduleRepo;
+
+        WeekDays.Add(Day0);
+        WeekDays.Add(Day1);
+        WeekDays.Add(Day2);
+        WeekDays.Add(Day3);
+        WeekDays.Add(Day4);
+        WeekDays.Add(Day5);
+        WeekDays.Add(Day6);
     }
 
     private bool _isInitialized;
@@ -149,39 +188,24 @@ public partial class ScheduleViewModel : ObservableObject
             var (defaultDays, scheduledDates) = await plannedIndicatorsTask;
 
             var dayNames = new[] { "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС" };
+            var days = new[] { Day0, Day1, Day2, Day3, Day4, Day5, Day6 };
 
-            if (WeekDays.Count == 7 && WeekDays[0].Date == monday)
+            for (int i = 0; i < 7; i++)
             {
-                for (int i = 0; i < 7; i++)
-                {
-                    var d = WeekDays[i];
-                    d.IsSelected = d.Date == SelectedDate.Date;
-                    d.HasCompletedWorkout = completedSet.Contains(d.Date);
-                    d.HasPlannedWorkout = defaultDays.Contains(d.Date.DayOfWeek) || scheduledDates.Contains(d.Date);
-                }
-            }
-            else
-            {
-                WeekDays.Clear();
-                for (int i = 0; i < 7; i++)
-                {
-                    var dayDate = monday.AddDays(i);
-                    var isSelected = dayDate.Date == SelectedDate.Date;
-                    var isToday = dayDate.Date == DateTime.Today;
-                    var hasCompleted = completedSet.Contains(dayDate.Date);
-                    var hasPlanned = defaultDays.Contains(dayDate.DayOfWeek) || scheduledDates.Contains(dayDate.Date);
+                var dayDate = monday.AddDays(i);
+                var isSelected = dayDate.Date == SelectedDate.Date;
+                var isToday = dayDate.Date == DateTime.Today;
+                var hasCompleted = completedSet.Contains(dayDate.Date);
+                var hasPlanned = defaultDays.Contains(dayDate.DayOfWeek) || scheduledDates.Contains(dayDate.Date);
 
-                    WeekDays.Add(new CalendarDayItem
-                    {
-                        Date = dayDate,
-                        DayName = dayNames[i],
-                        DayNumber = dayDate.Day.ToString(),
-                        IsToday = isToday,
-                        IsSelected = isSelected,
-                        HasCompletedWorkout = hasCompleted,
-                        HasPlannedWorkout = hasPlanned
-                    });
-                }
+                var item = days[i];
+                item.Date = dayDate;
+                item.DayName = dayNames[i];
+                item.DayNumber = dayDate.Day.ToString();
+                item.IsToday = isToday;
+                item.IsSelected = isSelected;
+                item.HasCompletedWorkout = hasCompleted;
+                item.HasPlannedWorkout = hasPlanned;
             }
 
             await LoadSelectedDateDetailsAsync();
