@@ -1,4 +1,4 @@
-﻿namespace Myonic.Core.Models;
+namespace Myonic.Core.Models;
 
 public class WorkoutExercise
 {
@@ -10,8 +10,10 @@ public class WorkoutExercise
     // Снимок плана; null, если упражнение добавлено на лету
     public int? PlannedSets { get; set; }
     public int? PlannedReps { get; set; }
+    public int? PlannedRepsMax { get; set; }
     public double? PlannedWeight { get; set; }
     public double? PlannedRpe { get; set; }
+    public double? PlannedRpeMax { get; set; }
     public int? PlannedRestSeconds { get; set; }
 
     public bool IsSkipped { get; set; }
