@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Repositories;
+using Myonic.Pages;
 
 namespace Myonic.ViewModels;
 
@@ -283,13 +284,13 @@ public partial class ScheduleViewModel : ObservableObject
                 "Открыть", "Отмена");
             if (proceed)
             {
-                await Shell.Current.GoToAsync($"///ActiveWorkoutPage?sessionId={active.Id}");
+                await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={active.Id}");
             }
             return;
         }
 
         var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(workout.ProgramWorkoutId);
-        await Shell.Current.GoToAsync($"///ActiveWorkoutPage?sessionId={sessionId}");
+        await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
     }
 
     [RelayCommand]
@@ -304,7 +305,7 @@ public partial class ScheduleViewModel : ObservableObject
                 "Открыть", "Отмена");
             if (proceed)
             {
-                await Shell.Current.GoToAsync($"///ActiveWorkoutPage?sessionId={active.Id}");
+                await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={active.Id}");
             }
             return;
         }
@@ -320,14 +321,14 @@ public partial class ScheduleViewModel : ObservableObject
 
         var title = string.IsNullOrWhiteSpace(name) ? "Свободная тренировка" : name.Trim();
         var sessionId = await _sessionRepo.StartEmptySessionAsync(title);
-        await Shell.Current.GoToAsync($"///ActiveWorkoutPage?sessionId={sessionId}");
+        await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
     }
 
     [RelayCommand]
     public async Task ResumeActiveSessionAsync()
     {
         if (ActiveSession == null) return;
-        await Shell.Current.GoToAsync($"///ActiveWorkoutPage?sessionId={ActiveSession.Id}");
+        await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={ActiveSession.Id}");
     }
 
     [RelayCommand]

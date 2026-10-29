@@ -94,15 +94,14 @@ public partial class WorkoutEditViewModel : ObservableObject, IQueryAttributable
         {
             pickerVm.ExerciseSelectedAsync = async (selectedExercise) =>
             {
-                var pe = new ProgramExercise
-                {
-                    ProgramWorkoutId = _workout.Id,
-                    ExerciseId = selectedExercise.Id,
-                    Sets = 3,
-                    Reps = 8
-                };
-                await _exerciseRepository.AddAsync(pe);
-                await LoadExercisesAsync();
+                await Shell.Current.GoToAsync(
+                    nameof(ProgramExerciseEditPage),
+                    new Dictionary<string, object>
+                    {
+                        ["workoutId"] = _workout.Id,
+                        ["exerciseId"] = selectedExercise.Id,
+                        ["exerciseName"] = selectedExercise.Name
+                    });
             };
         }
 

@@ -52,16 +52,19 @@ public partial class ExercisePickerViewModel : ObservableObject
     {
         if (exercise == null) return;
 
-        if (ExerciseSelectedAsync != null)
+        var callbackAsync = ExerciseSelectedAsync;
+        var callback = ExerciseSelected;
+
+        await Shell.Current.Navigation.PopModalAsync();
+
+        if (callbackAsync != null)
         {
-            await ExerciseSelectedAsync.Invoke(exercise);
+            await callbackAsync.Invoke(exercise);
         }
         else
         {
-            ExerciseSelected?.Invoke(exercise);
+            callback?.Invoke(exercise);
         }
-
-        await Shell.Current.Navigation.PopModalAsync();
     }
 
     [RelayCommand]
