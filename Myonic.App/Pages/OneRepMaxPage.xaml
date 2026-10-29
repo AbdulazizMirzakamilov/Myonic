@@ -105,20 +105,12 @@
                 </VerticalStackLayout>
             </Grid>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Быстрый выбор %" FontFamily="OpenSansSemibold" />
-                    <Picker ItemsSource="{Binding PresetPercentOptions}"
-                            SelectedIndex="{Binding SelectedPresetPercentIndex}" />
-                </VerticalStackLayout>
-
-                <VerticalStackLayout Grid.Column="1" Spacing="6">
-                    <Label Text="Процент, %" FontFamily="OpenSansSemibold" />
-                    <Entry Text="{Binding PercentageText}"
-                           Keyboard="Numeric"
-                           Placeholder="Например, 80" />
-                </VerticalStackLayout>
-            </Grid>
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Процент, %" FontFamily="OpenSansSemibold" />
+                <Entry Text="{Binding PercentageText}"
+                       Keyboard="Numeric"
+                       Placeholder="Например, 80" />
+            </VerticalStackLayout>
 
             <Button Text="Рассчитать процент"
                     Command="{Binding CalculatePercentageCommand}"

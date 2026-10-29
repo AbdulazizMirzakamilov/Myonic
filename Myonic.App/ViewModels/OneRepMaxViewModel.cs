@@ -19,7 +19,7 @@ public partial class OneRepMaxViewModel : ObservableObject
 
     // --- 1RM Calculation ---
     [ObservableProperty]
-    private string _weightText = "100";
+    private string _weightText = string.Empty;
 
     [ObservableProperty]
     private int _selectedRepsIndex = 4; // 5 reps by default
@@ -41,7 +41,7 @@ public partial class OneRepMaxViewModel : ObservableObject
 
     // --- Percentage Calculation ---
     [ObservableProperty]
-    private string _percentWeightText = "100";
+    private string _percentWeightText = string.Empty;
 
     [ObservableProperty]
     private int _baseTypeIndex = 0; // 0: 1RM, 1: 5RM
@@ -49,21 +49,7 @@ public partial class OneRepMaxViewModel : ObservableObject
     public List<string> BaseTypeOptions { get; } = ["От 1ПМ", "От 5ПМ"];
 
     [ObservableProperty]
-    private string _percentageText = "80";
-
-    [ObservableProperty]
-    private int _selectedPresetPercentIndex = 6; // 80%
-
-    public List<string> PresetPercentOptions { get; } =
-        ["50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%", "100%"];
-
-    partial void OnSelectedPresetPercentIndexChanged(int value)
-    {
-        if (value >= 0 && value < PresetPercentOptions.Count)
-        {
-            PercentageText = PresetPercentOptions[value].Replace("%", string.Empty);
-        }
-    }
+    private string _percentageText = string.Empty;
 
     [ObservableProperty]
     private string? _percentResultText;
@@ -83,7 +69,7 @@ public partial class OneRepMaxViewModel : ObservableObject
         if (!double.TryParse(cleanWeight, NumberStyles.Float, CultureInfo.InvariantCulture, out var weight))
         {
             HasResult = false;
-            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите корректное числовое значение веса.", "OK");
+            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите числовое значение веса.", "OK");
             return;
         }
 
@@ -115,26 +101,11 @@ public partial class OneRepMaxViewModel : ObservableObject
             AverageText = $"{result.Average:0.#} кг";
             IsLowAccuracy = result.IsLowAccuracy;
             HasResult = true;
-
-            // Auto-fill percentage base weight with calculated average 1RM for user's convenience
-            PercentWeightText = result.Average.ToString("0.#", CultureInfo.InvariantCulture);
-            BaseTypeIndex = 0; // 1RM
         }
         catch (Exception ex)
         {
             HasResult = false;
             await Shell.Current.DisplayAlertAsync("Ошибка", ex.Message, "OK");
-        }
-    }
-
-    [RelayCommand]
-    public void SelectPresetPercentage(int index)
-    {
-        if (index >= 0 && index < PresetPercentOptions.Count)
-        {
-            SelectedPresetPercentIndex = index;
-            var numStr = PresetPercentOptions[index].Replace("%", string.Empty);
-            PercentageText = numStr;
         }
     }
 
@@ -145,7 +116,7 @@ public partial class OneRepMaxViewModel : ObservableObject
         if (!double.TryParse(cleanWeight, NumberStyles.Float, CultureInfo.InvariantCulture, out var weight))
         {
             HasPercentResult = false;
-            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите вес для расчёта процентов.", "OK");
+            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите базовый вес для расчёта процентов.", "OK");
             return;
         }
 
