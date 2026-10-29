@@ -48,6 +48,39 @@ public class PastWorkoutSummary
     public int ExerciseCount { get; set; }
 }
 
+public class ExerciseHistorySetItem
+{
+    public int SetNumber { get; set; }
+    public double Weight { get; set; }
+    public int Reps { get; set; }
+    public double? Rpe { get; set; }
+    public double Estimated1Rm { get; set; }
+}
+
+public class ExerciseHistoryItem
+{
+    public int SessionId { get; set; }
+    public string WorkoutTitle { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public double MaxWeight { get; set; }
+    public double Best1Rm { get; set; }
+    public double TotalVolume { get; set; }
+    public List<ExerciseHistorySetItem> Sets { get; set; } = [];
+}
+
+public class ExerciseHistorySummary
+{
+    public int ExerciseId { get; set; }
+    public string ExerciseName { get; set; } = string.Empty;
+    public ExerciseType ExerciseType { get; set; }
+    public string? Description { get; set; }
+    public double AllTimeMaxWeight { get; set; }
+    public double AllTimeBest1Rm { get; set; }
+    public int TotalSessionsCount { get; set; }
+    public int TotalSetsCount { get; set; }
+    public List<ExerciseHistoryItem> Sessions { get; set; } = [];
+}
+
 public interface IWorkoutSessionRepository
 {
     Task<ActiveSessionSummary?> GetActiveSessionSummaryAsync();
@@ -63,4 +96,5 @@ public interface IWorkoutSessionRepository
     Task<IReadOnlyList<PastWorkoutSummary>> GetPastSessionsAsync();
     Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromUtc, DateTime toUtc);
     Task<IReadOnlyList<WorkoutSessionDetail>> GetSessionsForDateAsync(DateTime date);
+    Task<ExerciseHistorySummary> GetExerciseHistoryAsync(int exerciseId);
 }

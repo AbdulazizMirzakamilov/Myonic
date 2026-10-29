@@ -1,3 +1,4 @@
+using Myonic.Core.Calculators;
 using Myonic.Core.Formatting;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
@@ -347,6 +348,104 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         }
 
         return result;
+    }
+
+    public async Task<ExerciseHistorySummary> GetExerciseHistoryAsync(int exerciseId)
+    {
+        var db = await _database.GetConnectionAsync();
+        var exercise = await db.Table<Exercise>().Where(e => e.Id == exerciseId).FirstOrDefaultAsync();
+        if (exercise == null)
+            throw new InvalidOperationException($"Упражнение с ID {exerciseId} не найдено.");
+
+        var rows = await db.QueryAsync<ExerciseSessionHistoryRow>(
+            @"SELECT we.Id AS WorkoutExerciseId,
+                     ws.Id AS SessionId,
+                     ws.Title AS WorkoutTitle,
+                     ws.StartedAt AS SessionStartedAt
+              FROM WorkoutExercise we
+              JOIN WorkoutSession ws ON we.WorkoutSessionId = ws.Id
+              WHERE we.ExerciseId = ?
+              ORDER BY ws.StartedAt DESC",
+            exerciseId);
+
+        var sessions = new List<ExerciseHistoryItem>();
+        double allTimeMaxWeight = 0;
+        double allTimeBest1Rm = 0;
+        int totalSets = 0;
+
+        foreach (var r in rows)
+        {
+            var sets = await db.Table<SetEntry>()
+                .Where(s => s.WorkoutExerciseId == r.WorkoutExerciseId)
+                .OrderBy(s => s.SetNumber)
+                .ToListAsync();
+
+            if (sets.Count == 0) continue;
+
+            totalSets += sets.Count;
+            var setItems = new List<ExerciseHistorySetItem>();
+            double maxWeightInSession = 0;
+            double best1RmInSession = 0;
+            double sessionVolume = 0;
+
+            foreach (var s in sets)
+            {
+                double est1Rm = s.Weight;
+                if (s.Weight > 0 && s.Reps > 1)
+                {
+                    var cappedReps = Math.Min(s.Reps, OneRepMaxCalculator.MaxReps);
+                    est1Rm = Math.Round(OneRepMaxCalculator.Calculate(OneRepMaxFormula.Epley, s.Weight, cappedReps), 1);
+                }
+
+                if (s.Weight > maxWeightInSession) maxWeightInSession = s.Weight;
+                if (est1Rm > best1RmInSession) best1RmInSession = est1Rm;
+                sessionVolume += s.Weight * s.Reps;
+
+                setItems.Add(new ExerciseHistorySetItem
+                {
+                    SetNumber = s.SetNumber,
+                    Weight = s.Weight,
+                    Reps = s.Reps,
+                    Rpe = s.Rpe,
+                    Estimated1Rm = est1Rm
+                });
+            }
+
+            if (maxWeightInSession > allTimeMaxWeight) allTimeMaxWeight = maxWeightInSession;
+            if (best1RmInSession > allTimeBest1Rm) allTimeBest1Rm = best1RmInSession;
+
+            sessions.Add(new ExerciseHistoryItem
+            {
+                SessionId = r.SessionId,
+                WorkoutTitle = string.IsNullOrWhiteSpace(r.WorkoutTitle) ? "Тренировка" : r.WorkoutTitle,
+                Date = r.SessionStartedAt,
+                MaxWeight = maxWeightInSession,
+                Best1Rm = best1RmInSession,
+                TotalVolume = sessionVolume,
+                Sets = setItems
+            });
+        }
+
+        return new ExerciseHistorySummary
+        {
+            ExerciseId = exercise.Id,
+            ExerciseName = exercise.Name,
+            ExerciseType = exercise.Type,
+            Description = exercise.Description,
+            AllTimeMaxWeight = allTimeMaxWeight,
+            AllTimeBest1Rm = allTimeBest1Rm,
+            TotalSessionsCount = sessions.Count,
+            TotalSetsCount = totalSets,
+            Sessions = sessions
+        };
+    }
+
+    private sealed class ExerciseSessionHistoryRow
+    {
+        public int WorkoutExerciseId { get; set; }
+        public int SessionId { get; set; }
+        public string WorkoutTitle { get; set; } = string.Empty;
+        public DateTime SessionStartedAt { get; set; }
     }
 
     private sealed class WorkoutExerciseRow

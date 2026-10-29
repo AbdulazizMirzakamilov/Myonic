@@ -198,4 +198,34 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         var daySessions = await _sessionRepo.GetSessionsForDateAsync(today);
         Assert.Contains(daySessions, s => s.Id == sessionId && s.Title == "Утренняя тренировка");
     }
+
+    [Fact]
+    public async Task GetExerciseHistory_ReturnsCorrectHistoryAndMaxStats()
+    {
+        // Session 1: 80kg x 8, 80kg x 7
+        var session1Id = await _sessionRepo.StartEmptySessionAsync("Грудь 1");
+        var we1 = await _sessionRepo.AddExerciseToSessionAsync(session1Id, _exerciseId);
+        await _sessionRepo.AddSetAsync(we1.WorkoutExerciseId, 80, 8, 8.0);
+        await _sessionRepo.AddSetAsync(we1.WorkoutExerciseId, 80, 7, 8.5);
+        await _sessionRepo.FinishSessionAsync(session1Id);
+
+        // Session 2: 90kg x 5, 100kg x 1
+        var session2Id = await _sessionRepo.StartEmptySessionAsync("Грудь 2");
+        var we2 = await _sessionRepo.AddExerciseToSessionAsync(session2Id, _exerciseId);
+        await _sessionRepo.AddSetAsync(we2.WorkoutExerciseId, 90, 5, 8.0);
+        await _sessionRepo.AddSetAsync(we2.WorkoutExerciseId, 100, 1, 9.5);
+        await _sessionRepo.FinishSessionAsync(session2Id);
+
+        var history = await _sessionRepo.GetExerciseHistoryAsync(_exerciseId);
+
+        Assert.Equal(_exerciseId, history.ExerciseId);
+        Assert.Equal(2, history.TotalSessionsCount);
+        Assert.Equal(4, history.TotalSetsCount);
+        Assert.Equal(100.0, history.AllTimeMaxWeight);
+        // Epley for 80x8: 80 * (1 + 8/30.0) = 101.3. For 90x5: 90 * (1 + 5/30.0) = 105.0. For 100x1 = 100. Best is 105.0
+        Assert.Equal(105.0, history.AllTimeBest1Rm);
+        Assert.Equal(2, history.Sessions.Count);
+        Assert.Equal("Грудь 2", history.Sessions[0].WorkoutTitle);
+        Assert.Equal(2, history.Sessions[0].Sets.Count);
+    }
 }

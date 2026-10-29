@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Repositories;
+using Myonic.Pages;
 
 namespace Myonic.ViewModels;
 
@@ -52,5 +53,12 @@ public partial class WorkoutHistoryViewModel : ObservableObject
         }
 
         HasNoHistory = PastSessions.Count == 0;
+    }
+
+    [RelayCommand]
+    public async Task OpenSessionDetailAsync(PastWorkoutItem? item)
+    {
+        if (item == null) return;
+        await Shell.Current.GoToAsync($"{nameof(WorkoutSessionDetailPage)}?sessionId={item.Id}");
     }
 }

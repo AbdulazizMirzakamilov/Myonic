@@ -495,6 +495,16 @@
                                             </DataTemplate>
                                         </BindableLayout.ItemTemplate>
                                     </VerticalStackLayout>
+
+                                    <!-- Plan vs Fact Analysis Button -->
+                                    <Button Text="Разбор тренировки (План / Факт) →"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenSessionDetailCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource SecondaryActionButton}"
+                                            HeightRequest="38"
+                                            FontSize="12"
+                                            FontAttributes="Bold"
+                                            Margin="0,4,0,0" />
                                 </VerticalStackLayout>
                             </Border>
                         </DataTemplate>

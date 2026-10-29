@@ -27,12 +27,17 @@ namespace Myonic
             builder.Services.AddSingleton(_ => new MyonicDatabase(
                 Path.Combine(FileSystem.AppDataDirectory, "myonic.db3")));
 
-            // Exercise Library
+            // Exercise Library & Records
             builder.Services.AddSingleton<IExerciseRepository, ExerciseRepository>();
+            builder.Services.AddSingleton<IPersonalRecordRepository, PersonalRecordRepository>();
             builder.Services.AddTransient<ExercisesViewModel>();
             builder.Services.AddTransient<ExerciseEditViewModel>();
+            builder.Services.AddTransient<ExerciseDetailViewModel>();
+            builder.Services.AddTransient<PersonalRecordsViewModel>();
             builder.Services.AddTransient<ExercisesPage>();
             builder.Services.AddTransient<ExerciseEditPage>();
+            builder.Services.AddTransient<ExerciseDetailPage>();
+            builder.Services.AddTransient<PersonalRecordsPage>();
 
             // Training Programs & Workouts
             builder.Services.AddSingleton<ITrainingProgramRepository, TrainingProgramRepository>();
@@ -60,6 +65,8 @@ namespace Myonic
             builder.Services.AddTransient<ActiveWorkoutPage>();
             builder.Services.AddTransient<WorkoutHistoryViewModel>();
             builder.Services.AddTransient<WorkoutHistoryPage>();
+            builder.Services.AddTransient<WorkoutSessionDetailViewModel>();
+            builder.Services.AddTransient<WorkoutSessionDetailPage>();
 
             // Schedule & Unified Calendar
             builder.Services.AddSingleton<IWorkoutScheduleRepository, WorkoutScheduleRepository>();

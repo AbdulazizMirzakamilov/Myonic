@@ -317,6 +317,13 @@ public partial class ScheduleViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public async Task OpenSessionDetailAsync(DayCompletedSessionItem? session)
+    {
+        if (session == null) return;
+        await Shell.Current.GoToAsync($"{nameof(WorkoutSessionDetailPage)}?sessionId={session.SessionId}");
+    }
+
+    [RelayCommand]
     public async Task StartPlannedWorkoutAsync(PlannedWorkoutSummary? workout)
     {
         if (workout == null) return;
