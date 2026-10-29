@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.OneRepMaxPage"
+             x:DataType="vm:OneRepMaxViewModel"
+             Title="Калькулятор 1ПМ">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,16,16,36" Spacing="16">
+
+            <!-- Title & subtitle -->
+            <Label Text="Калькулятор повторного максимума"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="20" />
+            <Label Text="Введите рабочий вес и количество повторений, чтобы рассчитать ваш предполагаемый 1ПМ."
+                   FontSize="13" />
+
+            <!-- Inputs -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Вес, кг" FontFamily="OpenSansSemibold" />
+                    <Entry Text="{Binding WeightText}"
+                           Keyboard="Numeric"
+                           Placeholder="100" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="6">
+                    <Label Text="Повторения" FontFamily="OpenSansSemibold" />
+                    <Picker ItemsSource="{Binding RepOptions}"
+                            SelectedIndex="{Binding SelectedRepsIndex}" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Results -->
+            <VerticalStackLayout Spacing="12" IsVisible="{Binding HasResult}">
+
+                <!-- Low accuracy warning -->
+                <Label Text="⚠️ При более чем 10 повторениях точность расчёта снижается."
+                       IsVisible="{Binding IsLowAccuracy}"
+                       FontSize="12"
+                       TextColor="DarkOrange" />
+
+                <Label Text="Результаты по формулам"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="16"
+                       Margin="0,8,0,0" />
+
+                <!-- Formulas list -->
+                <CollectionView ItemsSource="{Binding FormulaResults}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FormulaResultItem">
+                            <Grid Padding="12,8" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding FormulaName}"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding ValueText}"
+                                       FontFamily="OpenSansSemibold"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Average Section at the end of the formulas list -->
+                <Grid Padding="14" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                    <Label Text="Среднее значение"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="17"
+                           VerticalOptions="Center" />
+                    <Label Grid.Column="1"
+                           Text="{Binding AverageText}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="18"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Percentages Table -->
+                <Label Text="Проценты от 1ПМ (для тренировок)"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="16"
+                       Margin="0,12,0,0" />
+
+                <CollectionView ItemsSource="{Binding Percentages}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PercentageItem">
+                            <Grid Padding="12,6" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding PercentageText}"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding WeightText}"
+                                       FontFamily="OpenSansSemibold"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

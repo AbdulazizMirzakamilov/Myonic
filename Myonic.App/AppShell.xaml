@@ -15,5 +15,9 @@
             Title="Упражнения"
             ContentTemplate="{DataTemplate pages:ExercisesPage}"
             Route="ExercisesPage" />
+        <ShellContent
+            Title="Калькулятор 1ПМ"
+            ContentTemplate="{DataTemplate pages:OneRepMaxPage}"
+            Route="OneRepMaxPage" />
     </TabBar>
 </Shell>
