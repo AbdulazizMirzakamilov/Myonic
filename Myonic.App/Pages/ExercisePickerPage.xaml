@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Myonic.Core.Models;assembly=Myonic.Core"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.ExercisePickerPage"
+             x:DataType="vm:ExercisePickerViewModel"
+             Title="Выбор упражнения">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
+        <!-- Header with close button -->
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Выберите упражнение"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="20"
+                   VerticalOptions="Center" />
+            <Button Grid.Column="1"
+                    Text="Закрыть"
+                    Command="{Binding CancelCommand}"
+                    Padding="12,6" />
+        </Grid>
+
+        <!-- Search Bar -->
+        <SearchBar Grid.Row="1"
+                   Placeholder="Поиск по названию..."
+                   Text="{Binding SearchText}" />
+
+        <!-- Exercises List -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding FilteredExercises}"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="32" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="Упражнения не найдены"
+                           FontFamily="OpenSansSemibold"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Exercise">
+                    <Grid Padding="12,14" ColumnDefinitions="*,Auto">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=SelectExerciseCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+
+                        <Label Text="{Binding Name}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="16"
+                               VerticalOptions="Center" />
+
+                        <Label Grid.Column="1"
+                               Text="›"
+                               FontSize="20"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

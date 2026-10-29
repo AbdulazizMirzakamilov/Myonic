@@ -8,21 +8,97 @@
     x:DataType="vm:WorkoutEditViewModel">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="8">
-            <Label Text="Название" />
-            <Entry Placeholder="Например, Грудь + трицепс" Text="{Binding Name}" />
+        <VerticalStackLayout Padding="16,16,16,36" Spacing="16">
 
-            <Label Margin="0,8,0,0" Text="День недели по умолчанию" />
-            <Picker ItemsSource="{Binding DayOptions}" SelectedIndex="{Binding DayIndex}" />
+            <!-- Workout info -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Название тренировки" FontFamily="OpenSansSemibold" />
+                <Entry Placeholder="Например, Грудь + трицепс" Text="{Binding Name}" />
+            </VerticalStackLayout>
 
-            <Button
-                Margin="0,16,0,0"
-                Command="{Binding SaveCommand}"
-                Text="Сохранить" />
+            <VerticalStackLayout Spacing="6">
+                <Label Text="День недели по умолчанию" FontFamily="OpenSansSemibold" />
+                <Picker ItemsSource="{Binding DayOptions}" SelectedIndex="{Binding DayIndex}" />
+            </VerticalStackLayout>
+
+            <Button Command="{Binding SaveCommand}" Text="Сохранить параметры" />
+
+            <!-- Exercises list -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                <Label Text="Упражнения"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="18"
+                       VerticalOptions="Center" />
+                <Button Grid.Column="1"
+                        Text="+ Добавить"
+                        Command="{Binding AddExerciseCommand}"
+                        Padding="12,6" />
+            </Grid>
+
+            <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Padding="24" Spacing="6" HorizontalOptions="Center">
+                        <Label Text="Упражнений пока нет"
+                               FontFamily="OpenSansSemibold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Нажмите «+ Добавить», чтобы выбрать упражнения из библиотеки."
+                               FontSize="12"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlannedExerciseItem">
+                        <Grid Padding="12" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Margin="0,4">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutEditViewModel}}, Path=OpenExerciseCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+
+                            <!-- Order number -->
+                            <Label Text="{Binding OrderText}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="15"
+                                   VerticalOptions="Center"
+                                   WidthRequest="24" />
+
+                            <!-- Title and Plan -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{Binding Title}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="15" />
+                                <Label Text="{Binding PlanText}"
+                                       FontSize="12" />
+                            </VerticalStackLayout>
+
+                            <!-- Move Up and Down buttons -->
+                            <Button Grid.Column="2"
+                                    Text="▲"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutEditViewModel}}, Path=MoveUpCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Padding="8,4"
+                                    WidthRequest="36"
+                                    HeightRequest="36" />
+                            <Button Grid.Column="3"
+                                    Text="▼"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WorkoutEditViewModel}}, Path=MoveDownCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Padding="8,4"
+                                    WidthRequest="36"
+                                    HeightRequest="36" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Delete Workout -->
             <Button
                 BackgroundColor="Firebrick"
                 Command="{Binding DeleteCommand}"
-                Text="Удалить тренировку" />
+                Text="Удалить тренировку"
+                Margin="0,16,0,0" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

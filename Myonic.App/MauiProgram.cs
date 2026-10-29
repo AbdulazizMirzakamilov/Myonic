@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Myonic.Core.Repositories;
 using Myonic.Data;
 using Myonic.Data.Repositories;
@@ -26,20 +26,33 @@ namespace Myonic
 
             builder.Services.AddSingleton(_ => new MyonicDatabase(
                 Path.Combine(FileSystem.AppDataDirectory, "myonic.db3")));
+
+            // Exercise Library
             builder.Services.AddSingleton<IExerciseRepository, ExerciseRepository>();
             builder.Services.AddTransient<ExercisesViewModel>();
             builder.Services.AddTransient<ExerciseEditViewModel>();
             builder.Services.AddTransient<ExercisesPage>();
             builder.Services.AddTransient<ExerciseEditPage>();
 
+            // Training Programs & Workouts
             builder.Services.AddSingleton<ITrainingProgramRepository, TrainingProgramRepository>();
-
             builder.Services.AddTransient<ProgramsViewModel>();
             builder.Services.AddTransient<ProgramEditViewModel>();
             builder.Services.AddTransient<WorkoutEditViewModel>();
             builder.Services.AddTransient<ProgramsPage>();
             builder.Services.AddTransient<ProgramEditPage>();
             builder.Services.AddTransient<WorkoutEditPage>();
+
+            // Program Exercises
+            builder.Services.AddSingleton<IProgramExerciseRepository, ProgramExerciseRepository>();
+            builder.Services.AddTransient<ExercisePickerViewModel>();
+            builder.Services.AddTransient<ExercisePickerPage>();
+            builder.Services.AddTransient<ProgramExerciseEditViewModel>();
+            builder.Services.AddTransient<ProgramExerciseEditPage>();
+
+            // 1RM Calculator
+            builder.Services.AddTransient<OneRepMaxViewModel>();
+            builder.Services.AddTransient<OneRepMaxPage>();
 
             return builder.Build();
         }
