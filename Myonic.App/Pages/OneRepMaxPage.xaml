@@ -51,9 +51,9 @@
                        FontSize="16"
                        Margin="0,4,0,0" />
 
-                <!-- Formulas list -->
-                <CollectionView ItemsSource="{Binding FormulaResults}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
+                <!-- Formulas list (BindableLayout - zero nested RecyclerView lag) -->
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding FormulaResults}" Spacing="4">
+                    <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:FormulaResultItem">
                             <Grid Padding="12,8" ColumnDefinitions="*,Auto">
                                 <Label Text="{Binding FormulaName}"
@@ -64,8 +64,8 @@
                                        VerticalOptions="Center" />
                             </Grid>
                         </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
 
                 <!-- Average Section at the end of the formulas list -->
                 <Grid Padding="12" ColumnDefinitions="*,Auto" Margin="0,4,0,0">

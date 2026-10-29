@@ -156,4 +156,46 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         var loaded = await _sessionRepo.GetSessionDetailAsync(sessionId);
         Assert.Null(loaded);
     }
+
+    [Fact]
+    public async Task StartEmptySession_AllowsAddingExercisesAndCompleting()
+    {
+        var sessionId = await _sessionRepo.StartEmptySessionAsync("Фулбоди экспресс");
+        Assert.True(sessionId > 0);
+
+        var detail = await _sessionRepo.GetSessionDetailAsync(sessionId);
+        Assert.NotNull(detail);
+        Assert.Equal("Фулбоди экспресс", detail.Title);
+        Assert.Empty(detail.Exercises);
+
+        var addedExercise = await _sessionRepo.AddExerciseToSessionAsync(sessionId, _exerciseId);
+        Assert.NotNull(addedExercise);
+        Assert.Equal(1, addedExercise.Order);
+        Assert.Equal(_exerciseId, addedExercise.ExerciseId);
+
+        var updatedDetail = await _sessionRepo.GetSessionDetailAsync(sessionId);
+        Assert.Single(updatedDetail!.Exercises);
+
+        await _sessionRepo.AddSetAsync(addedExercise.WorkoutExerciseId, 100, 5, 8.5);
+        await _sessionRepo.FinishSessionAsync(sessionId);
+
+        var past = await _sessionRepo.GetPastSessionsAsync();
+        Assert.Contains(past, p => p.Id == sessionId && p.CompletedSetsCount == 1);
+    }
+
+    [Fact]
+    public async Task GetSessionsForDate_And_GetCompletedSessionDates_ReturnCorrectData()
+    {
+        var sessionId = await _sessionRepo.StartEmptySessionAsync("Утренняя тренировка");
+        var added = await _sessionRepo.AddExerciseToSessionAsync(sessionId, _exerciseId);
+        await _sessionRepo.AddSetAsync(added.WorkoutExerciseId, 70, 10, null);
+        await _sessionRepo.FinishSessionAsync(sessionId);
+
+        var today = DateTime.UtcNow.Date;
+        var dates = await _sessionRepo.GetCompletedSessionDatesAsync(today.AddDays(-1), today.AddDays(1));
+        Assert.Contains(today, dates);
+
+        var daySessions = await _sessionRepo.GetSessionsForDateAsync(today);
+        Assert.Contains(daySessions, s => s.Id == sessionId && s.Title == "Утренняя тренировка");
+    }
 }

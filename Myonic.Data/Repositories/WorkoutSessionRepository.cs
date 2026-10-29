@@ -70,6 +70,57 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         return session.Id;
     }
 
+    public async Task<int> StartEmptySessionAsync(string title)
+    {
+        var db = await _database.GetConnectionAsync();
+        var session = new WorkoutSession
+        {
+            Title = string.IsNullOrWhiteSpace(title) ? "Свободная тренировка" : title.Trim(),
+            StartedAt = DateTime.UtcNow
+        };
+        await db.InsertAsync(session);
+        return session.Id;
+    }
+
+    public async Task<SessionExerciseDetail> AddExerciseToSessionAsync(int sessionId, int exerciseId)
+    {
+        var db = await _database.GetConnectionAsync();
+        var exercise = await db.FindAsync<Exercise>(exerciseId)
+            ?? throw new ArgumentException($"Упражнение с ID {exerciseId} не найдено.");
+
+        var maxOrder = await db.ExecuteScalarAsync<int>(
+            "SELECT IFNULL(MAX(\"Order\"), 0) FROM WorkoutExercise WHERE WorkoutSessionId = ?",
+            sessionId);
+
+        var we = new WorkoutExercise
+        {
+            WorkoutSessionId = sessionId,
+            ExerciseId = exerciseId,
+            Order = maxOrder + 1
+        };
+        await db.InsertAsync(we);
+
+        return new SessionExerciseDetail
+        {
+            WorkoutExerciseId = we.Id,
+            ExerciseId = exercise.Id,
+            ExerciseName = exercise.Name,
+            ExerciseType = exercise.Type,
+            Order = we.Order,
+            Sets = []
+        };
+    }
+
+    public async Task DeleteExerciseFromSessionAsync(int workoutExerciseId)
+    {
+        var db = await _database.GetConnectionAsync();
+        var we = await db.FindAsync<WorkoutExercise>(workoutExerciseId);
+        if (we == null) return;
+
+        await db.Table<SetEntry>().DeleteAsync(s => s.WorkoutExerciseId == workoutExerciseId);
+        await db.DeleteAsync(we);
+    }
+
     public async Task<WorkoutSessionDetail?> GetSessionDetailAsync(int sessionId)
     {
         var db = await _database.GetConnectionAsync();
@@ -260,6 +311,42 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         }
 
         return list;
+    }
+
+    public async Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromUtc, DateTime toUtc)
+    {
+        var db = await _database.GetConnectionAsync();
+        var sessions = await db.Table<WorkoutSession>()
+            .Where(s => s.FinishedAt != null && s.FinishedAt >= fromUtc && s.FinishedAt <= toUtc)
+            .ToListAsync();
+
+        return sessions
+            .Select(s => s.FinishedAt!.Value.Date)
+            .Distinct()
+            .OrderBy(d => d)
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<WorkoutSessionDetail>> GetSessionsForDateAsync(DateTime date)
+    {
+        var db = await _database.GetConnectionAsync();
+        var start = date.Date;
+        var end = start.AddDays(1);
+
+        var sessions = await db.Table<WorkoutSession>()
+            .Where(s => s.FinishedAt != null && s.FinishedAt >= start && s.FinishedAt < end)
+            .OrderByDescending(s => s.FinishedAt)
+            .ToListAsync();
+
+        var result = new List<WorkoutSessionDetail>();
+        foreach (var s in sessions)
+        {
+            var detail = await GetSessionDetailAsync(s.Id);
+            if (detail != null)
+                result.Add(detail);
+        }
+
+        return result;
     }
 
     private sealed class WorkoutExerciseRow

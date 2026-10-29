@@ -5,57 +5,82 @@
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              x:Class="Myonic.Pages.ExercisePickerPage"
              x:DataType="vm:ExercisePickerViewModel"
-             Title="Выбор упражнения">
+             x:Name="ThisPage"
+             Title="Выбор упражнения"
+             BackgroundColor="{StaticResource KineticCanvas}">
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
         <!-- Header with close button -->
-        <Grid ColumnDefinitions="*,Auto">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
             <Label Text="Выберите упражнение"
-                   FontFamily="OpenSansSemibold"
+                   TextColor="{StaticResource KineticText}"
                    FontSize="20"
+                   FontAttributes="Bold"
                    VerticalOptions="Center" />
             <Button Grid.Column="1"
                     Text="Закрыть"
                     Command="{Binding CancelCommand}"
-                    Padding="12,6" />
+                    Style="{StaticResource SecondaryActionButton}"
+                    HeightRequest="38"
+                    Padding="14,0"
+                    FontSize="13" />
         </Grid>
 
         <!-- Search Bar -->
-        <SearchBar Grid.Row="1"
-                   Placeholder="Поиск по названию..."
-                   Text="{Binding SearchText}" />
+        <Border Grid.Row="1"
+                BackgroundColor="{StaticResource KineticWell}"
+                Stroke="{StaticResource KineticBorderSubtle}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10"
+                Padding="6,2">
+            <SearchBar Placeholder="Поиск по названию..."
+                       PlaceholderColor="{StaticResource KineticTextMuted}"
+                       TextColor="{StaticResource KineticText}"
+                       BackgroundColor="Transparent"
+                       Text="{Binding SearchText}" />
+        </Border>
 
         <!-- Exercises List -->
         <CollectionView Grid.Row="2"
                         ItemsSource="{Binding FilteredExercises}"
                         SelectionMode="None">
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="32" HorizontalOptions="Center" VerticalOptions="Center">
+                <VerticalStackLayout Padding="32" Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
                     <Label Text="Упражнения не найдены"
-                           FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource KineticTextMuted}"
+                           FontSize="15"
                            HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Exercise">
-                    <Grid Padding="12,14" ColumnDefinitions="*,Auto">
-                        <Grid.GestureRecognizers>
+                    <Border BackgroundColor="{StaticResource KineticWell}"
+                            Stroke="{StaticResource KineticBorderSubtle}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="14,12"
+                            Margin="0,3">
+                        <Border.GestureRecognizers>
                             <TapGestureRecognizer
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExercisePickerViewModel}}, Path=SelectExerciseCommand}"
+                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectExerciseCommand}"
                                 CommandParameter="{Binding .}" />
-                        </Grid.GestureRecognizers>
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding Name}"
+                                   TextColor="{StaticResource KineticText}"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
 
-                        <Label Text="{Binding Name}"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="16"
-                               VerticalOptions="Center" />
-
-                        <Label Grid.Column="1"
-                               Text="›"
-                               FontSize="20"
-                               VerticalOptions="Center" />
-                    </Grid>
+                            <Label Grid.Column="1"
+                                   Text="›"
+                                   TextColor="{StaticResource KineticVolt}"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

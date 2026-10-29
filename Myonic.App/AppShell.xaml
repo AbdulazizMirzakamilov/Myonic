@@ -8,6 +8,10 @@
 
     <TabBar>
         <ShellContent
+            Title="График"
+            ContentTemplate="{DataTemplate pages:SchedulePage}"
+            Route="SchedulePage" />
+        <ShellContent
             Title="Программы"
             ContentTemplate="{DataTemplate pages:ProgramsPage}"
             Route="ProgramsPage" />
@@ -16,12 +20,8 @@
             ContentTemplate="{DataTemplate pages:ExercisesPage}"
             Route="ExercisesPage" />
         <ShellContent
-            Title="Калькулятор 1ПМ"
+            Title="1ПМ"
             ContentTemplate="{DataTemplate pages:OneRepMaxPage}"
             Route="OneRepMaxPage" />
-        <ShellContent
-            Title="История"
-            ContentTemplate="{DataTemplate pages:WorkoutHistoryPage}"
-            Route="WorkoutHistoryPage" />
     </TabBar>
 </Shell>

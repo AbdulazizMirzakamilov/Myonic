@@ -92,7 +92,7 @@ public partial class WorkoutEditViewModel : ObservableObject, IQueryAttributable
         var pickerPage = _serviceProvider.GetRequiredService<ExercisePickerPage>();
         if (pickerPage.BindingContext is ExercisePickerViewModel pickerVm)
         {
-            pickerVm.ExerciseSelected += async (selectedExercise) =>
+            pickerVm.ExerciseSelectedAsync = async (selectedExercise) =>
             {
                 await Shell.Current.GoToAsync(
                     nameof(ProgramExerciseEditPage),
