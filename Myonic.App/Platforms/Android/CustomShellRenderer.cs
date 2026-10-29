@@ -25,8 +25,6 @@ public class CustomShellRenderer : ShellRenderer
 
 public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearanceTracker
 {
-    private bool _isAnimatedHooked;
-
     public CustomBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
         : base(shellContext, shellItem)
     {
@@ -41,7 +39,11 @@ public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearance
         // 1. Force labeled mode (all 5 icons and titles always visible simultaneously)
         bottomView.LabelVisibilityMode = LabelVisibilityMode.LabelVisibilityLabeled;
 
-        // 2. ColorStateList for icons and text: #CCFF00 (KineticVolt) active, #94A3B8 inactive
+        // 2. Custom Typography: 10.5sp ensures labels (like "ПРОФИЛЬ", "ТРЕНИНГ") NEVER truncate to "ПРОФИ..."
+        bottomView.ItemTextAppearanceActive = Resource.Style.BottomNavTextActive;
+        bottomView.ItemTextAppearanceInactive = Resource.Style.BottomNavTextInactive;
+
+        // 3. ColorStateList for icons and text: #CCFF00 (KineticVolt) active, #94A3B8 inactive
         var states = new int[][]
         {
             new int[] { global::Android.Resource.Attribute.StateChecked },
@@ -57,57 +59,36 @@ public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearance
         bottomView.ItemIconTintList = colorStateList;
         bottomView.ItemTextColor = colorStateList;
 
-        // 3. Active Icon Indicator: subtle neon volt glow matching the screenshot aesthetic
+        // 4. Active Icon Indicator: subtle neon volt glow pill behind active icon
         bottomView.ItemActiveIndicatorColor = ColorStateList.ValueOf(global::Android.Graphics.Color.ParseColor("#24CCFF00"));
 
-        // 4. Rounded Floating Dock Background
+        // 5. Rounded Floating Dock Background
         var shape = new GradientDrawable();
         shape.SetShape(ShapeType.Rectangle);
-        shape.SetCornerRadius(22 * density);
+        shape.SetCornerRadius(20 * density);
         shape.SetColor(global::Android.Graphics.Color.ParseColor("#171A21")); // KineticSurface
         shape.SetStroke((int)(1.2f * density), global::Android.Graphics.Color.ParseColor("#2A313E")); // KineticBorder
         bottomView.Background = shape;
 
-        // 5. Floating Margins & Elevation (adapts to phone bezels and gesture bar)
+        // 6. Floating Margins & Elevation (adapts to phone bezels and gesture bar)
         if (bottomView.LayoutParameters is ViewGroup.MarginLayoutParams lp)
         {
-            int marginH = (int)(14 * density);
-            int marginB = (int)(12 * density);
+            int marginH = (int)(10 * density);
+            int marginB = (int)(10 * density);
             lp.SetMargins(marginH, 0, marginH, marginB);
-            lp.Height = (int)(66 * density);
+            lp.Height = (int)(64 * density);
             bottomView.LayoutParameters = lp;
         }
 
         bottomView.Elevation = 14 * density;
 
-        // 6. Subtle neon ripple on tap
+        // 7. Subtle neon ripple on tap
         bottomView.ItemRippleColor = ColorStateList.ValueOf(global::Android.Graphics.Color.ParseColor("#33CCFF00"));
 
-        // 7. Micro-bounce spring animation on tab selection
-        if (!_isAnimatedHooked)
-        {
-            _isAnimatedHooked = true;
-            bottomView.ItemSelected += (s, e) =>
-            {
-                var itemView = bottomView.FindViewById(e.Item.ItemId);
-                if (itemView != null)
-                {
-                    itemView.Animate()?
-                        .ScaleX(1.14f)
-                        .ScaleY(1.14f)
-                        .SetDuration(110)
-                        .WithEndAction(new Java.Lang.Runnable(() =>
-                        {
-                            itemView.Animate()?
-                                .ScaleX(1.0f)
-                                .ScaleY(1.0f)
-                                .SetDuration(110)
-                                .Start();
-                        }))
-                        .Start();
-                }
-            };
-        }
+        // IMPORTANT: Do NOT subscribe to bottomView.ItemSelected!
+        // In Android .NET, subscribing to bottomView.ItemSelected assigns a new listener and overrides
+        // MAUI Shell's ShellItemRenderer listener, breaking Shell page navigation completely.
+        // MAUI's ShellItemRenderer must retain ownership of OnNavigationItemSelected.
     }
 }
 #endif
