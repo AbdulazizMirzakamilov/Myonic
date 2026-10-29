@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 using Myonic.Pages;
 
@@ -26,11 +27,15 @@ public sealed class ExerciseHistorySessionDisplayItem
 public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IWorkoutSessionRepository _sessionRepo;
+    private readonly IPersonalRecordRepository _prRepo;
     private static readonly CultureInfo RussianCulture = new("ru-RU");
 
-    public ExerciseDetailViewModel(IWorkoutSessionRepository sessionRepo)
+    public ExerciseDetailViewModel(
+        IWorkoutSessionRepository sessionRepo,
+        IPersonalRecordRepository prRepo)
     {
         _sessionRepo = sessionRepo;
+        _prRepo = prRepo;
     }
 
     [ObservableProperty]
@@ -67,9 +72,13 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
     private bool _hasNoHistory = true;
 
     [ObservableProperty]
+    private bool _hasPersonalRecords;
+
+    [ObservableProperty]
     private bool _isLoading;
 
     public ObservableCollection<ExerciseHistorySessionDisplayItem> Sessions { get; } = [];
+    public ObservableCollection<PersonalRecordItem> Records { get; } = [];
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -132,11 +141,83 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
                     Sets = setItems
                 });
             }
+
+            // Load personal records for this exercise
+            var records = await _prRepo.GetByExerciseAsync(ExerciseId);
+            Records.Clear();
+            foreach (var r in records)
+            {
+                Records.Add(r);
+            }
+            HasPersonalRecords = Records.Count > 0;
         }
         finally
         {
             IsLoading = false;
         }
+    }
+
+    [RelayCommand]
+    public async Task AddRecordAsync()
+    {
+        if (ExerciseId <= 0) return;
+
+        var weightStr = await Shell.Current.DisplayPromptAsync(
+            "Вес рекорда",
+            $"Введите максимальный вес для «{ExerciseName}» (в кг):",
+            "Далее",
+            "Отмена",
+            keyboard: Keyboard.Numeric);
+
+        if (string.IsNullOrWhiteSpace(weightStr)) return;
+
+        var cleanWeight = weightStr.Replace(',', '.').Trim();
+        if (!double.TryParse(cleanWeight, NumberStyles.Float, CultureInfo.InvariantCulture, out var weight) || weight <= 0)
+        {
+            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите корректный положительный вес.", "OK");
+            return;
+        }
+
+        var repsStr = await Shell.Current.DisplayPromptAsync(
+            "Количество повторений",
+            "Введите количество повторений (например, 1 или 5):",
+            "Сохранить",
+            "Отмена",
+            initialValue: "1",
+            keyboard: Keyboard.Numeric);
+
+        if (string.IsNullOrWhiteSpace(repsStr)) return;
+
+        if (!int.TryParse(repsStr.Trim(), out var reps) || reps <= 0)
+        {
+            await Shell.Current.DisplayAlertAsync("Ошибка", "Введите корректное число повторений (> 0).", "OK");
+            return;
+        }
+
+        var recordType = reps switch
+        {
+            1 => RecordType.OneRepMax,
+            5 => RecordType.FiveRepMax,
+            _ => RecordType.MaxWeight
+        };
+
+        await _prRepo.AddManualRecordAsync(ExerciseId, recordType, weight, reps, DateTime.UtcNow);
+        await LoadAsync();
+    }
+
+    [RelayCommand]
+    public async Task DeleteRecordAsync(PersonalRecordItem record)
+    {
+        if (record == null) return;
+        var confirm = await Shell.Current.DisplayAlertAsync(
+            "Удаление",
+            $"Удалить рекорд {record.Weight} кг ({record.TypeDisplayName})?",
+            "Да",
+            "Нет");
+        if (!confirm) return;
+
+        await _prRepo.DeleteRecordAsync(record.Id);
+        await LoadAsync();
     }
 
     [RelayCommand]

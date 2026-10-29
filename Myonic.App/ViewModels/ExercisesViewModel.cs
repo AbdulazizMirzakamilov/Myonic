@@ -46,6 +46,9 @@ public partial class ExercisesViewModel : ObservableObject
     private Task AddAsync() => Shell.Current.GoToAsync(nameof(ExerciseEditPage));
 
     [RelayCommand]
+    private Task OpenRecordsAsync() => Shell.Current.GoToAsync(nameof(PersonalRecordsPage));
+
+    [RelayCommand]
     private Task OpenAsync(ExerciseListItem item) =>
         Shell.Current.GoToAsync($"{nameof(ExerciseDetailPage)}?id={item.Id}");
 }

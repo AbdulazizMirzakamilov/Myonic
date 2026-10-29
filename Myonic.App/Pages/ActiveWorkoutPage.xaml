@@ -111,13 +111,26 @@
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 8"
                                                     Padding="12,8">
-                                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" VerticalOptions="Center">
                                                     <Label Text="{Binding SummaryText}"
                                                            TextColor="{StaticResource KineticText}"
                                                            FontSize="14"
                                                            FontAttributes="Bold"
                                                            VerticalOptions="Center" />
-                                                    <Button Grid.Column="1"
+                                                    <Border Grid.Column="1"
+                                                            IsVisible="{Binding IsPr}"
+                                                            BackgroundColor="{StaticResource KineticSurface}"
+                                                            Stroke="{StaticResource KineticVolt}"
+                                                            StrokeThickness="1"
+                                                            StrokeShape="RoundRectangle 6"
+                                                            Padding="6,2"
+                                                            VerticalOptions="Center">
+                                                        <Label Text="{Binding PrBadgeText}"
+                                                               TextColor="{StaticResource KineticVolt}"
+                                                               FontSize="10"
+                                                               FontAttributes="Bold" />
+                                                    </Border>
+                                                    <Button Grid.Column="2"
                                                             Text="✕"
                                                             Command="{Binding Source={x:Reference ExerciseCard}, Path=BindingContext.DeleteSetCommand}"
                                                             CommandParameter="{Binding .}"

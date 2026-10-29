@@ -10,7 +10,8 @@
     BackgroundColor="{StaticResource KineticCanvas}">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding AddCommand}" Text="Добавить" />
+        <ToolbarItem Command="{Binding OpenRecordsCommand}" Text="Рекорды 🏆" />
+        <ToolbarItem Command="{Binding AddCommand}" Text="+ Добавить" />
     </ContentPage.ToolbarItems>
 
     <Grid

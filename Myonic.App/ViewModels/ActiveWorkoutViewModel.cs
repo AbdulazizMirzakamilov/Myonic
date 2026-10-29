@@ -16,6 +16,9 @@ public sealed class SetEntryItem
     public double Weight { get; init; }
     public int Reps { get; init; }
     public double? Rpe { get; init; }
+    public bool IsPr { get; init; }
+    public string? PrBadgeText { get; init; }
+
     public string SummaryText
     {
         get
@@ -31,6 +34,7 @@ public sealed class SetEntryItem
 public partial class ActiveExerciseViewModel : ObservableObject
 {
     private readonly IWorkoutSessionRepository _repository;
+    private readonly IPersonalRecordRepository _prRepository;
 
     public int WorkoutExerciseId { get; init; }
     public int ExerciseId { get; init; }
@@ -51,9 +55,11 @@ public partial class ActiveExerciseViewModel : ObservableObject
 
     public ActiveExerciseViewModel(
         IWorkoutSessionRepository repository,
+        IPersonalRecordRepository prRepository,
         SessionExerciseDetail detail)
     {
         _repository = repository;
+        _prRepository = prRepository;
         WorkoutExerciseId = detail.WorkoutExerciseId;
         ExerciseId = detail.ExerciseId;
         Order = detail.Order;
@@ -116,17 +122,32 @@ public partial class ActiveExerciseViewModel : ObservableObject
         try
         {
             var created = await _repository.AddSetAsync(WorkoutExerciseId, weight, reps, rpe);
+
+            var newPrs = await _prRepository.CheckAndRecordNewPrsAsync(WorkoutExerciseId, created.Id, weight, reps);
+            var isPr = newPrs.Count > 0;
+            var prBadge = isPr ? "🏆 " + string.Join(", ", newPrs.Select(p => p.TypeDisplayName)) : null;
+
             Sets.Add(new SetEntryItem
             {
                 Id = created.Id,
                 SetNumber = created.SetNumber,
                 Weight = created.Weight,
                 Reps = created.Reps,
-                Rpe = created.Rpe
+                Rpe = created.Rpe,
+                IsPr = isPr,
+                PrBadgeText = prBadge
             });
 
             // Keep weight and reps for the next set, clear RPE
             NextRpeText = string.Empty;
+
+            if (isPr)
+            {
+                await Shell.Current.DisplayAlertAsync(
+                    "🎉 Новый личный рекорд!",
+                    $"{ExerciseName}: {weight} кг × {reps}\n({string.Join(", ", newPrs.Select(p => p.TypeDisplayName))})",
+                    "Отлично!");
+            }
         }
         catch (Exception ex)
         {
@@ -162,6 +183,7 @@ public partial class ActiveExerciseViewModel : ObservableObject
 public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IWorkoutSessionRepository _repository;
+    private readonly IPersonalRecordRepository _prRepository;
     private readonly IServiceProvider _serviceProvider;
     private IDispatcherTimer? _timer;
     private DateTime _startedAt;
@@ -177,9 +199,11 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
     public ActiveWorkoutViewModel(
         IWorkoutSessionRepository repository,
+        IPersonalRecordRepository prRepository,
         IServiceProvider serviceProvider)
     {
         _repository = repository;
+        _prRepository = prRepository;
         _serviceProvider = serviceProvider;
     }
 
@@ -204,7 +228,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         Exercises.Clear();
         foreach (var ex in detail.Exercises)
         {
-            Exercises.Add(new ActiveExerciseViewModel(_repository, ex));
+            Exercises.Add(new ActiveExerciseViewModel(_repository, _prRepository, ex));
         }
 
         UpdateDuration();
@@ -243,7 +267,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         vm.ExerciseSelectedAsync = async exercise =>
         {
             var detail = await _repository.AddExerciseToSessionAsync(_sessionId, exercise.Id);
-            Exercises.Add(new ActiveExerciseViewModel(_repository, detail));
+            Exercises.Add(new ActiveExerciseViewModel(_repository, _prRepository, detail));
         };
 
         await Shell.Current.Navigation.PushModalAsync(picker);

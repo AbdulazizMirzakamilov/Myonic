@@ -1,4 +1,4 @@
-﻿namespace Myonic.Core.Models;
+namespace Myonic.Core.Models;
 
 public enum ExerciseType
 {
@@ -15,6 +15,7 @@ public enum ScheduledWorkoutStatus
 
 public enum RecordType
 {
-    OneRepMax,
-    FiveRepMax
+    OneRepMax = 0,   // Расчётный или 1-повторный максимум
+    FiveRepMax = 1,  // Лучший вес на 5 повторений
+    MaxWeight = 2    // Абсолютный максимальный рабочий вес
 }
