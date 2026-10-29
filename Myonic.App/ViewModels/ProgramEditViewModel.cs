@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
@@ -12,9 +12,16 @@ public record WorkoutListItem(int Id, string Name, string DayText);
 public partial class ProgramEditViewModel : ObservableObject, IQueryAttributable
 {
     private readonly ITrainingProgramRepository _repository;
+    private readonly IWorkoutSessionRepository _sessionRepository;
     private TrainingProgram? _program;   // null = программа ещё не создана
 
-    public ProgramEditViewModel(ITrainingProgramRepository repository) => _repository = repository;
+    public ProgramEditViewModel(
+        ITrainingProgramRepository repository,
+        IWorkoutSessionRepository sessionRepository)
+    {
+        _repository = repository;
+        _sessionRepository = sessionRepository;
+    }
 
     public ObservableCollection<WorkoutListItem> Workouts { get; } = [];
 
@@ -91,34 +98,53 @@ public partial class ProgramEditViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    private async Task AddWorkoutAsync()
-    {
-        if (_program is null) return;
-
-        var name = await Shell.Current.DisplayPromptAsync(
-            "Новая тренировка", "Название, например «Грудь + трицепс»", "Добавить", "Отмена");
-        if (string.IsNullOrWhiteSpace(name)) return;
-
-        await _repository.AddWorkoutAsync(new ProgramWorkout { ProgramId = _program.Id, Name = name });
-        await LoadWorkoutsAsync();
-    }
-
-    [RelayCommand]
-    private Task OpenWorkoutAsync(WorkoutListItem item) =>
-        Shell.Current.GoToAsync($"{nameof(WorkoutEditPage)}?id={item.Id}");
-
-    [RelayCommand]
     private async Task DeleteAsync()
     {
         if (_program is null) return;
 
         var confirmed = await Shell.Current.DisplayAlertAsync(
             "Удалить программу",
-            $"Удалить «{_program.Name}» вместе с тренировками и расписанием? Выполненные тренировки в истории сохранятся.",
+            $"Удалить «{_program.Name}»? Все тренировки в ней также будут удалены.",
             "Удалить", "Отмена");
         if (!confirmed) return;
 
         await _repository.DeleteProgramAsync(_program.Id);
         await Shell.Current.GoToAsync("..");
+    }
+
+    [RelayCommand]
+    private async Task AddWorkoutAsync()
+    {
+        if (_program is null) return;
+
+        var defaultName = $"День {Workouts.Count + 1}";
+        var workout = new ProgramWorkout
+        {
+            ProgramId = _program.Id,
+            Name = defaultName
+        };
+
+        var id = await _repository.AddWorkoutAsync(workout);
+        await Shell.Current.GoToAsync($"{nameof(WorkoutEditPage)}?id={id}");
+    }
+
+    [RelayCommand]
+    private async Task OpenWorkoutAsync(WorkoutListItem item)
+    {
+        if (item is null) return;
+        await Shell.Current.GoToAsync($"{nameof(WorkoutEditPage)}?id={item.Id}");
+    }
+
+    [RelayCommand]
+    private async Task StartWorkoutAsync(WorkoutListItem item)
+    {
+        if (item is null) return;
+        var sessionId = await _sessionRepository.StartSessionFromProgramWorkoutAsync(item.Id);
+        await Shell.Current.GoToAsync(
+            nameof(ActiveWorkoutPage),
+            new Dictionary<string, object>
+            {
+                ["sessionId"] = sessionId
+            });
     }
 }

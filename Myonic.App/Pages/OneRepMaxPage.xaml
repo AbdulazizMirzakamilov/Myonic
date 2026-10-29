@@ -7,36 +7,41 @@
              Title="Калькулятор 1ПМ">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16,16,16,36" Spacing="16">
+        <VerticalStackLayout Padding="16,16,16,36" Spacing="20">
 
-            <!-- Title & subtitle -->
-            <Label Text="Калькулятор повторного максимума"
+            <!-- ================= SECTION 1: 1RM CALCULATOR ================= -->
+            <Label Text="Калькулятор повторного максимума (1ПМ)"
                    FontFamily="OpenSansSemibold"
-                   FontSize="20" />
-            <Label Text="Введите рабочий вес и количество повторений, чтобы рассчитать ваш предполагаемый 1ПМ."
+                   FontSize="19" />
+            <Label Text="Введите вес (от 20 до 500 кг) и количество повторений, затем нажмите «Рассчитать 1ПМ»."
                    FontSize="13" />
 
-            <!-- Inputs -->
+            <!-- Weight and Reps Inputs -->
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Вес, кг" FontFamily="OpenSansSemibold" />
+                    <Label Text="Вес снаряда, кг" FontFamily="OpenSansSemibold" />
                     <Entry Text="{Binding WeightText}"
                            Keyboard="Numeric"
-                           Placeholder="100" />
+                           Placeholder="От 20 до 500" />
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="1" Spacing="6">
-                    <Label Text="Повторения" FontFamily="OpenSansSemibold" />
+                    <Label Text="Повторения (1–12)" FontFamily="OpenSansSemibold" />
                     <Picker ItemsSource="{Binding RepOptions}"
                             SelectedIndex="{Binding SelectedRepsIndex}" />
                 </VerticalStackLayout>
             </Grid>
 
-            <!-- Results -->
-            <VerticalStackLayout Spacing="12" IsVisible="{Binding HasResult}">
+            <!-- Calculate Button -->
+            <Button Text="Рассчитать 1ПМ"
+                    Command="{Binding CalculateCommand}"
+                    Margin="0,4,0,0" />
+
+            <!-- Results Section (Visible only when calculated) -->
+            <VerticalStackLayout Spacing="10" IsVisible="{Binding HasResult}">
 
                 <!-- Low accuracy warning -->
-                <Label Text="⚠️ При более чем 10 повторениях точность расчёта снижается."
+                <Label Text="⚠️ При более чем 10 повторениях точность формул снижается."
                        IsVisible="{Binding IsLowAccuracy}"
                        FontSize="12"
                        TextColor="DarkOrange" />
@@ -44,7 +49,7 @@
                 <Label Text="Результаты по формулам"
                        FontFamily="OpenSansSemibold"
                        FontSize="16"
-                       Margin="0,8,0,0" />
+                       Margin="0,4,0,0" />
 
                 <!-- Formulas list -->
                 <CollectionView ItemsSource="{Binding FormulaResults}" SelectionMode="None">
@@ -63,7 +68,7 @@
                 </CollectionView>
 
                 <!-- Average Section at the end of the formulas list -->
-                <Grid Padding="14" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                <Grid Padding="12" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
                     <Label Text="Среднее значение"
                            FontFamily="OpenSansSemibold"
                            FontSize="17"
@@ -74,28 +79,49 @@
                            FontSize="18"
                            VerticalOptions="Center" />
                 </Grid>
+            </VerticalStackLayout>
 
-                <!-- Percentages Table -->
-                <Label Text="Проценты от 1ПМ (для тренировок)"
-                       FontFamily="OpenSansSemibold"
-                       FontSize="16"
-                       Margin="0,12,0,0" />
+            <!-- ================= SECTION 2: PERCENTAGE CALCULATOR ================= -->
+            <BoxView HeightRequest="1" Margin="0,8" Color="LightGray" />
 
-                <CollectionView ItemsSource="{Binding Percentages}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="vm:PercentageItem">
-                            <Grid Padding="12,6" ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding PercentageText}"
-                                       VerticalOptions="Center" />
-                                <Label Grid.Column="1"
-                                       Text="{Binding WeightText}"
-                                       FontFamily="OpenSansSemibold"
-                                       VerticalOptions="Center" />
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+            <Label Text="Калькулятор процентов"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="19" />
+            <Label Text="Рассчитайте необходимый вес для тренировочного подхода от любого базового веса."
+                   FontSize="13" />
 
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Базовый вес, кг" FontFamily="OpenSansSemibold" />
+                    <Entry Text="{Binding PercentWeightText}"
+                           Keyboard="Numeric"
+                           Placeholder="От 20 до 500" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="6">
+                    <Label Text="Процент, %" FontFamily="OpenSansSemibold" />
+                    <Entry Text="{Binding PercentageText}"
+                           Keyboard="Numeric"
+                           Placeholder="Например, 80" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <Button Text="Рассчитать процент"
+                    Command="{Binding CalculatePercentageCommand}"
+                    Margin="0,4,0,0" />
+
+            <!-- Percentage Result -->
+            <VerticalStackLayout Spacing="6" IsVisible="{Binding HasPercentResult}" Margin="0,4,0,0">
+                <Grid Padding="14" ColumnDefinitions="*,Auto">
+                    <Label Text="{Binding PercentDetailText}"
+                           VerticalOptions="Center"
+                           FontSize="15" />
+                    <Label Grid.Column="1"
+                           Text="{Binding PercentResultText}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="20"
+                           VerticalOptions="Center" />
+                </Grid>
             </VerticalStackLayout>
 
         </VerticalStackLayout>
