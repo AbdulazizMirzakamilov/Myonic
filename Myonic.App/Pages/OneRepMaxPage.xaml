@@ -84,10 +84,10 @@
             <!-- ================= SECTION 2: PERCENTAGE CALCULATOR ================= -->
             <BoxView HeightRequest="1" Margin="0,8" Color="LightGray" />
 
-            <Label Text="Калькулятор рабочих процентов"
+            <Label Text="Калькулятор процентов"
                    FontFamily="OpenSansSemibold"
                    FontSize="19" />
-            <Label Text="Рассчитайте необходимый вес для тренировочного подхода от 1ПМ или 5ПМ."
+            <Label Text="Рассчитайте необходимый вес для тренировочного подхода от любого базового веса."
                    FontSize="13" />
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
@@ -99,18 +99,12 @@
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="1" Spacing="6">
-                    <Label Text="База расчёта" FontFamily="OpenSansSemibold" />
-                    <Picker ItemsSource="{Binding BaseTypeOptions}"
-                            SelectedIndex="{Binding BaseTypeIndex}" />
+                    <Label Text="Процент, %" FontFamily="OpenSansSemibold" />
+                    <Entry Text="{Binding PercentageText}"
+                           Keyboard="Numeric"
+                           Placeholder="Например, 80" />
                 </VerticalStackLayout>
             </Grid>
-
-            <VerticalStackLayout Spacing="6">
-                <Label Text="Процент, %" FontFamily="OpenSansSemibold" />
-                <Entry Text="{Binding PercentageText}"
-                       Keyboard="Numeric"
-                       Placeholder="Например, 80" />
-            </VerticalStackLayout>
 
             <Button Text="Рассчитать процент"
                     Command="{Binding CalculatePercentageCommand}"

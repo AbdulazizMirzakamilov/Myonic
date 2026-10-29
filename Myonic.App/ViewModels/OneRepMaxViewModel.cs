@@ -44,11 +44,6 @@ public partial class OneRepMaxViewModel : ObservableObject
     private string _percentWeightText = string.Empty;
 
     [ObservableProperty]
-    private int _baseTypeIndex = 0; // 0: 1RM, 1: 5RM
-
-    public List<string> BaseTypeOptions { get; } = ["От 1ПМ", "От 5ПМ"];
-
-    [ObservableProperty]
     private string _percentageText = string.Empty;
 
     [ObservableProperty]
@@ -135,11 +130,10 @@ public partial class OneRepMaxViewModel : ObservableObject
             return;
         }
 
-        var baseType = BaseTypeIndex == 1 ? "5ПМ" : "1ПМ";
         var calculatedWeight = weight * (percent / 100.0);
 
         PercentResultText = $"{calculatedWeight:0.##} кг";
-        PercentDetailText = $"{percent:0.#}% от {weight:0.##} кг ({baseType})";
+        PercentDetailText = $"{percent:0.#}% от {weight:0.##} кг";
         HasPercentResult = true;
     }
 
