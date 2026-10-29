@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 using Myonic.Core.Validation;
+using Myonic.Pages;
 
 namespace Myonic.ViewModels;
 
@@ -222,6 +223,37 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
     }
 
     [RelayCommand]
+    public async Task AddExerciseAsync()
+    {
+        var picker = IPlatformApplication.Current?.Services.GetService<ExercisePickerPage>()
+                     ?? Application.Current?.Handler?.MauiContext?.Services.GetService<ExercisePickerPage>();
+        if (picker == null) return;
+
+        var vm = (ExercisePickerViewModel)picker.BindingContext;
+        vm.ExerciseSelected += async exercise =>
+        {
+            var detail = await _repository.AddExerciseToSessionAsync(_sessionId, exercise.Id);
+            Exercises.Add(new ActiveExerciseViewModel(_repository, detail));
+        };
+
+        await Shell.Current.Navigation.PushModalAsync(picker);
+    }
+
+    [RelayCommand]
+    public async Task RemoveExerciseAsync(ActiveExerciseViewModel item)
+    {
+        if (item == null) return;
+        var confirm = await Shell.Current.DisplayAlertAsync(
+            "Удаление упражнения",
+            $"Удалить упражнение «{item.ExerciseName}» из текущей тренировки?",
+            "Да", "Нет");
+        if (!confirm) return;
+
+        await _repository.DeleteExerciseFromSessionAsync(item.WorkoutExerciseId);
+        Exercises.Remove(item);
+    }
+
+    [RelayCommand]
     public async Task FinishSessionAsync()
     {
         var totalSets = Exercises.Sum(e => e.Sets.Count);
@@ -236,7 +268,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         StopTimer();
         await _repository.FinishSessionAsync(_sessionId);
         await Shell.Current.DisplayAlertAsync("Отличная работа!", "Тренировка успешно сохранена в истории.", "OK");
-        await Shell.Current.GoToAsync("//ProgramsPage");
+        await Shell.Current.GoToAsync("//SchedulePage");
     }
 
     [RelayCommand]
@@ -251,6 +283,6 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
         StopTimer();
         await _repository.DiscardSessionAsync(_sessionId);
-        await Shell.Current.GoToAsync("//ProgramsPage");
+        await Shell.Current.GoToAsync("//SchedulePage");
     }
 }

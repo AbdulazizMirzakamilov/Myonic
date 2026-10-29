@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             xmlns:repo="clr-namespace:Myonic.Core.Repositories;assembly=Myonic.Core"
+             xmlns:conv="clr-namespace:Myonic.Converters"
+             x:Class="Myonic.Pages.SchedulePage"
+             x:DataType="vm:ScheduleViewModel"
+             Title="График"
+             BackgroundColor="{StaticResource KineticCanvas}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:DayStrokeConverter x:Key="DayStrokeConverter" />
+            <conv:DayStrokeColorConverter x:Key="DayStrokeColorConverter" />
+            <conv:DayBgColorConverter x:Key="DayBgColorConverter" />
+            <conv:DayTextColorConverter x:Key="DayTextColorConverter" />
+            <conv:DayTextMutedColorConverter x:Key="DayTextMutedColorConverter" />
+            <conv:DayCompletedIconColorConverter x:Key="DayCompletedIconColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,12,16,40" Spacing="16">
+
+            <!-- Active Workout Banner (Sticky Top) -->
+            <Border IsVisible="{Binding HasActiveSession}"
+                    Stroke="{StaticResource KineticVolt}"
+                    StrokeThickness="1.5"
+                    BackgroundColor="{StaticResource KineticSurface}"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="14,10">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                        <Label Text="ИДЕТ АКТИВНАЯ ТРЕНИРОВКА"
+                               TextColor="{StaticResource KineticVolt}"
+                               FontSize="11"
+                               FontAttributes="Bold" />
+                        <Label Text="{Binding ActiveSession.Title}"
+                               TextColor="{StaticResource KineticText}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               LineBreakMode="TailTruncation" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1"
+                            Text="Продолжить"
+                            Command="{Binding ResumeActiveSessionCommand}"
+                            Style="{StaticResource VoltButton}"
+                            HeightRequest="42"
+                            Padding="16,0"
+                            FontSize="13" />
+                </Grid>
+            </Border>
+
+            <!-- Calendar Header: Month/Year, Week Number & Navigation -->
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto" VerticalOptions="Center">
+                <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                    <Label Text="{Binding WeekNumberHeader}"
+                           TextColor="{StaticResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding MonthYearHeader}"
+                           TextColor="{StaticResource KineticText}"
+                           FontSize="22"
+                           FontAttributes="Bold" />
+                </VerticalStackLayout>
+
+                <!-- Navigation Buttons: Previous, Today, Next -->
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                    <Button Text="‹"
+                            Command="{Binding PreviousWeekCommand}"
+                            Style="{StaticResource SecondaryActionButton}"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            Padding="0"
+                            FontSize="18"
+                            FontAttributes="Bold" />
+                    <Button Text="Сегодня"
+                            Command="{Binding TodayCommand}"
+                            Style="{StaticResource SecondaryActionButton}"
+                            HeightRequest="40"
+                            Padding="12,0"
+                            FontSize="12"
+                            FontAttributes="Bold" />
+                    <Button Text="›"
+                            Command="{Binding NextWeekCommand}"
+                            Style="{StaticResource SecondaryActionButton}"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            Padding="0"
+                            FontSize="18"
+                            FontAttributes="Bold" />
+                </HorizontalStackLayout>
+            </Grid>
+
+            <!-- Weekly Calendar Strip (7 Days Grid) -->
+            <Border BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="6,8">
+                <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="4">
+                    <!-- Bind 7 days through child controls or CollectionView -->
+                    <CollectionView Grid.ColumnSpan="7"
+                                    ItemsSource="{Binding WeekDays}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical" Span="7" HorizontalItemSpacing="4" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CalendarDayItem">
+                                <Border StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                                        Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                                        StrokeShape="RoundRectangle 10"
+                                        Padding="2,8">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, Path=SelectDayCommand}"
+                                                              CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                                        <!-- Day name: ПН, ВТ, etc. -->
+                                        <Label Text="{Binding DayName}"
+                                               FontSize="11"
+                                               FontAttributes="Bold"
+                                               HorizontalTextAlignment="Center"
+                                               TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+
+                                        <!-- Day number: 19, 20, etc. -->
+                                        <Label Text="{Binding DayNumber}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                               HorizontalTextAlignment="Center"
+                                               TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+
+                                        <!-- Status indicator icon/dot -->
+                                        <Grid HeightRequest="16" HorizontalOptions="Center">
+                                            <!-- Completed checkmark -->
+                                            <Label Text="✔"
+                                                   IsVisible="{Binding HasCompletedWorkout}"
+                                                   TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   HorizontalTextAlignment="Center" />
+
+                                            <!-- Planned dot (if not completed) -->
+                                            <Ellipse WidthRequest="6"
+                                                     HeightRequest="6"
+                                                     Fill="{StaticResource KineticIceBlue}"
+                                                     IsVisible="{Binding HasPlannedWorkout}"
+                                                     HorizontalOptions="Center"
+                                                     VerticalOptions="Center" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Border>
+
+            <!-- Quick Start Action Bar (Independence from Programs tab) -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Text="+ Свободная"
+                        Command="{Binding StartFreeWorkoutCommand}"
+                        Style="{StaticResource SecondaryActionButton}"
+                        HeightRequest="44"
+                        FontSize="13"
+                        FontAttributes="Bold" />
+
+                <Button Text="Из программы..."
+                        Command="{Binding ChooseProgramWorkoutCommand}"
+                        Style="{StaticResource SecondaryActionButton}"
+                        HeightRequest="44"
+                        FontSize="13"
+                        FontAttributes="Bold" />
+            </Grid>
+
+            <!-- Selected Date Headline -->
+            <Label Text="{Binding SelectedDateFormatted}"
+                   TextColor="{StaticResource KineticTextSecondary}"
+                   FontSize="13"
+                   FontAttributes="Bold"
+                   Margin="2,4,0,0" />
+
+            <!-- CASE 1: Completed Workouts on Selected Date (Workout History in Calendar) -->
+            <VerticalStackLayout IsVisible="{Binding HasCompletedWorkouts}" Spacing="12">
+                <Label Text="ВЫПОЛНЕННЫЕ ТРЕНИРОВКИ"
+                       TextColor="{StaticResource KineticEmerald}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="2,0" />
+
+                <CollectionView ItemsSource="{Binding CompletedSessions}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DayCompletedSessionItem">
+                            <Border BackgroundColor="{StaticResource KineticSurface}"
+                                    Stroke="{StaticResource KineticBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14"
+                                    Padding="16"
+                                    Margin="0,0,0,12">
+                                <VerticalStackLayout Spacing="12">
+                                    <!-- Session Header: Title & Time -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding Title}"
+                                                   TextColor="{StaticResource KineticText}"
+                                                   FontSize="18"
+                                                   FontAttributes="Bold" />
+                                            <Label Text="{Binding TimeText}"
+                                                   TextColor="{StaticResource KineticTextMuted}"
+                                                   FontSize="13" />
+                                        </VerticalStackLayout>
+
+                                        <!-- Duration Badge -->
+                                        <Border Grid.Column="1"
+                                                BackgroundColor="{StaticResource KineticWell}"
+                                                Stroke="{StaticResource KineticBorderSubtle}"
+                                                StrokeShape="RoundRectangle 8"
+                                                Padding="10,4"
+                                                VerticalOptions="Start">
+                                            <Label Text="{Binding DurationText}"
+                                                   TextColor="{StaticResource KineticEmerald}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Quick summary: Exercises and Sets -->
+                                    <Label Text="{Binding SetsCount, StringFormat='Выполнено подходов: {0}'}"
+                                           TextColor="{StaticResource KineticTextSecondary}"
+                                           FontSize="13" />
+
+                                    <BoxView HeightRequest="1" Color="{StaticResource KineticBorderSubtle}" />
+
+                                    <!-- Exercise details list -->
+                                    <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:DayCompletedExerciseItem">
+                                                <VerticalStackLayout Spacing="4" Margin="0,4,0,8">
+                                                    <Label Text="{Binding ExerciseName}"
+                                                           TextColor="{StaticResource KineticVolt}"
+                                                           FontSize="15"
+                                                           FontAttributes="Bold" />
+
+                                                    <!-- Sets lines -->
+                                                    <CollectionView ItemsSource="{Binding SetsSummary}" SelectionMode="None">
+                                                        <CollectionView.ItemTemplate>
+                                                            <DataTemplate x:DataType="x:String">
+                                                                <Label Text="{Binding .}"
+                                                                       TextColor="{StaticResource KineticTextSecondary}"
+                                                                       FontSize="13"
+                                                                       Margin="8,1,0,1" />
+                                                            </DataTemplate>
+                                                        </CollectionView.ItemTemplate>
+                                                    </CollectionView>
+                                                </VerticalStackLayout>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- CASE 2: Planned Workout Hero Card (from active program/schedule) -->
+            <VerticalStackLayout IsVisible="{Binding HasPlannedWorkouts}" Spacing="12">
+                <Label Text="ЗАПЛАНИРОВАННАЯ ТРЕНИРОВКА"
+                       TextColor="{StaticResource KineticIceBlue}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="2,0" />
+
+                <CollectionView ItemsSource="{Binding PlannedWorkouts}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="repo:PlannedWorkoutSummary">
+                            <Border BackgroundColor="{StaticResource KineticSurface}"
+                                    Stroke="{StaticResource KineticBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14"
+                                    Padding="16"
+                                    Margin="0,0,0,12">
+                                <VerticalStackLayout Spacing="14">
+                                    <!-- Program & Workout Name -->
+                                    <VerticalStackLayout Spacing="4">
+                                        <Border BackgroundColor="{StaticResource KineticWell}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 6"
+                                                Padding="8,3"
+                                                HorizontalOptions="Start">
+                                            <Label Text="{Binding ProgramName}"
+                                                   TextColor="{StaticResource KineticIceBlue}"
+                                                   FontSize="11"
+                                                   FontAttributes="Bold" />
+                                        </Border>
+
+                                        <Label Text="{Binding WorkoutName}"
+                                               TextColor="{StaticResource KineticText}"
+                                               FontSize="20"
+                                               FontAttributes="Bold"
+                                               Margin="0,2,0,0" />
+
+                                        <Label Text="{Binding ExerciseCount, StringFormat='Упражнений: {0}'}"
+                                               TextColor="{StaticResource KineticTextMuted}"
+                                               FontSize="13" />
+                                    </VerticalStackLayout>
+
+                                    <!-- Exercise plan list preview -->
+                                    <Border BackgroundColor="{StaticResource KineticWell}"
+                                            Stroke="{StaticResource KineticBorderSubtle}"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="12,10">
+                                        <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate x:DataType="repo:PlannedExerciseItem">
+                                                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                                                        <Label Text="{Binding ExerciseName}"
+                                                               TextColor="{StaticResource KineticText}"
+                                                               FontSize="14"
+                                                               FontAttributes="Bold"
+                                                               LineBreakMode="TailTruncation" />
+                                                        <Label Grid.Column="1"
+                                                               Text="{Binding PlanText}"
+                                                               TextColor="{StaticResource KineticTextSecondary}"
+                                                               FontSize="13" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </Border>
+
+                                    <!-- Large Volt Start Button -->
+                                    <Button Text="НАЧАТЬ ТРЕНИРОВКУ"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, Path=StartPlannedWorkoutCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource VoltButton}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- CASE 3: Rest Day / No planned workouts -->
+            <Border IsVisible="{Binding IsRestDay}"
+                    BackgroundColor="{StaticResource KineticSurface}"
+                    Stroke="{StaticResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="20">
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="Отдых или свободная тренировка"
+                           TextColor="{StaticResource KineticText}"
+                           FontSize="17"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label Text="На этот день нет запланированных тренировок. Вы можете провести свободную тренировку или выбрать тренировку из программы."
+                           TextColor="{StaticResource KineticTextSecondary}"
+                           FontSize="13"
+                           HorizontalTextAlignment="Center" />
+
+                    <Button Text="+ Начать свободную тренировку"
+                            Command="{Binding StartFreeWorkoutCommand}"
+                            Style="{StaticResource VoltButton}"
+                            HeightRequest="48"
+                            FontSize="14"
+                            Margin="0,8,0,0" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

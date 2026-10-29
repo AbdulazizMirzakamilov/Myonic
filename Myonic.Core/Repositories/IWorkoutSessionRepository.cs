@@ -52,10 +52,15 @@ public interface IWorkoutSessionRepository
 {
     Task<ActiveSessionSummary?> GetActiveSessionSummaryAsync();
     Task<int> StartSessionFromProgramWorkoutAsync(int programWorkoutId);
+    Task<int> StartEmptySessionAsync(string title);
+    Task<SessionExerciseDetail> AddExerciseToSessionAsync(int sessionId, int exerciseId);
+    Task DeleteExerciseFromSessionAsync(int workoutExerciseId);
     Task<WorkoutSessionDetail?> GetSessionDetailAsync(int sessionId);
     Task<SetEntry> AddSetAsync(int workoutExerciseId, double weight, int reps, double? rpe, string? comment = null);
     Task DeleteSetAsync(int setId);
     Task FinishSessionAsync(int sessionId, string? comment = null);
     Task DiscardSessionAsync(int sessionId);
     Task<IReadOnlyList<PastWorkoutSummary>> GetPastSessionsAsync();
+    Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromUtc, DateTime toUtc);
+    Task<IReadOnlyList<WorkoutSessionDetail>> GetSessionsForDateAsync(DateTime date);
 }

@@ -61,6 +61,11 @@ namespace Myonic
             builder.Services.AddTransient<WorkoutHistoryViewModel>();
             builder.Services.AddTransient<WorkoutHistoryPage>();
 
+            // Schedule & Unified Calendar
+            builder.Services.AddSingleton<IWorkoutScheduleRepository, WorkoutScheduleRepository>();
+            builder.Services.AddTransient<ScheduleViewModel>();
+            builder.Services.AddTransient<SchedulePage>();
+
             return builder.Build();
         }
     }
