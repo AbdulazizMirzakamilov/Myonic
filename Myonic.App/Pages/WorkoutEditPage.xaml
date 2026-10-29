@@ -74,9 +74,9 @@
                         FontAttributes="Bold" />
             </Grid>
 
-            <!-- Exercises CollectionView -->
-            <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
-                <CollectionView.EmptyView>
+            <!-- Exercises list (BindableLayout - zero nested RecyclerView lag) -->
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Exercises}" Spacing="8">
+                <BindableLayout.EmptyView>
                     <Border BackgroundColor="{StaticResource KineticSurface}"
                             Stroke="{StaticResource KineticBorder}"
                             StrokeThickness="1"
@@ -94,9 +94,9 @@
                                    HorizontalTextAlignment="Center" />
                         </VerticalStackLayout>
                     </Border>
-                </CollectionView.EmptyView>
+                </BindableLayout.EmptyView>
 
-                <CollectionView.ItemTemplate>
+                <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:PlannedExerciseItem">
                         <Border BackgroundColor="{StaticResource KineticSurface}"
                                 Stroke="{StaticResource KineticBorder}"
@@ -162,8 +162,8 @@
                             </Grid>
                         </Border>
                     </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
 
             <!-- Delete Workout -->
             <Button

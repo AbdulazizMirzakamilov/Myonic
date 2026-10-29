@@ -64,6 +64,32 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
         return result;
     }
 
+    public async Task<(IReadOnlySet<DayOfWeek> DefaultDays, IReadOnlySet<DateTime> ScheduledDates)> GetPlannedDayIndicatorsForWeekAsync(DateTime fromDate, DateTime toDate)
+    {
+        var db = await _database.GetConnectionAsync();
+
+        var defaultDaysRaw = await db.ExecuteScalarAsync<string>(
+            "SELECT GROUP_CONCAT(DISTINCT DefaultDayOfWeek) FROM ProgramWorkout WHERE DefaultDayOfWeek IS NOT NULL");
+
+        var defaultDays = new HashSet<DayOfWeek>();
+        if (!string.IsNullOrEmpty(defaultDaysRaw))
+        {
+            foreach (var part in defaultDaysRaw.Split(','))
+            {
+                if (int.TryParse(part, out var val))
+                    defaultDays.Add((DayOfWeek)val);
+            }
+        }
+
+        var scheduled = await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.Date >= fromDate.Date && sw.Date <= toDate.Date)
+            .ToListAsync();
+
+        var scheduledDates = new HashSet<DateTime>(scheduled.Select(s => s.Date.Date));
+
+        return (defaultDays, scheduledDates);
+    }
+
     private async Task<PlannedWorkoutSummary?> BuildSummaryAsync(int programWorkoutId)
     {
         var db = await _database.GetConnectionAsync();

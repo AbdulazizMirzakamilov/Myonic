@@ -103,10 +103,17 @@ public partial class ScheduleViewModel : ObservableObject
         _scheduleRepo = scheduleRepo;
     }
 
+    private bool _isInitialized;
+
     [RelayCommand]
     public async Task InitializeAsync()
     {
-        SelectedDate = DateTime.Today;
+        if (!_isInitialized)
+        {
+            _isInitialized = true;
+            SelectedDate = DateTime.Today;
+        }
+
         await RefreshWeekAsync();
     }
 
@@ -132,33 +139,49 @@ public partial class ScheduleViewModel : ObservableObject
             var weekNum = calendar.GetWeekOfYear(monday, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
             WeekNumberHeader = $"Неделя {weekNum}";
 
-            // Completed session dates for the week
-            var completedDates = await _sessionRepo.GetCompletedSessionDatesAsync(monday, sunday.AddDays(1));
-            var completedSet = new HashSet<DateTime>(completedDates.Select(d => d.Date));
+            // Fast parallel queries for week indicators
+            var completedDatesTask = _sessionRepo.GetCompletedSessionDatesAsync(monday, sunday.AddDays(1));
+            var plannedIndicatorsTask = _scheduleRepo.GetPlannedDayIndicatorsForWeekAsync(monday, sunday);
 
-            WeekDays.Clear();
+            await Task.WhenAll(completedDatesTask, plannedIndicatorsTask);
+
+            var completedSet = new HashSet<DateTime>((await completedDatesTask).Select(d => d.Date));
+            var (defaultDays, scheduledDates) = await plannedIndicatorsTask;
+
             var dayNames = new[] { "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС" };
 
-            for (int i = 0; i < 7; i++)
+            if (WeekDays.Count == 7 && WeekDays[0].Date == monday)
             {
-                var dayDate = monday.AddDays(i);
-                var isSelected = dayDate.Date == SelectedDate.Date;
-                var isToday = dayDate.Date == DateTime.Today;
-                var hasCompleted = completedSet.Contains(dayDate.Date);
-
-                // Check if planned workout exists for day
-                var planned = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(dayDate);
-
-                WeekDays.Add(new CalendarDayItem
+                for (int i = 0; i < 7; i++)
                 {
-                    Date = dayDate,
-                    DayName = dayNames[i],
-                    DayNumber = dayDate.Day.ToString(),
-                    IsToday = isToday,
-                    IsSelected = isSelected,
-                    HasCompletedWorkout = hasCompleted,
-                    HasPlannedWorkout = planned.Count > 0
-                });
+                    var d = WeekDays[i];
+                    d.IsSelected = d.Date == SelectedDate.Date;
+                    d.HasCompletedWorkout = completedSet.Contains(d.Date);
+                    d.HasPlannedWorkout = defaultDays.Contains(d.Date.DayOfWeek) || scheduledDates.Contains(d.Date);
+                }
+            }
+            else
+            {
+                WeekDays.Clear();
+                for (int i = 0; i < 7; i++)
+                {
+                    var dayDate = monday.AddDays(i);
+                    var isSelected = dayDate.Date == SelectedDate.Date;
+                    var isToday = dayDate.Date == DateTime.Today;
+                    var hasCompleted = completedSet.Contains(dayDate.Date);
+                    var hasPlanned = defaultDays.Contains(dayDate.DayOfWeek) || scheduledDates.Contains(dayDate.Date);
+
+                    WeekDays.Add(new CalendarDayItem
+                    {
+                        Date = dayDate,
+                        DayName = dayNames[i],
+                        DayNumber = dayDate.Day.ToString(),
+                        IsToday = isToday,
+                        IsSelected = isSelected,
+                        HasCompletedWorkout = hasCompleted,
+                        HasPlannedWorkout = hasPlanned
+                    });
+                }
             }
 
             await LoadSelectedDateDetailsAsync();

@@ -94,70 +94,60 @@
                 </HorizontalStackLayout>
             </Grid>
 
-            <!-- Weekly Calendar Strip (7 Days Grid) -->
+            <!-- Weekly Calendar Strip (FlexLayout with BindableLayout - Zero Nested RecyclerViews) -->
             <Border BackgroundColor="{StaticResource KineticSurface}"
                     Stroke="{StaticResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="6,8">
-                <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="4">
-                    <!-- Bind 7 days through child controls or CollectionView -->
-                    <CollectionView Grid.ColumnSpan="7"
-                                    ItemsSource="{Binding WeekDays}"
-                                    SelectionMode="None">
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Vertical" Span="7" HorizontalItemSpacing="4" />
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="vm:CalendarDayItem">
-                                <Border StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
-                                        Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
-                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
-                                        StrokeShape="RoundRectangle 10"
-                                        Padding="2,8">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
-                                                              CommandParameter="{Binding .}" />
-                                    </Border.GestureRecognizers>
-                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
-                                        <!-- Day name: ПН, ВТ, etc. -->
-                                        <Label Text="{Binding DayName}"
-                                               FontSize="11"
+                <FlexLayout BindableLayout.ItemsSource="{Binding WeekDays}"
+                            JustifyContent="SpaceBetween"
+                            AlignItems="Center">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CalendarDayItem">
+                            <Border StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}, FallbackValue=1}"
+                                    Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}, FallbackValue='#2A313E'}"
+                                    BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}, FallbackValue='#1F242D'}"
+                                    StrokeShape="RoundRectangle 10"
+                                    WidthRequest="44"
+                                    Padding="2,8">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                                    <Label Text="{Binding DayName}"
+                                           FontSize="11"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"
+                                           TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+
+                                    <Label Text="{Binding DayNumber}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"
+                                           TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
+
+                                    <Grid HeightRequest="16" HorizontalOptions="Center">
+                                        <Label Text="✔"
+                                               IsVisible="{Binding HasCompletedWorkout}"
+                                               TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
+                                               FontSize="12"
                                                FontAttributes="Bold"
-                                               HorizontalTextAlignment="Center"
-                                               TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}, FallbackValue='#94A3B8'}" />
+                                               HorizontalTextAlignment="Center" />
 
-                                        <!-- Day number: 19, 20, etc. -->
-                                        <Label Text="{Binding DayNumber}"
-                                               FontSize="16"
-                                               FontAttributes="Bold"
-                                               HorizontalTextAlignment="Center"
-                                               TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}, FallbackValue='#FFFFFF'}" />
-
-                                        <!-- Status indicator icon/dot -->
-                                        <Grid HeightRequest="16" HorizontalOptions="Center">
-                                            <!-- Completed checkmark -->
-                                            <Label Text="✔"
-                                                   IsVisible="{Binding HasCompletedWorkout}"
-                                                   TextColor="{Binding IsSelected, Converter={StaticResource DayCompletedIconColorConverter}, FallbackValue='#10B981'}"
-                                                   FontSize="12"
-                                                   FontAttributes="Bold"
-                                                   HorizontalTextAlignment="Center" />
-
-                                            <!-- Planned dot (if not completed) -->
-                                            <Ellipse WidthRequest="6"
-                                                     HeightRequest="6"
-                                                     Fill="{StaticResource KineticIceBlue}"
-                                                     IsVisible="{Binding HasPlannedWorkout}"
-                                                     HorizontalOptions="Center"
-                                                     VerticalOptions="Center" />
-                                        </Grid>
-                                    </VerticalStackLayout>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </Grid>
+                                        <Ellipse WidthRequest="6"
+                                                 HeightRequest="6"
+                                                 Fill="{StaticResource KineticIceBlue}"
+                                                 IsVisible="{Binding HasPlannedWorkout}"
+                                                 HorizontalOptions="Center"
+                                                 VerticalOptions="Center" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
             </Border>
 
             <!-- Quick Start Action Bar (Independence from Programs tab) -->
@@ -184,7 +174,7 @@
                    FontAttributes="Bold"
                    Margin="2,4,0,0" />
 
-            <!-- CASE 1: Completed Workouts on Selected Date (Workout History in Calendar) -->
+            <!-- CASE 1: Completed Workouts on Selected Date (Zero nested CollectionViews) -->
             <VerticalStackLayout IsVisible="{Binding HasCompletedWorkouts}" Spacing="12">
                 <Label Text="ВЫПОЛНЕННЫЕ ТРЕНИРОВКИ"
                        TextColor="{StaticResource KineticEmerald}"
@@ -192,17 +182,15 @@
                        FontAttributes="Bold"
                        Margin="2,0" />
 
-                <CollectionView ItemsSource="{Binding CompletedSessions}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding CompletedSessions}" Spacing="12">
+                    <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:DayCompletedSessionItem">
                             <Border BackgroundColor="{StaticResource KineticSurface}"
                                     Stroke="{StaticResource KineticBorder}"
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 14"
-                                    Padding="16"
-                                    Margin="0,0,0,12">
+                                    Padding="16">
                                 <VerticalStackLayout Spacing="12">
-                                    <!-- Session Header: Title & Time -->
                                     <Grid ColumnDefinitions="*,Auto">
                                         <VerticalStackLayout Spacing="2">
                                             <Label Text="{Binding Title}"
@@ -214,7 +202,6 @@
                                                    FontSize="13" />
                                         </VerticalStackLayout>
 
-                                        <!-- Duration Badge -->
                                         <Border Grid.Column="1"
                                                 BackgroundColor="{StaticResource KineticWell}"
                                                 Stroke="{StaticResource KineticBorderSubtle}"
@@ -228,7 +215,6 @@
                                         </Border>
                                     </Grid>
 
-                                    <!-- Quick summary: Exercises and Sets -->
                                     <Label Text="{Binding SetsCount, StringFormat='Выполнено подходов: {0}'}"
                                            TextColor="{StaticResource KineticTextSecondary}"
                                            FontSize="13" />
@@ -236,35 +222,35 @@
                                     <BoxView HeightRequest="1" Color="{StaticResource KineticBorderSubtle}" />
 
                                     <!-- Exercise details list -->
-                                    <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
-                                        <CollectionView.ItemTemplate>
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Exercises}" Spacing="8">
+                                        <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="vm:DayCompletedExerciseItem">
-                                                <VerticalStackLayout Spacing="4" Margin="0,4,0,8">
+                                                <VerticalStackLayout Spacing="4">
                                                     <Label Text="{Binding ExerciseName}"
                                                            TextColor="{StaticResource KineticVolt}"
                                                            FontSize="15"
                                                            FontAttributes="Bold" />
 
                                                     <!-- Sets lines -->
-                                                    <CollectionView ItemsSource="{Binding SetsSummary}" SelectionMode="None">
-                                                        <CollectionView.ItemTemplate>
+                                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding SetsSummary}" Spacing="2">
+                                                        <BindableLayout.ItemTemplate>
                                                             <DataTemplate x:DataType="x:String">
                                                                 <Label Text="{Binding .}"
                                                                        TextColor="{StaticResource KineticTextSecondary}"
                                                                        FontSize="13"
                                                                        Margin="8,1,0,1" />
                                                             </DataTemplate>
-                                                        </CollectionView.ItemTemplate>
-                                                    </CollectionView>
+                                                        </BindableLayout.ItemTemplate>
+                                                    </VerticalStackLayout>
                                                 </VerticalStackLayout>
                                             </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
                                 </VerticalStackLayout>
                             </Border>
                         </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
             </VerticalStackLayout>
 
             <!-- CASE 2: Planned Workout Hero Card (from active program/schedule) -->
@@ -275,17 +261,15 @@
                        FontAttributes="Bold"
                        Margin="2,0" />
 
-                <CollectionView ItemsSource="{Binding PlannedWorkouts}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding PlannedWorkouts}" Spacing="12">
+                    <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="repo:PlannedWorkoutSummary">
                             <Border BackgroundColor="{StaticResource KineticSurface}"
                                     Stroke="{StaticResource KineticBorder}"
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 14"
-                                    Padding="16"
-                                    Margin="0,0,0,12">
+                                    Padding="16">
                                 <VerticalStackLayout Spacing="14">
-                                    <!-- Program & Workout Name -->
                                     <VerticalStackLayout Spacing="4">
                                         <Border BackgroundColor="{StaticResource KineticWell}"
                                                 StrokeThickness="0"
@@ -314,10 +298,10 @@
                                             Stroke="{StaticResource KineticBorderSubtle}"
                                             StrokeShape="RoundRectangle 10"
                                             Padding="12,10">
-                                        <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
-                                            <CollectionView.ItemTemplate>
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Exercises}" Spacing="6">
+                                            <BindableLayout.ItemTemplate>
                                                 <DataTemplate x:DataType="repo:PlannedExerciseItem">
-                                                    <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                                                    <Grid ColumnDefinitions="*,Auto" Padding="0,2">
                                                         <Label Text="{Binding ExerciseName}"
                                                                TextColor="{StaticResource KineticText}"
                                                                FontSize="14"
@@ -329,8 +313,8 @@
                                                                FontSize="13" />
                                                     </Grid>
                                                 </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
                                     </Border>
 
                                     <!-- Large Volt Start Button -->
@@ -341,8 +325,8 @@
                                 </VerticalStackLayout>
                             </Border>
                         </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
             </VerticalStackLayout>
 
             <!-- CASE 3: Rest Day / No planned workouts -->

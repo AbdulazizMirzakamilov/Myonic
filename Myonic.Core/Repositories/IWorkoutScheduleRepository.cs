@@ -24,4 +24,5 @@ public interface IWorkoutScheduleRepository
 {
     Task<IReadOnlyList<PlannedWorkoutSummary>> GetPlannedWorkoutsForDateAsync(DateTime date);
     Task<IReadOnlyList<PlannedWorkoutSummary>> GetAllAvailableProgramWorkoutsAsync();
+    Task<(IReadOnlySet<DayOfWeek> DefaultDays, IReadOnlySet<DateTime> ScheduledDates)> GetPlannedDayIndicatorsForWeekAsync(DateTime fromDate, DateTime toDate);
 }

@@ -48,17 +48,16 @@
                     FontSize="14"
                     FontAttributes="Bold" />
 
-            <!-- Exercises Collection -->
-            <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
-                <CollectionView.ItemTemplate>
+            <!-- Exercises Collection (BindableLayout - zero nested RecyclerView lag) -->
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Exercises}" Spacing="14">
+                <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ActiveExerciseViewModel">
                         <Border x:Name="ExerciseCard"
                                 BackgroundColor="{StaticResource KineticSurface}"
                                 Stroke="{StaticResource KineticBorder}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 14"
-                                Padding="16"
-                                Margin="0,0,0,14">
+                                Padding="16">
                             <VerticalStackLayout Spacing="12">
 
                                 <!-- Exercise header & plan + Delete Exercise Button -->
@@ -89,16 +88,15 @@
                                             VerticalOptions="Start" />
                                 </Grid>
 
-                                <!-- Completed sets list -->
-                                <CollectionView ItemsSource="{Binding Sets}" SelectionMode="None">
-                                    <CollectionView.ItemTemplate>
+                                <!-- Completed sets list (BindableLayout) -->
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6">
+                                    <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="vm:SetEntryItem">
                                             <Border BackgroundColor="{StaticResource KineticWell}"
                                                     Stroke="{StaticResource KineticBorderSubtle}"
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 8"
-                                                    Padding="12,8"
-                                                    Margin="0,0,0,6">
+                                                    Padding="12,8">
                                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                                     <Label Text="{Binding SummaryText}"
                                                            TextColor="{StaticResource KineticText}"
@@ -118,8 +116,8 @@
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
 
                                 <!-- Add new set input row -->
                                 <Grid ColumnDefinitions="*,*,*,Auto" ColumnSpacing="8">
@@ -165,8 +163,8 @@
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
 
             <!-- Discard button -->
             <Button Text="Отменить тренировку"
