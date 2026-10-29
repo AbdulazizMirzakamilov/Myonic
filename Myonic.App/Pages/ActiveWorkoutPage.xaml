@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.ActiveWorkoutPage"
+             x:DataType="vm:ActiveWorkoutViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,16,16,40" Spacing="16">
+
+            <!-- Top Session Status Bar -->
+            <Grid ColumnDefinitions="*,Auto" Padding="4">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="{Binding Title}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="20" />
+                    <Label Text="{Binding DurationText, StringFormat='Время тренировки: {0}'}"
+                           FontSize="14" />
+                </VerticalStackLayout>
+
+                <Button Grid.Column="1"
+                        Text="Завершить"
+                        Command="{Binding FinishSessionCommand}"
+                        Padding="14,8"
+                        VerticalOptions="Center" />
+            </Grid>
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Exercises Collection -->
+            <CollectionView ItemsSource="{Binding Exercises}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ActiveExerciseViewModel">
+                        <VerticalStackLayout Spacing="10" Margin="0,8,0,16">
+
+                            <!-- Exercise header & plan -->
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding ExerciseName}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="17" />
+                                <Label Text="{Binding PlanText}"
+                                       FontSize="13" />
+                            </VerticalStackLayout>
+
+                            <!-- Completed sets list -->
+                            <CollectionView ItemsSource="{Binding Sets}" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SetEntryItem">
+                                        <Grid ColumnDefinitions="*,Auto" Padding="8,4">
+                                            <Label Text="{Binding SummaryText}"
+                                                   FontFamily="OpenSansSemibold"
+                                                   FontSize="14"
+                                                   VerticalOptions="Center" />
+                                            <Button Grid.Column="1"
+                                                    Text="✕"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ActiveExerciseViewModel}}, Path=DeleteSetCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    Padding="6,2"
+                                                    HeightRequest="32"
+                                                    WidthRequest="32" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <!-- Add new set input row -->
+                            <Grid ColumnDefinitions="*,*,*,Auto" ColumnSpacing="8">
+                                <VerticalStackLayout Spacing="2">
+                                    <Label Text="Вес (кг)" FontSize="11" />
+                                    <Entry Text="{Binding NextWeightText}" Keyboard="Numeric" Placeholder="80" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="Повт." FontSize="11" />
+                                    <Entry Text="{Binding NextRepsText}" Keyboard="Numeric" Placeholder="8" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="2" Spacing="2">
+                                    <Label Text="RPE" FontSize="11" />
+                                    <Entry Text="{Binding NextRpeText}" Keyboard="Numeric" Placeholder="8.0" />
+                                </VerticalStackLayout>
+
+                                <Button Grid.Column="3"
+                                        Text="+ Сет"
+                                        Command="{Binding AddSetCommand}"
+                                        VerticalOptions="End"
+                                        Padding="12,10"
+                                        HeightRequest="42" />
+                            </Grid>
+
+                            <BoxView HeightRequest="1" Margin="0,8,0,0" Color="#E5E7EB" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Discard button -->
+            <Button Text="Отменить тренировку"
+                    Command="{Binding DiscardSessionCommand}"
+                    BackgroundColor="Firebrick"
+                    Margin="0,16,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

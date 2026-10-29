@@ -14,13 +14,17 @@
 
         <VerticalStackLayout Spacing="8">
             <Label Text="Название" />
-            <Entry Placeholder="Например, Upper / Lower" Text="{Binding Name}" />
+            <Entry Placeholder="Например, Верх / Низ (4 дня)" Text="{Binding Name}" />
 
             <Label Margin="0,8,0,0" Text="Описание" />
-            <Editor HeightRequest="80" Text="{Binding Description}" />
+            <Editor
+                AutoSize="TextChanges"
+                HeightRequest="80"
+                Placeholder="Краткое описание сплита..."
+                Text="{Binding Description}" />
 
             <Button
-                Margin="0,8,0,0"
+                Margin="0,16,0,0"
                 Command="{Binding SaveCommand}"
                 Text="Сохранить" />
             <Button
@@ -66,19 +70,34 @@
                                                  Dark={StaticResource Gray600}}"
                         StrokeShape="RoundRectangle 8"
                         StrokeThickness="1">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProgramEditViewModel}}, Path=OpenWorkoutCommand}" CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-                        <VerticalStackLayout Spacing="2">
-                            <Label
-                                FontAttributes="Bold"
-                                FontSize="16"
-                                Text="{Binding Name}" />
-                            <Label
-                                FontSize="12"
-                                Opacity="0.7"
-                                Text="{Binding DayText}" />
-                        </VerticalStackLayout>
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProgramEditViewModel}}, Path=OpenWorkoutCommand}" CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="16"
+                                    Text="{Binding Name}" />
+                                <Label
+                                    FontSize="12"
+                                    Opacity="0.7"
+                                    Text="{Binding DayText}" />
+                            </VerticalStackLayout>
+
+                            <Button Grid.Column="1"
+                                    Text="▶ Старт"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProgramEditViewModel}}, Path=StartWorkoutCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Padding="12,6"
+                                    VerticalOptions="Center" />
+
+                            <Label Grid.Column="2"
+                                   Text="›"
+                                   FontSize="20"
+                                   VerticalOptions="Center" />
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

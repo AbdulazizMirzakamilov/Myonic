@@ -54,6 +54,13 @@ namespace Myonic
             builder.Services.AddTransient<OneRepMaxViewModel>();
             builder.Services.AddTransient<OneRepMaxPage>();
 
+            // Live Workout Sessions & History
+            builder.Services.AddSingleton<IWorkoutSessionRepository, WorkoutSessionRepository>();
+            builder.Services.AddTransient<ActiveWorkoutViewModel>();
+            builder.Services.AddTransient<ActiveWorkoutPage>();
+            builder.Services.AddTransient<WorkoutHistoryViewModel>();
+            builder.Services.AddTransient<WorkoutHistoryPage>();
+
             return builder.Build();
         }
     }
