@@ -17,6 +17,14 @@ public partial class OneRepMaxViewModel : ObservableObject
     public const double MinWeight = 20.0;
     public const double MaxWeight = 500.0;
 
+    public Myonic.Services.IActiveWorkoutTracker? ActiveWorkoutTracker { get; }
+
+    public OneRepMaxViewModel(Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
+    {
+        ActiveWorkoutTracker = activeWorkoutTracker;
+        _ = ActiveWorkoutTracker?.RefreshAsync();
+    }
+
     // --- 1RM Calculation ---
     [ObservableProperty]
     private string _weightText = string.Empty;

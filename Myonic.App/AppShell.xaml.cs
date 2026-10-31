@@ -62,6 +62,11 @@ namespace Myonic
             Routing.RegisterRoute(nameof(Pages.WorkoutSessionDetailPage), typeof(Pages.WorkoutSessionDetailPage));
             Routing.RegisterRoute(nameof(Pages.SettingsPage), typeof(Pages.SettingsPage));
 
+            if (DeviceInfo.Idiom != DeviceIdiom.Phone)
+            {
+                Shell.SetTabBarIsVisible(this, false);
+            }
+
             var themeService = IPlatformApplication.Current?.Services.GetService<Myonic.Services.IThemeService>();
             if (themeService != null)
             {

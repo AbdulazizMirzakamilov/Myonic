@@ -452,4 +452,8 @@
         <Setter Property="SelectedTabColor" Value="{DynamicResource KineticVolt}" />
     </Style>
 
+    <Style TargetType="Page" ApplyToDerivedTypes="True">
+        <Setter Property="Shell.TabBarIsVisible" Value="{OnIdiom Phone=True, Desktop=False}" />
+    </Style>
+
 </ResourceDictionary>
