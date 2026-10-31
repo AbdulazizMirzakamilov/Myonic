@@ -84,12 +84,25 @@ public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearance
     {
         var density = bottomView.Context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
 
-        var activeHex = isDark ? "#22C55E" : "#16A34A";
+        var activeHex = isDark ? "#CCFF00" : "#65A30D";
         var inactiveHex = isDark ? "#94A3B8" : "#64748B";
         var bgHex = isDark ? "#171A21" : "#FFFFFF";
         var borderHex = isDark ? "#2A313E" : "#CBD5E1";
-        var indicatorHex = isDark ? "#2422C55E" : "#2416A34A";
-        var rippleHex = isDark ? "#3322C55E" : "#2216A34A";
+        var indicatorHex = isDark ? "#24CCFF00" : "#2465A30D";
+        var rippleHex = isDark ? "#33CCFF00" : "#2265A30D";
+
+        var canvasHex = isDark ? "#0F1115" : "#FFFFFF";
+        var canvasColor = global::Android.Graphics.Color.ParseColor(canvasHex);
+
+        // Synchronize parent background containers so floating dock margins have zero color mismatch
+        global::Android.Views.View? current = bottomView.Parent as global::Android.Views.View;
+        int depth = 0;
+        while (current != null && depth < 3)
+        {
+            current.SetBackgroundColor(canvasColor);
+            current = current.Parent as global::Android.Views.View;
+            depth++;
+        }
 
         var states = new int[][]
         {

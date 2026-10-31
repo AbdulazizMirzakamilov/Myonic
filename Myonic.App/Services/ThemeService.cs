@@ -70,8 +70,8 @@ public class ThemeService : IThemeService
             res["KineticBorder"] = Color.FromArgb("#2A313E");
             res["KineticBorderSubtle"] = Color.FromArgb("#232832");
 
-            res["KineticVolt"] = Color.FromArgb("#22C55E"); // Rich athletic green
-            res["KineticVoltMuted"] = Color.FromArgb("#16A34A");
+            res["KineticVolt"] = Color.FromArgb("#CCFF00"); // Signature Kinetic Volt neon lime
+            res["KineticVoltMuted"] = Color.FromArgb("#9AC600");
             res["KineticVoltText"] = Color.FromArgb("#0F1115");
 
             res["KineticEmerald"] = Color.FromArgb("#10B981");
@@ -93,9 +93,9 @@ public class ThemeService : IThemeService
             res["KineticBorder"] = Color.FromArgb("#CBD5E1");
             res["KineticBorderSubtle"] = Color.FromArgb("#E2E8F0");
 
-            res["KineticVolt"] = Color.FromArgb("#16A34A"); // Deep contrast green
-            res["KineticVoltMuted"] = Color.FromArgb("#15803D");
-            res["KineticVoltText"] = Color.FromArgb("#FFFFFF"); // Crisp white text on green
+            res["KineticVolt"] = Color.FromArgb("#65A30D"); // Athletic green for light mode
+            res["KineticVoltMuted"] = Color.FromArgb("#4D7C0F");
+            res["KineticVoltText"] = Color.FromArgb("#FFFFFF"); // Crisp white text on volt button
 
             res["KineticEmerald"] = Color.FromArgb("#059669");
             res["KineticIceBlue"] = Color.FromArgb("#0284C7");
@@ -134,24 +134,38 @@ public class ThemeService : IThemeService
         try
         {
             var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
-            var window = activity?.Window;
-            if (window == null) return;
+            if (activity == null) return;
 
-            var barColor = isDark
-                ? Android.Graphics.Color.ParseColor("#0F1115")
-                : Android.Graphics.Color.ParseColor("#F1F5F9");
+            activity.RunOnUiThread(() =>
+            {
+                try
+                {
+                    var window = activity.Window;
+                    if (window == null) return;
+
+                    window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
+                    window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
+
+                    var barColor = isDark
+                        ? Android.Graphics.Color.ParseColor("#0F1115")
+                        : Android.Graphics.Color.ParseColor("#FFFFFF");
 
 #pragma warning disable CA1422
-            window.SetStatusBarColor(barColor);
-            window.SetNavigationBarColor(barColor);
+                    window.SetStatusBarColor(barColor);
+                    window.SetNavigationBarColor(barColor);
 #pragma warning restore CA1422
 
-            var insetsController = AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView);
-            if (insetsController != null)
-            {
-                insetsController.AppearanceLightStatusBars = !isDark;
-                insetsController.AppearanceLightNavigationBars = !isDark;
-            }
+                    var insetsController = AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView);
+                    if (insetsController != null)
+                    {
+                        insetsController.AppearanceLightStatusBars = !isDark;
+                        insetsController.AppearanceLightNavigationBars = !isDark;
+                    }
+                }
+                catch
+                {
+                }
+            });
         }
         catch
         {

@@ -74,7 +74,9 @@
             <!-- Calculate Button -->
             <Button Text="Рассчитать 1ПМ"
                     Command="{Binding CalculateCommand}"
-                    Style="{StaticResource SecondaryActionButton}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="50"
+                    FontSize="15"
                     FontAttributes="Bold"
                     Margin="0,4,0,0" />
 
@@ -167,7 +169,9 @@
 
             <Button Text="Рассчитать процент"
                     Command="{Binding CalculatePercentageCommand}"
-                    Style="{StaticResource SecondaryActionButton}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="50"
+                    FontSize="15"
                     FontAttributes="Bold"
                     Margin="0,4,0,0" />
 
