@@ -108,17 +108,40 @@ namespace Myonic
         private void UpdateActiveDesktopTab(string location)
         {
             var loc = location.ToLowerInvariant();
-            IsScheduleActive = loc.Contains("schedule");
-            IsTrainingActive = loc.Contains("program") || loc.Contains("exercise") || loc.Contains("workoutedit");
-            IsAnalysisActive = loc.Contains("workouthistory") || loc.Contains("workoutsessiondetail");
-            IsOneRepMaxActive = loc.Contains("onerepmax");
-            IsProfileActive = loc.Contains("profile") || loc.Contains("setting");
 
-            // Default fallback to Schedule if none matched
-            if (!IsScheduleActive && !IsTrainingActive && !IsAnalysisActive && !IsOneRepMaxActive && !IsProfileActive)
+            bool schedule = false;
+            bool training = false;
+            bool analysis = false;
+            bool oneRepMax = false;
+            bool profile = false;
+
+            // Exclusive evaluation: specific subpages take precedence over the section they were pushed from
+            if (loc.Contains("workoutsessiondetail") || loc.Contains("workouthistory"))
             {
-                IsScheduleActive = true;
+                analysis = true;
             }
+            else if (loc.Contains("activeworkout") || loc.Contains("exercise") || loc.Contains("program") || loc.Contains("workoutedit"))
+            {
+                training = true;
+            }
+            else if (loc.Contains("onerepmax"))
+            {
+                oneRepMax = true;
+            }
+            else if (loc.Contains("profile") || loc.Contains("setting") || loc.Contains("personalrecord"))
+            {
+                profile = true;
+            }
+            else
+            {
+                schedule = true;
+            }
+
+            IsScheduleActive = schedule;
+            IsTrainingActive = training;
+            IsAnalysisActive = analysis;
+            IsOneRepMaxActive = oneRepMax;
+            IsProfileActive = profile;
         }
 
         public void ResetSubpagesToRoot()

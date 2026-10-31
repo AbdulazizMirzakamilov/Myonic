@@ -4,7 +4,8 @@
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              x:Class="Myonic.Pages.OneRepMaxPage"
              x:DataType="vm:OneRepMaxViewModel"
-             Title="Калькулятор 1ПМ">
+             Title="Калькулятор 1ПМ"
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,16,16,36" Spacing="20">
@@ -12,21 +13,23 @@
             <!-- ================= SECTION 1: 1RM CALCULATOR ================= -->
             <Label Text="Калькулятор повторного максимума (1ПМ)"
                    FontFamily="OpenSansSemibold"
-                   FontSize="19" />
+                   FontSize="19"
+                   TextColor="{DynamicResource KineticText}" />
             <Label Text="Введите вес (от 20 до 500 кг) и количество повторений, затем нажмите «Рассчитать 1ПМ»."
-                   FontSize="13" />
+                   FontSize="13"
+                   TextColor="{DynamicResource KineticTextSecondary}" />
 
             <!-- Weight and Reps Inputs -->
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Вес снаряда, кг" FontFamily="OpenSansSemibold" />
+                    <Label Text="Вес снаряда, кг" FontFamily="OpenSansSemibold" TextColor="{DynamicResource KineticText}" />
                     <Entry Text="{Binding WeightText}"
                            Keyboard="Numeric"
                            Placeholder="От 20 до 500" />
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="1" Spacing="6">
-                    <Label Text="Повторения (1–12)" FontFamily="OpenSansSemibold" />
+                    <Label Text="Повторения (1–12)" FontFamily="OpenSansSemibold" TextColor="{DynamicResource KineticText}" />
                     <Picker ItemsSource="{Binding RepOptions}"
                             SelectedIndex="{Binding SelectedRepsIndex}" />
                 </VerticalStackLayout>
@@ -35,6 +38,8 @@
             <!-- Calculate Button -->
             <Button Text="Рассчитать 1ПМ"
                     Command="{Binding CalculateCommand}"
+                    Style="{StaticResource SecondaryActionButton}"
+                    FontAttributes="Bold"
                     Margin="0,4,0,0" />
 
             <!-- Results Section (Visible only when calculated) -->
@@ -44,62 +49,80 @@
                 <Label Text="⚠️ При более чем 10 повторениях точность формул снижается."
                        IsVisible="{Binding IsLowAccuracy}"
                        FontSize="12"
-                       TextColor="DarkOrange" />
+                       TextColor="{DynamicResource KineticCrimson}" />
 
                 <Label Text="Результаты по формулам"
                        FontFamily="OpenSansSemibold"
                        FontSize="16"
+                       TextColor="{DynamicResource KineticText}"
                        Margin="0,4,0,0" />
 
                 <!-- Formulas list (BindableLayout - zero nested RecyclerView lag) -->
-                <VerticalStackLayout BindableLayout.ItemsSource="{Binding FormulaResults}" Spacing="4">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="vm:FormulaResultItem">
-                            <Grid Padding="12,8" ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding FormulaName}"
-                                       VerticalOptions="Center" />
-                                <Label Grid.Column="1"
-                                       Text="{Binding ValueText}"
-                                       FontFamily="OpenSansSemibold"
-                                       VerticalOptions="Center" />
-                            </Grid>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="4">
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding FormulaResults}" Spacing="2">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FormulaResultItem">
+                                <Grid Padding="12,8" ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding FormulaName}"
+                                           TextColor="{DynamicResource KineticTextSecondary}"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding ValueText}"
+                                           TextColor="{DynamicResource KineticText}"
+                                           FontFamily="OpenSansSemibold"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Border>
 
                 <!-- Average Section at the end of the formulas list -->
-                <Grid Padding="12" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                    <Label Text="Среднее значение"
-                           FontFamily="OpenSansSemibold"
-                           FontSize="17"
-                           VerticalOptions="Center" />
-                    <Label Grid.Column="1"
-                           Text="{Binding AverageText}"
-                           FontFamily="OpenSansSemibold"
-                           FontSize="18"
-                           VerticalOptions="Center" />
-                </Grid>
+                <Border BackgroundColor="{DynamicResource KineticWell}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="14,12"
+                        Margin="0,4,0,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Среднее значение"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="17"
+                               TextColor="{DynamicResource KineticText}"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{Binding AverageText}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="18"
+                               TextColor="{DynamicResource KineticText}"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
             </VerticalStackLayout>
 
             <!-- ================= SECTION 2: PERCENTAGE CALCULATOR ================= -->
-            <BoxView HeightRequest="1" Margin="0,8" Color="LightGray" />
+            <BoxView HeightRequest="1" Margin="0,8" Color="{DynamicResource KineticBorderSubtle}" />
 
             <Label Text="Калькулятор процентов"
                    FontFamily="OpenSansSemibold"
-                   FontSize="19" />
+                   FontSize="19"
+                   TextColor="{DynamicResource KineticText}" />
             <Label Text="Рассчитайте необходимый вес для тренировочного подхода от любого базового веса."
-                   FontSize="13" />
+                   FontSize="13"
+                   TextColor="{DynamicResource KineticTextSecondary}" />
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Базовый вес, кг" FontFamily="OpenSansSemibold" />
+                    <Label Text="Базовый вес, кг" FontFamily="OpenSansSemibold" TextColor="{DynamicResource KineticText}" />
                     <Entry Text="{Binding PercentWeightText}"
                            Keyboard="Numeric"
                            Placeholder="От 20 до 500" />
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="1" Spacing="6">
-                    <Label Text="Процент, %" FontFamily="OpenSansSemibold" />
+                    <Label Text="Процент, %" FontFamily="OpenSansSemibold" TextColor="{DynamicResource KineticText}" />
                     <Entry Text="{Binding PercentageText}"
                            Keyboard="Numeric"
                            Placeholder="Например, 80" />
@@ -108,20 +131,29 @@
 
             <Button Text="Рассчитать процент"
                     Command="{Binding CalculatePercentageCommand}"
+                    Style="{StaticResource SecondaryActionButton}"
+                    FontAttributes="Bold"
                     Margin="0,4,0,0" />
 
             <!-- Percentage Result -->
             <VerticalStackLayout Spacing="6" IsVisible="{Binding HasPercentResult}" Margin="0,4,0,0">
-                <Grid Padding="14" ColumnDefinitions="*,Auto">
-                    <Label Text="{Binding PercentDetailText}"
-                           VerticalOptions="Center"
-                           FontSize="15" />
-                    <Label Grid.Column="1"
-                           Text="{Binding PercentResultText}"
-                           FontFamily="OpenSansSemibold"
-                           FontSize="20"
-                           VerticalOptions="Center" />
-                </Grid>
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="14">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{Binding PercentDetailText}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center"
+                               FontSize="15" />
+                        <Label Grid.Column="1"
+                               Text="{Binding PercentResultText}"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="20"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
             </VerticalStackLayout>
 
         </VerticalStackLayout>

@@ -10,7 +10,6 @@
     BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding OpenRecordsCommand}" Text="Рекорды 🏆" />
         <ToolbarItem Command="{Binding AddCommand}" Text="+ Добавить" />
     </ContentPage.ToolbarItems>
 
