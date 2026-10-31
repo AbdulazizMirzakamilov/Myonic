@@ -146,13 +146,17 @@ public partial class ScheduleViewModel : ObservableObject
     public CalendarDayItem Day5 { get; } = new();
     public CalendarDayItem Day6 { get; } = new();
 
+    public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+
     public ScheduleViewModel(
         IWorkoutSessionRepository sessionRepo,
         IWorkoutScheduleRepository scheduleRepo,
-        Myonic.Services.IThemeService themeService)
+        Myonic.Services.IThemeService themeService,
+        Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _sessionRepo = sessionRepo;
         _scheduleRepo = scheduleRepo;
+        ActiveWorkoutTracker = activeWorkoutTracker ?? new Myonic.Services.ActiveWorkoutTracker(sessionRepo);
 
         WeekDays.Add(Day0);
         WeekDays.Add(Day1);
@@ -187,6 +191,7 @@ public partial class ScheduleViewModel : ObservableObject
         try
         {
             // Active session banner
+            await ActiveWorkoutTracker.RefreshAsync();
             ActiveSession = await _sessionRepo.GetActiveSessionSummaryAsync();
             HasActiveSession = ActiveSession != null;
 
@@ -391,6 +396,7 @@ public partial class ScheduleViewModel : ObservableObject
         }
 
         var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(workout.ProgramWorkoutId);
+        ActiveWorkoutTracker.NotifySessionStarted(sessionId, workout.WorkoutName);
         await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
     }
 
@@ -422,6 +428,7 @@ public partial class ScheduleViewModel : ObservableObject
 
         var title = string.IsNullOrWhiteSpace(name) ? "Свободная тренировка" : name.Trim();
         var sessionId = await _sessionRepo.StartEmptySessionAsync(title);
+        ActiveWorkoutTracker.NotifySessionStarted(sessionId, title);
         await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
     }
 

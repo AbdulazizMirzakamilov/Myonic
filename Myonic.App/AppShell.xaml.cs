@@ -61,6 +61,15 @@ namespace Myonic
             Routing.RegisterRoute(nameof(Pages.ActiveWorkoutPage), typeof(Pages.ActiveWorkoutPage));
             Routing.RegisterRoute(nameof(Pages.WorkoutSessionDetailPage), typeof(Pages.WorkoutSessionDetailPage));
             Routing.RegisterRoute(nameof(Pages.SettingsPage), typeof(Pages.SettingsPage));
+
+            var themeService = IPlatformApplication.Current?.Services.GetService<Myonic.Services.IThemeService>();
+            if (themeService != null)
+            {
+                themeService.ThemeChanged += _ =>
+                {
+                    MainThread.BeginInvokeOnMainThread(NotifyThemeChanged);
+                };
+            }
         }
 
         public async void OnNavButtonClicked(object? sender, EventArgs e)

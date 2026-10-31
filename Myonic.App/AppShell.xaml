@@ -5,7 +5,6 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Myonic.Pages"
-    xmlns:converters="clr-namespace:Myonic.Converters"
     Title="Myonic"
     FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}"
     FlyoutWidth="260"
@@ -19,15 +18,6 @@
     Shell.TabBarUnselectedColor="{DynamicResource KineticTextMuted}"
     Shell.FlyoutBackgroundColor="{DynamicResource KineticSurface}"
     Shell.FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}">
-
-    <Shell.Resources>
-        <ResourceDictionary>
-            <converters:ActiveNavBgConverter x:Key="ActiveNavBgConverter" />
-            <converters:ActiveNavTextColorConverter x:Key="ActiveNavTextColorConverter" />
-            <converters:ActiveNavStrokeConverter x:Key="ActiveNavStrokeConverter" />
-            <converters:ActiveNavFontConverter x:Key="ActiveNavFontConverter" />
-        </ResourceDictionary>
-    </Shell.Resources>
 
     <!-- Desktop Sidebar Header -->
     <Shell.FlyoutHeader>
@@ -63,20 +53,32 @@
         <VerticalStackLayout Padding="14,10" Spacing="6" BindingContext="{x:Reference ThisShell}">
             <!-- 1. Расписание -->
             <Grid HeightRequest="46">
-                <Border BackgroundColor="{Binding IsScheduleActive, Converter={StaticResource ActiveNavBgConverter}}"
-                        Stroke="{Binding IsScheduleActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 10"
                         Padding="14,0"
                         InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsScheduleActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
                     <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
                         <Label Text="📅" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
                         <Label Grid.Column="1"
                                Text="Расписание"
                                FontSize="14"
-                               FontAttributes="{Binding IsScheduleActive, Converter={StaticResource ActiveNavFontConverter}}"
-                               TextColor="{Binding IsScheduleActive, Converter={StaticResource ActiveNavTextColorConverter}}"
-                               VerticalOptions="Center" />
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsScheduleActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
                     </Grid>
                 </Border>
                 <Button BackgroundColor="Transparent"
@@ -90,20 +92,32 @@
 
             <!-- 2. Тренинг -->
             <Grid HeightRequest="46">
-                <Border BackgroundColor="{Binding IsTrainingActive, Converter={StaticResource ActiveNavBgConverter}}"
-                        Stroke="{Binding IsTrainingActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 10"
                         Padding="14,0"
                         InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsTrainingActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
                     <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
                         <Label Text="🏋️" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
                         <Label Grid.Column="1"
                                Text="Тренинг"
                                FontSize="14"
-                               FontAttributes="{Binding IsTrainingActive, Converter={StaticResource ActiveNavFontConverter}}"
-                               TextColor="{Binding IsTrainingActive, Converter={StaticResource ActiveNavTextColorConverter}}"
-                               VerticalOptions="Center" />
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsTrainingActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
                     </Grid>
                 </Border>
                 <Button BackgroundColor="Transparent"
@@ -117,20 +131,32 @@
 
             <!-- 3. Анализ -->
             <Grid HeightRequest="46">
-                <Border BackgroundColor="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavBgConverter}}"
-                        Stroke="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 10"
                         Padding="14,0"
                         InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsAnalysisActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
                     <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
                         <Label Text="📈" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
                         <Label Grid.Column="1"
                                Text="Анализ"
                                FontSize="14"
-                               FontAttributes="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavFontConverter}}"
-                               TextColor="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavTextColorConverter}}"
-                               VerticalOptions="Center" />
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsAnalysisActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
                     </Grid>
                 </Border>
                 <Button BackgroundColor="Transparent"
@@ -144,20 +170,32 @@
 
             <!-- 4. 1RM -->
             <Grid HeightRequest="46">
-                <Border BackgroundColor="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavBgConverter}}"
-                        Stroke="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 10"
                         Padding="14,0"
                         InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsOneRepMaxActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
                     <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
                         <Label Text="🧮" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
                         <Label Grid.Column="1"
                                Text="1RM"
                                FontSize="14"
-                               FontAttributes="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavFontConverter}}"
-                               TextColor="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavTextColorConverter}}"
-                               VerticalOptions="Center" />
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsOneRepMaxActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
                     </Grid>
                 </Border>
                 <Button BackgroundColor="Transparent"
@@ -171,20 +209,32 @@
 
             <!-- 5. Профиль -->
             <Grid HeightRequest="46">
-                <Border BackgroundColor="{Binding IsProfileActive, Converter={StaticResource ActiveNavBgConverter}}"
-                        Stroke="{Binding IsProfileActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 10"
                         Padding="14,0"
                         InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsProfileActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
                     <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
                         <Label Text="👤" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
                         <Label Grid.Column="1"
                                Text="Профиль"
                                FontSize="14"
-                               FontAttributes="{Binding IsProfileActive, Converter={StaticResource ActiveNavFontConverter}}"
-                               TextColor="{Binding IsProfileActive, Converter={StaticResource ActiveNavTextColorConverter}}"
-                               VerticalOptions="Center" />
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsProfileActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
                     </Grid>
                 </Border>
                 <Button BackgroundColor="Transparent"

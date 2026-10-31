@@ -17,12 +17,16 @@ public partial class ProgramsViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasActiveSession;
 
+    public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+
     public ProgramsViewModel(
         ITrainingProgramRepository repository,
-        IWorkoutSessionRepository sessionRepository)
+        IWorkoutSessionRepository sessionRepository,
+        Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _repository = repository;
         _sessionRepository = sessionRepository;
+        ActiveWorkoutTracker = activeWorkoutTracker ?? new Myonic.Services.ActiveWorkoutTracker(sessionRepository);
     }
 
     public ObservableCollection<ProgramSummary> Programs { get; } = [];
@@ -30,6 +34,7 @@ public partial class ProgramsViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadAsync()
     {
+        await ActiveWorkoutTracker.RefreshAsync();
         var active = await _sessionRepository.GetActiveSessionSummaryAsync();
         ActiveSession = active;
         HasActiveSession = active != null;

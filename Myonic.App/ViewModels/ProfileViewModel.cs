@@ -11,14 +11,18 @@ public partial class ProfileViewModel : ObservableObject
     private readonly IPersonalRecordRepository _prRepo;
     private readonly ITrainingProgramRepository _programRepo;
 
+    public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+
     public ProfileViewModel(
         IWorkoutSessionRepository sessionRepo,
         IPersonalRecordRepository prRepo,
-        ITrainingProgramRepository programRepo)
+        ITrainingProgramRepository programRepo,
+        Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _sessionRepo = sessionRepo;
         _prRepo = prRepo;
         _programRepo = programRepo;
+        ActiveWorkoutTracker = activeWorkoutTracker ?? new Myonic.Services.ActiveWorkoutTracker(sessionRepo);
     }
 
     [ObservableProperty]
@@ -36,6 +40,7 @@ public partial class ProfileViewModel : ObservableObject
     [RelayCommand]
     public async Task LoadAsync()
     {
+        await ActiveWorkoutTracker.RefreshAsync();
         IsLoading = true;
         try
         {

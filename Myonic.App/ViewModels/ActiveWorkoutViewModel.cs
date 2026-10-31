@@ -197,6 +197,9 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
     public ObservableCollection<ActiveExerciseViewModel> Exercises { get; } = [];
 
+    private Myonic.Services.IActiveWorkoutTracker? ActiveWorkoutTracker =>
+        _serviceProvider.GetService<Myonic.Services.IActiveWorkoutTracker>();
+
     public ActiveWorkoutViewModel(
         IWorkoutSessionRepository repository,
         IPersonalRecordRepository prRepository,
@@ -301,6 +304,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
         StopTimer();
         var finishedSessionId = _sessionId;
+        ActiveWorkoutTracker?.NotifySessionFinished();
         await _repository.FinishSessionAsync(finishedSessionId);
         await Shell.Current.DisplayAlertAsync("Отличная работа!", "Тренировка завершена! Открываем итоги тренировки.", "OK");
         await Shell.Current.GoToAsync("//SchedulePage");
@@ -318,6 +322,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         if (!confirm) return;
 
         StopTimer();
+        ActiveWorkoutTracker?.NotifySessionFinished();
         await _repository.DiscardSessionAsync(_sessionId);
         await Shell.Current.GoToAsync("//SchedulePage");
     }

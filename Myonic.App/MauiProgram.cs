@@ -85,6 +85,7 @@ namespace Myonic
 
             // Theme Service & Settings
             builder.Services.AddSingleton<Myonic.Services.IThemeService, Myonic.Services.ThemeService>();
+            builder.Services.AddSingleton<Myonic.Services.IActiveWorkoutTracker, Myonic.Services.ActiveWorkoutTracker>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsPage>();
 

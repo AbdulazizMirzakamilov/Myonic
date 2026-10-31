@@ -8,9 +8,46 @@
              Title="История тренировок"
              BackgroundColor="{DynamicResource KineticCanvas}">
 
-    <Grid Padding="16">
+    <Grid Padding="16" RowDefinitions="Auto,*" RowSpacing="12">
+        <!-- Active Workout Banner -->
+        <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
+                Stroke="{DynamicResource KineticVolt}"
+                StrokeThickness="1.5"
+                BackgroundColor="{DynamicResource KineticSurface}"
+                StrokeShape="RoundRectangle 12"
+                Padding="14,10">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                        <Label Text="ИДЕТ АКТИВНАЯ ТРЕНИРОВКА"
+                               TextColor="{DynamicResource KineticVolt}"
+                               FontSize="11"
+                               FontAttributes="Bold" />
+                        <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
+                        <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
+                               TextColor="{DynamicResource KineticVolt}"
+                               FontSize="11"
+                               FontAttributes="Bold" />
+                    </HorizontalStackLayout>
+                    <Label Text="{Binding ActiveWorkoutTracker.Title}"
+                           TextColor="{DynamicResource KineticText}"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           LineBreakMode="TailTruncation" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1"
+                        Text="Продолжить"
+                        Command="{Binding ActiveWorkoutTracker.ResumeCommand}"
+                        Style="{StaticResource VoltButton}"
+                        HeightRequest="42"
+                        Padding="16,0"
+                        FontSize="13" />
+            </Grid>
+        </Border>
+
         <!-- Empty state -->
-        <VerticalStackLayout IsVisible="{Binding HasNoHistory}"
+        <VerticalStackLayout Grid.Row="1"
+                             IsVisible="{Binding HasNoHistory}"
                              VerticalOptions="Center"
                              HorizontalOptions="Center"
                              Spacing="8">
@@ -26,7 +63,7 @@
         </VerticalStackLayout>
 
         <!-- Sessions list -->
-        <CollectionView ItemsSource="{Binding PastSessions}" SelectionMode="None">
+        <CollectionView Grid.Row="1" ItemsSource="{Binding PastSessions}" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:PastWorkoutItem">
                     <Border BackgroundColor="{DynamicResource KineticSurface}"

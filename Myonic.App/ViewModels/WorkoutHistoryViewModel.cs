@@ -24,14 +24,20 @@ public partial class WorkoutHistoryViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasNoHistory;
 
-    public WorkoutHistoryViewModel(IWorkoutSessionRepository repository)
+    public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+
+    public WorkoutHistoryViewModel(
+        IWorkoutSessionRepository repository,
+        Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _repository = repository;
+        ActiveWorkoutTracker = activeWorkoutTracker ?? new Myonic.Services.ActiveWorkoutTracker(repository);
     }
 
     [RelayCommand]
     public async Task LoadHistoryAsync()
     {
+        await ActiveWorkoutTracker.RefreshAsync();
         var items = await _repository.GetPastSessionsAsync();
         PastSessions.Clear();
 
