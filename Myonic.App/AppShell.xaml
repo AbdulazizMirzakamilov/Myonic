@@ -5,6 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Myonic.Pages"
     Title="Myonic"
+    FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}"
+    FlyoutWidth="260"
     BackgroundColor="{DynamicResource KineticCanvas}"
     Shell.BackgroundColor="{DynamicResource KineticCanvas}"
     Shell.ForegroundColor="{DynamicResource KineticText}"
@@ -12,37 +14,104 @@
     Shell.TabBarBackgroundColor="{DynamicResource KineticCanvas}"
     Shell.TabBarForegroundColor="{DynamicResource KineticVolt}"
     Shell.TabBarTitleColor="{DynamicResource KineticVolt}"
-    Shell.TabBarUnselectedColor="{DynamicResource KineticTextMuted}">
+    Shell.TabBarUnselectedColor="{DynamicResource KineticTextMuted}"
+    Shell.FlyoutBackgroundColor="{DynamicResource KineticSurface}"
+    Shell.FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}">
 
+    <!-- Desktop Sidebar Header -->
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout Padding="24,28,20,16" Spacing="14">
+            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                <Border BackgroundColor="{DynamicResource KineticWell}"
+                        Stroke="{DynamicResource KineticVolt}"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 8"
+                        WidthRequest="36"
+                        HeightRequest="36"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+                    <Label Text="M"
+                           TextColor="{DynamicResource KineticVolt}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+                <Label Text="Myonic"
+                       TextColor="{DynamicResource KineticText}"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
+
+    <!-- Desktop Sidebar Footer -->
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout Padding="20,14,20,20" Spacing="10">
+            <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
+            <Border BackgroundColor="{DynamicResource KineticWell}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="12,10">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+                    <Label Text="👤" FontSize="18" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                        <Label Text="Атлет"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="13"
+                               FontAttributes="Bold" />
+                        <Label Text="Локальный профиль"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="11" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </Shell.FlyoutFooter>
+
+    <!-- Navigation Items: Work as Tabs on Mobile and Flyout Items on Desktop -->
     <TabBar>
-        <ShellContent
-            Title="ГРАФИК"
-            Icon="tab_schedule.svg"
-            ContentTemplate="{DataTemplate pages:SchedulePage}"
-            Route="SchedulePage" />
+        <Tab Title="Расписание" Icon="tab_schedule.svg">
+            <ShellContent
+                Title="Расписание"
+                Icon="tab_schedule.svg"
+                ContentTemplate="{DataTemplate pages:SchedulePage}"
+                Route="SchedulePage" />
+        </Tab>
 
-        <ShellContent
-            Title="ТРЕНИНГ"
-            Icon="tab_workout.svg"
-            ContentTemplate="{DataTemplate pages:ProgramsPage}"
-            Route="ProgramsPage" />
+        <Tab Title="Тренинг" Icon="tab_workout.svg">
+            <ShellContent
+                Title="Тренинг"
+                Icon="tab_workout.svg"
+                ContentTemplate="{DataTemplate pages:ProgramsPage}"
+                Route="ProgramsPage" />
+        </Tab>
 
-        <ShellContent
-            Title="АНАЛИЗ"
-            Icon="tab_analysis.svg"
-            ContentTemplate="{DataTemplate pages:WorkoutHistoryPage}"
-            Route="WorkoutHistoryPage" />
+        <Tab Title="Анализ" Icon="tab_analysis.svg">
+            <ShellContent
+                Title="Анализ"
+                Icon="tab_analysis.svg"
+                ContentTemplate="{DataTemplate pages:WorkoutHistoryPage}"
+                Route="WorkoutHistoryPage" />
+        </Tab>
 
-        <ShellContent
-            Title="1RM"
-            Icon="tab_calc.svg"
-            ContentTemplate="{DataTemplate pages:OneRepMaxPage}"
-            Route="OneRepMaxPage" />
+        <Tab Title="1RM" Icon="tab_calc.svg">
+            <ShellContent
+                Title="1RM"
+                Icon="tab_calc.svg"
+                ContentTemplate="{DataTemplate pages:OneRepMaxPage}"
+                Route="OneRepMaxPage" />
+        </Tab>
 
-        <ShellContent
-            Title="ПРОФИЛЬ"
-            Icon="tab_profile.svg"
-            ContentTemplate="{DataTemplate pages:ProfilePage}"
-            Route="ProfilePage" />
+        <Tab Title="Профиль" Icon="tab_profile.svg">
+            <ShellContent
+                Title="Профиль"
+                Icon="tab_profile.svg"
+                ContentTemplate="{DataTemplate pages:ProfilePage}"
+                Route="ProfilePage" />
+        </Tab>
     </TabBar>
 </Shell>

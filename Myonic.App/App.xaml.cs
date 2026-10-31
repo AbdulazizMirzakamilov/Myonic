@@ -15,7 +15,17 @@ namespace Myonic
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            var window = new Window(new AppShell());
+
+#if WINDOWS
+            window.MinimumWidth = 980;
+            window.MinimumHeight = 640;
+            window.Width = 1200;
+            window.Height = 800;
+            window.Title = "Myonic";
+#endif
+
+            return window;
         }
     }
 }
