@@ -33,10 +33,10 @@
                     <Border
                         Margin="0,4"
                         Padding="12"
-                        Stroke="{StaticResource KineticBorderSubtle}"
+                        Stroke="{DynamicResource KineticBorderSubtle}"
                         StrokeShape="RoundRectangle 8"
                         StrokeThickness="1"
-                        BackgroundColor="{StaticResource KineticWell}">
+                        BackgroundColor="{DynamicResource KineticWell}">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenCommand}" CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
@@ -44,11 +44,11 @@
                             <Label
                                 FontAttributes="Bold"
                                 FontSize="16"
-                                TextColor="{StaticResource KineticText}"
+                                TextColor="{DynamicResource KineticText}"
                                 Text="{Binding Name}" />
                             <Label
                                 FontSize="12"
-                                TextColor="{StaticResource KineticTextSecondary}"
+                                TextColor="{DynamicResource KineticTextSecondary}"
                                 Text="{Binding TypeText}" />
                         </VerticalStackLayout>
                     </Border>

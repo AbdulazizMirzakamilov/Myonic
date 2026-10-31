@@ -18,26 +18,26 @@
         <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
 
             <!-- Exercise Summary Card -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16">
                 <VerticalStackLayout Spacing="8">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
                         <Label Text="{Binding ExerciseName}"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="22"
                                FontAttributes="Bold"
                                LineBreakMode="WordWrap" />
                         <Border Grid.Column="1"
-                                BackgroundColor="{StaticResource KineticWell}"
-                                Stroke="{StaticResource KineticBorderSubtle}"
+                                BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
                                 StrokeShape="RoundRectangle 8"
                                 Padding="10,4"
                                 VerticalOptions="Start">
                             <Label Text="{Binding ExerciseTypeText}"
-                                   TextColor="{StaticResource KineticVolt}"
+                                   TextColor="{DynamicResource KineticVolt}"
                                    FontSize="12"
                                    FontAttributes="Bold" />
                         </Border>
@@ -45,7 +45,7 @@
 
                     <Label Text="{Binding Description}"
                            IsVisible="{Binding HasDescription}"
-                           TextColor="{StaticResource KineticTextSecondary}"
+                           TextColor="{DynamicResource KineticTextSecondary}"
                            FontSize="13" />
 
                     <!-- Quick edit button inside card -->
@@ -62,76 +62,76 @@
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <!-- Max Weight Card -->
                 <Border Grid.Column="0"
-                        BackgroundColor="{StaticResource KineticSurface}"
-                        Stroke="{StaticResource KineticBorder}"
+                        BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 12"
                         Padding="14,12">
                     <VerticalStackLayout Spacing="4">
                         <Label Text="МАКС. ВЕС"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="11"
                                FontAttributes="Bold" />
                         <Label Text="{Binding AllTimeMaxWeightText}"
-                               TextColor="{StaticResource KineticVolt}"
+                               TextColor="{DynamicResource KineticVolt}"
                                FontSize="22"
                                FontAttributes="Bold" />
                         <Label Text="Лучший рабочий"
-                               TextColor="{StaticResource KineticTextSecondary}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="11" />
                     </VerticalStackLayout>
                 </Border>
 
                 <!-- Best 1RM Card -->
                 <Border Grid.Column="1"
-                        BackgroundColor="{StaticResource KineticSurface}"
-                        Stroke="{StaticResource KineticBorder}"
+                        BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 12"
                         Padding="14,12">
                     <VerticalStackLayout Spacing="4">
                         <Label Text="ЛУЧШИЙ 1ПМ"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="11"
                                FontAttributes="Bold" />
                         <Label Text="{Binding AllTimeBest1RmText}"
-                               TextColor="{StaticResource KineticIceBlue}"
+                               TextColor="{DynamicResource KineticIceBlue}"
                                FontSize="22"
                                FontAttributes="Bold" />
                         <Label Text="Расчёт по Эпли"
-                               TextColor="{StaticResource KineticTextSecondary}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="11" />
                     </VerticalStackLayout>
                 </Border>
             </Grid>
 
             <!-- Secondary Volume Metrics -->
-            <Border BackgroundColor="{StaticResource KineticWell}"
-                    Stroke="{StaticResource KineticBorderSubtle}"
+            <Border BackgroundColor="{DynamicResource KineticWell}"
+                    Stroke="{DynamicResource KineticBorderSubtle}"
                     StrokeShape="RoundRectangle 10"
                     Padding="14,10">
                 <Grid ColumnDefinitions="*,*">
                     <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
-                        <Label Text="Тренировок:" TextColor="{StaticResource KineticTextMuted}" FontSize="12" />
-                        <Label Text="{Binding TotalSessionsText}" TextColor="{StaticResource KineticText}" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Тренировок:" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" />
+                        <Label Text="{Binding TotalSessionsText}" TextColor="{DynamicResource KineticText}" FontSize="13" FontAttributes="Bold" />
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Grid.Column="1" Spacing="6" HorizontalOptions="Center">
-                        <Label Text="Всего подходов:" TextColor="{StaticResource KineticTextMuted}" FontSize="12" />
-                        <Label Text="{Binding TotalSetsText}" TextColor="{StaticResource KineticText}" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Всего подходов:" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" />
+                        <Label Text="{Binding TotalSetsText}" TextColor="{DynamicResource KineticText}" FontSize="13" FontAttributes="Bold" />
                     </HorizontalStackLayout>
                 </Grid>
             </Border>
 
             <!-- Personal Records Section -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16">
                 <VerticalStackLayout Spacing="10">
                     <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                         <Label Text="ЛИЧНЫЕ РЕКОРДЫ"
-                               TextColor="{StaticResource KineticVolt}"
+                               TextColor="{DynamicResource KineticVolt}"
                                FontSize="11"
                                FontAttributes="Bold" />
                         <Button Grid.Column="1"
@@ -146,34 +146,34 @@
                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Records}" Spacing="6">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="repo:PersonalRecordItem">
-                                <Border BackgroundColor="{StaticResource KineticWell}"
-                                        Stroke="{StaticResource KineticBorderSubtle}"
+                                <Border BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
                                         StrokeShape="RoundRectangle 8"
                                         Padding="10,8">
                                     <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                                        <Border BackgroundColor="{StaticResource KineticSurface}"
-                                                Stroke="{StaticResource KineticBorderSubtle}"
+                                        <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                                Stroke="{DynamicResource KineticBorderSubtle}"
                                                 StrokeShape="RoundRectangle 6"
                                                 Padding="6,2"
                                                 VerticalOptions="Center">
                                             <Label Text="{Binding TypeDisplayName}"
-                                                   TextColor="{StaticResource KineticVolt}"
+                                                   TextColor="{DynamicResource KineticVolt}"
                                                    FontSize="10"
                                                    FontAttributes="Bold" />
                                         </Border>
                                         <HorizontalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
                                             <Label Text="{Binding Weight, StringFormat='{0} кг'}"
-                                                   TextColor="{StaticResource KineticText}"
+                                                   TextColor="{DynamicResource KineticText}"
                                                    FontSize="14"
                                                    FontAttributes="Bold" />
                                             <Label Text="{Binding Reps, StringFormat='× {0}'}"
-                                                   TextColor="{StaticResource KineticTextSecondary}"
+                                                   TextColor="{DynamicResource KineticTextSecondary}"
                                                    FontSize="13"
                                                    VerticalOptions="Center" />
                                         </HorizontalStackLayout>
                                         <Label Grid.Column="2"
                                                Text="{Binding SourceText}"
-                                               TextColor="{StaticResource KineticTextMuted}"
+                                               TextColor="{DynamicResource KineticTextMuted}"
                                                FontSize="11"
                                                VerticalOptions="Center" />
                                         <Button Grid.Column="3"
@@ -181,7 +181,7 @@
                                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.DeleteRecordCommand}"
                                                 CommandParameter="{Binding .}"
                                                 BackgroundColor="Transparent"
-                                                TextColor="{StaticResource KineticTextMuted}"
+                                                TextColor="{DynamicResource KineticTextMuted}"
                                                 FontSize="12"
                                                 WidthRequest="28"
                                                 HeightRequest="28"
@@ -196,26 +196,26 @@
 
             <!-- History Section Header -->
             <Label Text="ИСТОРИЯ ВЫПОЛНЕНИЯ"
-                   TextColor="{StaticResource KineticTextMuted}"
+                   TextColor="{DynamicResource KineticTextMuted}"
                    FontSize="12"
                    FontAttributes="Bold"
                    Margin="4,6,0,0" />
 
             <!-- Empty History View -->
             <Border IsVisible="{Binding HasNoHistory}"
-                    BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+                    BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="24,28">
                 <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
                     <Label Text="Пока нет записей"
-                           TextColor="{StaticResource KineticText}"
+                           TextColor="{DynamicResource KineticText}"
                            FontSize="16"
                            FontAttributes="Bold"
                            HorizontalTextAlignment="Center" />
                     <Label Text="Выполните это упражнение на тренировке, чтобы здесь появилась подробная история подходов и динамика весов."
-                           TextColor="{StaticResource KineticTextSecondary}"
+                           TextColor="{DynamicResource KineticTextSecondary}"
                            FontSize="13"
                            HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
@@ -227,8 +227,8 @@
                                  Spacing="12">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ExerciseHistorySessionDisplayItem">
-                        <Border BackgroundColor="{StaticResource KineticSurface}"
-                                Stroke="{StaticResource KineticBorder}"
+                        <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
                                 Padding="14">
@@ -238,52 +238,52 @@
                                 <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                                     <VerticalStackLayout Spacing="2">
                                         <Label Text="{Binding DateHeader}"
-                                               TextColor="{StaticResource KineticText}"
+                                               TextColor="{DynamicResource KineticText}"
                                                FontSize="15"
                                                FontAttributes="Bold" />
                                         <Label Text="{Binding WorkoutTitle}"
-                                               TextColor="{StaticResource KineticTextSecondary}"
+                                               TextColor="{DynamicResource KineticTextSecondary}"
                                                FontSize="12" />
                                     </VerticalStackLayout>
 
                                     <Label Grid.Column="1"
                                            Text="{Binding SessionStatsText}"
-                                           TextColor="{StaticResource KineticVolt}"
+                                           TextColor="{DynamicResource KineticVolt}"
                                            FontSize="12"
                                            FontAttributes="Bold"
                                            VerticalOptions="Center" />
                                 </Grid>
 
                                 <!-- Sets Box -->
-                                <Border BackgroundColor="{StaticResource KineticWell}"
-                                        Stroke="{StaticResource KineticBorderSubtle}"
+                                <Border BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
                                         StrokeShape="RoundRectangle 8"
                                         Padding="10,8">
                                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6">
                                         <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="vm:ExerciseHistorySetDisplayItem">
                                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
-                                                    <Border BackgroundColor="{StaticResource KineticSurface}"
-                                                            Stroke="{StaticResource KineticBorderSubtle}"
+                                                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                                            Stroke="{DynamicResource KineticBorderSubtle}"
                                                             StrokeShape="RoundRectangle 6"
                                                             Padding="6,2"
                                                             VerticalOptions="Center">
                                                         <Label Text="{Binding SetNumber, StringFormat='Сет {0}'}"
-                                                               TextColor="{StaticResource KineticTextMuted}"
+                                                               TextColor="{DynamicResource KineticTextMuted}"
                                                                FontSize="11"
                                                                FontAttributes="Bold" />
                                                     </Border>
 
                                                     <Label Grid.Column="1"
                                                            Text="{Binding SummaryText}"
-                                                           TextColor="{StaticResource KineticText}"
+                                                           TextColor="{DynamicResource KineticText}"
                                                            FontSize="14"
                                                            FontAttributes="Bold"
                                                            VerticalOptions="Center" />
 
                                                     <Label Grid.Column="2"
                                                            Text="{Binding Est1RmText}"
-                                                           TextColor="{StaticResource KineticIceBlue}"
+                                                           TextColor="{DynamicResource KineticIceBlue}"
                                                            FontSize="12"
                                                            VerticalOptions="Center" />
                                                 </Grid>

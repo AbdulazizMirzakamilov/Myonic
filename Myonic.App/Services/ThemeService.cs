@@ -17,6 +17,19 @@ public class ThemeService : IThemeService
             ? (AppThemeMode)saved
             : AppThemeMode.Dark;
 
+        var app = Application.Current;
+        if (app != null)
+        {
+            // Listen to OS system theme changes in real time for Auto/System mode
+            app.RequestedThemeChanged += (s, e) =>
+            {
+                if (CurrentThemeMode == AppThemeMode.System)
+                {
+                    ApplyTheme(AppThemeMode.System);
+                }
+            };
+        }
+
         ApplyTheme(CurrentThemeMode);
     }
 
@@ -32,16 +45,19 @@ public class ThemeService : IThemeService
         var app = Application.Current;
         if (app == null) return;
 
-        bool dark = mode switch
+        bool dark;
+        if (mode == AppThemeMode.System)
         {
-            AppThemeMode.Dark => true,
-            AppThemeMode.Light => false,
-            AppThemeMode.System => app.RequestedTheme != AppTheme.Light,
-            _ => true
-        };
+            app.UserAppTheme = AppTheme.Unspecified;
+            dark = app.RequestedTheme != AppTheme.Light;
+        }
+        else
+        {
+            dark = mode == AppThemeMode.Dark;
+            app.UserAppTheme = dark ? AppTheme.Dark : AppTheme.Light;
+        }
 
         IsDark = dark;
-        app.UserAppTheme = dark ? AppTheme.Dark : AppTheme.Light;
 
         var res = app.Resources;
         if (dark)
@@ -69,24 +85,25 @@ public class ThemeService : IThemeService
         else
         {
             // Light (Clean Slate) Palette
-            res["KineticCanvas"] = Color.FromArgb("#F8FAFC");
+            // Deep contrast, warm slate foundation, premium lime/emerald button with sharp dark text
+            res["KineticCanvas"] = Color.FromArgb("#F1F5F9");
             res["KineticSurface"] = Color.FromArgb("#FFFFFF");
-            res["KineticWell"] = Color.FromArgb("#F1F5F9");
-            res["KineticSurfaceHigh"] = Color.FromArgb("#E2E8F0");
+            res["KineticWell"] = Color.FromArgb("#E2E8F0");
+            res["KineticSurfaceHigh"] = Color.FromArgb("#CBD5E1");
             res["KineticBorder"] = Color.FromArgb("#CBD5E1");
             res["KineticBorderSubtle"] = Color.FromArgb("#E2E8F0");
 
-            res["KineticVolt"] = Color.FromArgb("#65A30D");
-            res["KineticVoltMuted"] = Color.FromArgb("#4D7C0F");
-            res["KineticVoltText"] = Color.FromArgb("#FFFFFF");
+            res["KineticVolt"] = Color.FromArgb("#84CC16"); // Crisp vibrant lime
+            res["KineticVoltMuted"] = Color.FromArgb("#65A30D");
+            res["KineticVoltText"] = Color.FromArgb("#0F172A"); // Sharp dark text on volt button
 
             res["KineticEmerald"] = Color.FromArgb("#059669");
             res["KineticIceBlue"] = Color.FromArgb("#0284C7");
             res["KineticCrimson"] = Color.FromArgb("#E11D48");
 
-            res["KineticText"] = Color.FromArgb("#0F172A");
-            res["KineticTextSecondary"] = Color.FromArgb("#475569");
-            res["KineticTextMuted"] = Color.FromArgb("#64748B");
+            res["KineticText"] = Color.FromArgb("#0F172A"); // High-contrast slate-900
+            res["KineticTextSecondary"] = Color.FromArgb("#334155"); // Clear slate-700
+            res["KineticTextMuted"] = Color.FromArgb("#64748B"); // Slate-500
         }
 
         // Update Brushes
@@ -120,7 +137,7 @@ public class ThemeService : IThemeService
 
             var barColor = isDark
                 ? Android.Graphics.Color.ParseColor("#0F1115")
-                : Android.Graphics.Color.ParseColor("#F8FAFC");
+                : Android.Graphics.Color.ParseColor("#F1F5F9");
 
 #pragma warning disable CA1422
             window.SetStatusBarColor(barColor);
@@ -130,8 +147,6 @@ public class ThemeService : IThemeService
             var insetsController = AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView);
             if (insetsController != null)
             {
-                // In light theme, status bar icons (battery, clock) must be dark.
-                // In dark theme, status bar icons must be white/light.
                 insetsController.AppearanceLightStatusBars = !isDark;
                 insetsController.AppearanceLightNavigationBars = !isDark;
             }

@@ -7,45 +7,45 @@
     x:Name="ThisPage"
     Title="Тренировка"
     x:DataType="vm:WorkoutEditViewModel"
-    BackgroundColor="{StaticResource KineticCanvas}">
+    BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,16,16,40" Spacing="16">
 
             <!-- Workout info card -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16">
                 <VerticalStackLayout Spacing="14">
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Название тренировки"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Entry Placeholder="Например, Верх тела А"
-                               PlaceholderColor="{StaticResource KineticTextMuted}"
-                               TextColor="{StaticResource KineticText}"
-                               BackgroundColor="{StaticResource KineticWell}"
+                               PlaceholderColor="{DynamicResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticText}"
+                               BackgroundColor="{DynamicResource KineticWell}"
                                Text="{Binding Name}"
                                HeightRequest="44" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="6">
                         <Label Text="День недели по умолчанию"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
-                        <Border BackgroundColor="{StaticResource KineticWell}"
-                                Stroke="{StaticResource KineticBorderSubtle}"
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 8"
                                 Padding="8,2">
                             <Picker ItemsSource="{Binding DayOptions}"
                                     SelectedIndex="{Binding DayIndex}"
-                                    TextColor="{StaticResource KineticText}"
-                                    TitleColor="{StaticResource KineticTextMuted}" />
+                                    TextColor="{DynamicResource KineticText}"
+                                    TitleColor="{DynamicResource KineticTextMuted}" />
                         </Border>
                     </VerticalStackLayout>
 
@@ -60,7 +60,7 @@
             <!-- Exercises list header -->
             <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0" VerticalOptions="Center">
                 <Label Text="Упражнения"
-                       TextColor="{StaticResource KineticText}"
+                       TextColor="{DynamicResource KineticText}"
                        FontSize="18"
                        FontAttributes="Bold"
                        VerticalOptions="Center" />
@@ -77,19 +77,19 @@
             <!-- Exercises list (BindableLayout - zero nested RecyclerView lag) -->
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Exercises}" Spacing="8">
                 <BindableLayout.EmptyView>
-                    <Border BackgroundColor="{StaticResource KineticSurface}"
-                            Stroke="{StaticResource KineticBorder}"
+                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                            Stroke="{DynamicResource KineticBorder}"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 12"
                             Padding="24">
                         <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
                             <Label Text="Упражнений пока нет"
-                                   TextColor="{StaticResource KineticText}"
+                                   TextColor="{DynamicResource KineticText}"
                                    FontSize="15"
                                    FontAttributes="Bold"
                                    HorizontalTextAlignment="Center" />
                             <Label Text="Нажмите «+ Добавить», чтобы выбрать упражнения из библиотеки."
-                                   TextColor="{StaticResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="13"
                                    HorizontalTextAlignment="Center" />
                         </VerticalStackLayout>
@@ -98,8 +98,8 @@
 
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:PlannedExerciseItem">
-                        <Border BackgroundColor="{StaticResource KineticSurface}"
-                                Stroke="{StaticResource KineticBorder}"
+                        <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
                                 Padding="12,10"
@@ -112,14 +112,14 @@
                                 </Grid.GestureRecognizers>
 
                                 <!-- Order number -->
-                                <Border BackgroundColor="{StaticResource KineticWell}"
+                                <Border BackgroundColor="{DynamicResource KineticWell}"
                                         StrokeThickness="0"
                                         StrokeShape="RoundRectangle 6"
                                         WidthRequest="28"
                                         HeightRequest="28"
                                         VerticalOptions="Center">
                                     <Label Text="{Binding OrderText}"
-                                           TextColor="{StaticResource KineticVolt}"
+                                           TextColor="{DynamicResource KineticVolt}"
                                            FontSize="13"
                                            FontAttributes="Bold"
                                            HorizontalTextAlignment="Center"
@@ -129,12 +129,12 @@
                                 <!-- Title and Plan -->
                                 <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                     <Label Text="{Binding Title}"
-                                           TextColor="{StaticResource KineticText}"
+                                           TextColor="{DynamicResource KineticText}"
                                            FontSize="15"
                                            FontAttributes="Bold"
                                            LineBreakMode="TailTruncation" />
                                     <Label Text="{Binding PlanText}"
-                                           TextColor="{StaticResource KineticTextSecondary}"
+                                           TextColor="{DynamicResource KineticTextSecondary}"
                                            FontSize="12" />
                                 </VerticalStackLayout>
 
@@ -167,9 +167,9 @@
 
             <!-- Delete Workout -->
             <Button
-                BackgroundColor="{StaticResource KineticWell}"
-                TextColor="{StaticResource KineticCrimson}"
-                BorderColor="{StaticResource KineticCrimson}"
+                BackgroundColor="{DynamicResource KineticWell}"
+                TextColor="{DynamicResource KineticCrimson}"
+                BorderColor="{DynamicResource KineticCrimson}"
                 BorderWidth="1"
                 CornerRadius="10"
                 HeightRequest="44"

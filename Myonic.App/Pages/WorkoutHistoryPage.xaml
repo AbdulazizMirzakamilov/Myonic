@@ -15,12 +15,12 @@
                              HorizontalOptions="Center"
                              Spacing="8">
             <Label Text="История пока пуста"
-                   TextColor="{StaticResource KineticText}"
+                   TextColor="{DynamicResource KineticText}"
                    FontFamily="OpenSansSemibold"
                    FontSize="18"
                    HorizontalTextAlignment="Center" />
             <Label Text="Завершённые тренировки будут отображаться здесь."
-                   TextColor="{StaticResource KineticTextMuted}"
+                   TextColor="{DynamicResource KineticTextMuted}"
                    FontSize="13"
                    HorizontalTextAlignment="Center" />
         </VerticalStackLayout>
@@ -29,8 +29,8 @@
         <CollectionView ItemsSource="{Binding PastSessions}" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:PastWorkoutItem">
-                    <Border BackgroundColor="{StaticResource KineticSurface}"
-                            Stroke="{StaticResource KineticBorder}"
+                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                            Stroke="{DynamicResource KineticBorder}"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 12"
                             Padding="16"
@@ -43,27 +43,27 @@
                         <VerticalStackLayout Spacing="6">
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="{Binding Title}"
-                                       TextColor="{StaticResource KineticText}"
+                                       TextColor="{DynamicResource KineticText}"
                                        FontFamily="OpenSansSemibold"
                                        FontSize="16" />
                                 <Label Grid.Column="1"
                                        Text="{Binding DurationText}"
-                                       TextColor="{StaticResource KineticEmerald}"
+                                       TextColor="{DynamicResource KineticEmerald}"
                                        FontSize="13"
                                        FontAttributes="Bold" />
                             </Grid>
 
                             <Label Text="{Binding DateText}"
-                                   TextColor="{StaticResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="12" />
 
                             <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
                                 <Label Text="{Binding SummaryText}"
-                                       TextColor="{StaticResource KineticTextSecondary}"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
                                        FontSize="13" />
                                 <Label Grid.Column="1"
                                        Text="Разбор →"
-                                       TextColor="{StaticResource KineticVolt}"
+                                       TextColor="{DynamicResource KineticVolt}"
                                        FontSize="12"
                                        FontAttributes="Bold" />
                             </Grid>

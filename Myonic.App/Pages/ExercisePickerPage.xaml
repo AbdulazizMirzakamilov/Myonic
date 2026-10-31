@@ -7,13 +7,13 @@
              x:DataType="vm:ExercisePickerViewModel"
              x:Name="ThisPage"
              Title="Выбор упражнения"
-             BackgroundColor="{StaticResource KineticCanvas}">
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
         <!-- Header with close button -->
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
             <Label Text="Выберите упражнение"
-                   TextColor="{StaticResource KineticText}"
+                   TextColor="{DynamicResource KineticText}"
                    FontSize="20"
                    FontAttributes="Bold"
                    VerticalOptions="Center" />
@@ -28,14 +28,14 @@
 
         <!-- Search Bar -->
         <Border Grid.Row="1"
-                BackgroundColor="{StaticResource KineticWell}"
-                Stroke="{StaticResource KineticBorderSubtle}"
+                BackgroundColor="{DynamicResource KineticWell}"
+                Stroke="{DynamicResource KineticBorderSubtle}"
                 StrokeThickness="1"
                 StrokeShape="RoundRectangle 10"
                 Padding="6,2">
             <SearchBar Placeholder="Поиск по названию..."
-                       PlaceholderColor="{StaticResource KineticTextMuted}"
-                       TextColor="{StaticResource KineticText}"
+                       PlaceholderColor="{DynamicResource KineticTextMuted}"
+                       TextColor="{DynamicResource KineticText}"
                        BackgroundColor="Transparent"
                        Text="{Binding SearchText}" />
         </Border>
@@ -47,7 +47,7 @@
             <CollectionView.EmptyView>
                 <VerticalStackLayout Padding="32" Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
                     <Label Text="Упражнения не найдены"
-                           TextColor="{StaticResource KineticTextMuted}"
+                           TextColor="{DynamicResource KineticTextMuted}"
                            FontSize="15"
                            HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
@@ -55,8 +55,8 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Exercise">
-                    <Border BackgroundColor="{StaticResource KineticWell}"
-                            Stroke="{StaticResource KineticBorderSubtle}"
+                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="{DynamicResource KineticBorderSubtle}"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 10"
                             Padding="14,12"
@@ -68,14 +68,14 @@
                         </Border.GestureRecognizers>
                         <Grid ColumnDefinitions="*,Auto">
                             <Label Text="{Binding Name}"
-                                   TextColor="{StaticResource KineticText}"
+                                   TextColor="{DynamicResource KineticText}"
                                    FontSize="15"
                                    FontAttributes="Bold"
                                    VerticalOptions="Center" />
 
                             <Label Grid.Column="1"
                                    Text="›"
-                                   TextColor="{StaticResource KineticVolt}"
+                                   TextColor="{DynamicResource KineticVolt}"
                                    FontSize="22"
                                    FontAttributes="Bold"
                                    VerticalOptions="Center" />

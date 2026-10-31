@@ -12,20 +12,20 @@
         <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
 
             <!-- Top Session Status Bar -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16,14">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
                     <VerticalStackLayout Spacing="2">
                         <Label Text="{Binding Title}"
-                               TextColor="{StaticResource KineticText}"
+                               TextColor="{DynamicResource KineticText}"
                                FontSize="19"
                                FontAttributes="Bold"
                                LineBreakMode="TailTruncation" />
                         <Label Text="{Binding DurationText, StringFormat='Время: {0}'}"
-                               TextColor="{StaticResource KineticVolt}"
+                               TextColor="{DynamicResource KineticVolt}"
                                FontSize="14"
                                FontAttributes="Bold" />
                     </VerticalStackLayout>
@@ -53,8 +53,8 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ActiveExerciseViewModel">
                         <Border x:Name="ExerciseCard"
-                                BackgroundColor="{StaticResource KineticSurface}"
-                                Stroke="{StaticResource KineticBorder}"
+                                BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 14"
                                 Padding="16">
@@ -67,20 +67,20 @@
                                             <TapGestureRecognizer Command="{Binding ViewHistoryCommand}" />
                                         </VerticalStackLayout.GestureRecognizers>
                                         <Label Text="{Binding ExerciseName}"
-                                               TextColor="{StaticResource KineticVolt}"
+                                               TextColor="{DynamicResource KineticVolt}"
                                                FontSize="17"
                                                FontAttributes="Bold" />
                                         <Label Text="{Binding PlanText}"
-                                               TextColor="{StaticResource KineticTextSecondary}"
+                                               TextColor="{DynamicResource KineticTextSecondary}"
                                                FontSize="13" />
                                     </VerticalStackLayout>
 
                                     <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                         <Button Text="История"
                                                 Command="{Binding ViewHistoryCommand}"
-                                                BackgroundColor="{StaticResource KineticWell}"
-                                                TextColor="{StaticResource KineticIceBlue}"
-                                                BorderColor="{StaticResource KineticBorderSubtle}"
+                                                BackgroundColor="{DynamicResource KineticWell}"
+                                                TextColor="{DynamicResource KineticIceBlue}"
+                                                BorderColor="{DynamicResource KineticBorderSubtle}"
                                                 BorderWidth="1"
                                                 CornerRadius="8"
                                                 Padding="10,0"
@@ -90,9 +90,9 @@
                                         <Button Text="✕"
                                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.RemoveExerciseCommand}"
                                                 CommandParameter="{Binding .}"
-                                                BackgroundColor="{StaticResource KineticWell}"
-                                                TextColor="{StaticResource KineticTextMuted}"
-                                                BorderColor="{StaticResource KineticBorderSubtle}"
+                                                BackgroundColor="{DynamicResource KineticWell}"
+                                                TextColor="{DynamicResource KineticTextMuted}"
+                                                BorderColor="{DynamicResource KineticBorderSubtle}"
                                                 BorderWidth="1"
                                                 CornerRadius="8"
                                                 Padding="0"
@@ -106,27 +106,27 @@
                                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sets}" Spacing="6">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="vm:SetEntryItem">
-                                            <Border BackgroundColor="{StaticResource KineticWell}"
-                                                    Stroke="{StaticResource KineticBorderSubtle}"
+                                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                                    Stroke="{DynamicResource KineticBorderSubtle}"
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 8"
                                                     Padding="12,8">
                                                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" VerticalOptions="Center">
                                                     <Label Text="{Binding SummaryText}"
-                                                           TextColor="{StaticResource KineticText}"
+                                                           TextColor="{DynamicResource KineticText}"
                                                            FontSize="14"
                                                            FontAttributes="Bold"
                                                            VerticalOptions="Center" />
                                                     <Border Grid.Column="1"
                                                             IsVisible="{Binding IsPr}"
-                                                            BackgroundColor="{StaticResource KineticSurface}"
-                                                            Stroke="{StaticResource KineticVolt}"
+                                                            BackgroundColor="{DynamicResource KineticSurface}"
+                                                            Stroke="{DynamicResource KineticVolt}"
                                                             StrokeThickness="1"
                                                             StrokeShape="RoundRectangle 6"
                                                             Padding="6,2"
                                                             VerticalOptions="Center">
                                                         <Label Text="{Binding PrBadgeText}"
-                                                               TextColor="{StaticResource KineticVolt}"
+                                                               TextColor="{DynamicResource KineticVolt}"
                                                                FontSize="10"
                                                                FontAttributes="Bold" />
                                                     </Border>
@@ -135,7 +135,7 @@
                                                             Command="{Binding Source={x:Reference ExerciseCard}, Path=BindingContext.DeleteSetCommand}"
                                                             CommandParameter="{Binding .}"
                                                             BackgroundColor="Transparent"
-                                                            TextColor="{StaticResource KineticCrimson}"
+                                                            TextColor="{DynamicResource KineticCrimson}"
                                                             Padding="0"
                                                             HeightRequest="28"
                                                             WidthRequest="28"
@@ -149,32 +149,32 @@
                                 <!-- Add new set input row -->
                                 <Grid ColumnDefinitions="*,*,*,Auto" ColumnSpacing="8">
                                     <VerticalStackLayout Spacing="2">
-                                        <Label Text="Вес (кг)" TextColor="{StaticResource KineticTextMuted}" FontSize="11" />
+                                        <Label Text="Вес (кг)" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
                                         <Entry Text="{Binding NextWeightText}"
                                                Keyboard="Numeric"
                                                Placeholder="80"
-                                               BackgroundColor="{StaticResource KineticWell}"
-                                               TextColor="{StaticResource KineticText}"
+                                               BackgroundColor="{DynamicResource KineticWell}"
+                                               TextColor="{DynamicResource KineticText}"
                                                HeightRequest="42" />
                                     </VerticalStackLayout>
 
                                     <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                        <Label Text="Повт." TextColor="{StaticResource KineticTextMuted}" FontSize="11" />
+                                        <Label Text="Повт." TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
                                         <Entry Text="{Binding NextRepsText}"
                                                Keyboard="Numeric"
                                                Placeholder="8"
-                                               BackgroundColor="{StaticResource KineticWell}"
-                                               TextColor="{StaticResource KineticText}"
+                                               BackgroundColor="{DynamicResource KineticWell}"
+                                               TextColor="{DynamicResource KineticText}"
                                                HeightRequest="42" />
                                     </VerticalStackLayout>
 
                                     <VerticalStackLayout Grid.Column="2" Spacing="2">
-                                        <Label Text="RPE" TextColor="{StaticResource KineticTextMuted}" FontSize="11" />
+                                        <Label Text="RPE" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
                                         <Entry Text="{Binding NextRpeText}"
                                                Keyboard="Numeric"
                                                Placeholder="8.0"
-                                               BackgroundColor="{StaticResource KineticWell}"
-                                               TextColor="{StaticResource KineticText}"
+                                               BackgroundColor="{DynamicResource KineticWell}"
+                                               TextColor="{DynamicResource KineticText}"
                                                HeightRequest="42" />
                                     </VerticalStackLayout>
 
@@ -196,9 +196,9 @@
             <!-- Discard button -->
             <Button Text="Отменить тренировку"
                     Command="{Binding DiscardSessionCommand}"
-                    BackgroundColor="{StaticResource KineticWell}"
-                    TextColor="{StaticResource KineticCrimson}"
-                    BorderColor="{StaticResource KineticCrimson}"
+                    BackgroundColor="{DynamicResource KineticWell}"
+                    TextColor="{DynamicResource KineticCrimson}"
+                    BorderColor="{DynamicResource KineticCrimson}"
                     BorderWidth="1"
                     CornerRadius="10"
                     HeightRequest="46"

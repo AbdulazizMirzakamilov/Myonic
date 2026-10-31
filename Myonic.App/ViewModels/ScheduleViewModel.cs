@@ -58,6 +58,12 @@ public sealed class CalendarDayItem : ObservableObject
         get => _hasPlannedWorkout;
         set => SetProperty(ref _hasPlannedWorkout, value);
     }
+
+    public void NotifyThemeChanged()
+    {
+        OnPropertyChanged(nameof(IsSelected));
+        OnPropertyChanged(nameof(HasCompletedWorkout));
+    }
 }
 
 public sealed class DayCompletedSessionItem
@@ -128,7 +134,8 @@ public partial class ScheduleViewModel : ObservableObject
 
     public ScheduleViewModel(
         IWorkoutSessionRepository sessionRepo,
-        IWorkoutScheduleRepository scheduleRepo)
+        IWorkoutScheduleRepository scheduleRepo,
+        Myonic.Services.IThemeService themeService)
     {
         _sessionRepo = sessionRepo;
         _scheduleRepo = scheduleRepo;
@@ -140,6 +147,9 @@ public partial class ScheduleViewModel : ObservableObject
         WeekDays.Add(Day4);
         WeekDays.Add(Day5);
         WeekDays.Add(Day6);
+        themeService.ThemeChanged += _ => {
+            foreach (var d in WeekDays) d.NotifyThemeChanged();
+        };
     }
 
     private bool _isInitialized;
