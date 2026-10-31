@@ -22,13 +22,9 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <Grid HorizontalOptions="Fill">
-            <!-- Center desktop layout with max width to look neat and balanced -->
-            <VerticalStackLayout MaximumWidthRequest="{OnIdiom Phone=10000, Desktop=1240}"
-                                 HorizontalOptions="{OnIdiom Phone=Fill, Desktop=Center}"
-                                 Padding="{OnIdiom Phone='16,12,16,40', Desktop='28,20,28,40'}"
-                                 Spacing="16"
-                                 WidthRequest="{OnIdiom Phone=-1, Desktop=1240}">
+        <VerticalStackLayout Padding="{OnIdiom Phone='16,12,16,40', Desktop='28,20,28,40'}"
+                             Spacing="16"
+                             HorizontalOptions="Fill">
 
                 <!-- Active Workout Banner (Sticky Top) -->
                 <Border IsVisible="{Binding HasActiveSession}"
@@ -654,6 +650,5 @@
                 </Border>
 
             </VerticalStackLayout>
-        </Grid>
     </ScrollView>
 </ContentPage>
