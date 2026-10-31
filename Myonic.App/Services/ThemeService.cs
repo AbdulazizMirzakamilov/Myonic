@@ -70,8 +70,8 @@ public class ThemeService : IThemeService
             res["KineticBorder"] = Color.FromArgb("#2A313E");
             res["KineticBorderSubtle"] = Color.FromArgb("#232832");
 
-            res["KineticVolt"] = Color.FromArgb("#CCFF00");
-            res["KineticVoltMuted"] = Color.FromArgb("#9AC600");
+            res["KineticVolt"] = Color.FromArgb("#22C55E"); // Rich athletic green
+            res["KineticVoltMuted"] = Color.FromArgb("#16A34A");
             res["KineticVoltText"] = Color.FromArgb("#0F1115");
 
             res["KineticEmerald"] = Color.FromArgb("#10B981");
@@ -93,9 +93,9 @@ public class ThemeService : IThemeService
             res["KineticBorder"] = Color.FromArgb("#CBD5E1");
             res["KineticBorderSubtle"] = Color.FromArgb("#E2E8F0");
 
-            res["KineticVolt"] = Color.FromArgb("#84CC16"); // Crisp vibrant lime
-            res["KineticVoltMuted"] = Color.FromArgb("#65A30D");
-            res["KineticVoltText"] = Color.FromArgb("#0F172A"); // Sharp dark text on volt button
+            res["KineticVolt"] = Color.FromArgb("#16A34A"); // Deep contrast green
+            res["KineticVoltMuted"] = Color.FromArgb("#15803D");
+            res["KineticVoltText"] = Color.FromArgb("#FFFFFF"); // Crisp white text on green
 
             res["KineticEmerald"] = Color.FromArgb("#059669");
             res["KineticIceBlue"] = Color.FromArgb("#0284C7");

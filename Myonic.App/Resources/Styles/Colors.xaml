@@ -11,8 +11,8 @@
     <Color x:Key="KineticBorder">#2A313E</Color>
     <Color x:Key="KineticBorderSubtle">#232832</Color>
 
-    <Color x:Key="KineticVolt">#CCFF00</Color>
-    <Color x:Key="KineticVoltMuted">#9AC600</Color>
+    <Color x:Key="KineticVolt">#22C55E</Color>
+    <Color x:Key="KineticVoltMuted">#16A34A</Color>
     <Color x:Key="KineticVoltText">#0F1115</Color>
 
     <Color x:Key="KineticEmerald">#10B981</Color>
@@ -36,8 +36,8 @@
     <SolidColorBrush x:Key="KineticTextMutedBrush" Color="{StaticResource KineticTextMuted}"/>
 
     <!-- Backward-compatible legacy tokens mapped to Kinetic Obsidian dark palette -->
-    <Color x:Key="Primary">#CCFF00</Color>
-    <Color x:Key="PrimaryDark">#CCFF00</Color>
+    <Color x:Key="Primary">#22C55E</Color>
+    <Color x:Key="PrimaryDark">#22C55E</Color>
     <Color x:Key="PrimaryDarkText">#0F1115</Color>
     <Color x:Key="Secondary">#171A21</Color>
     <Color x:Key="SecondaryDarkText">#E2E2E8</Color>
@@ -45,7 +45,7 @@
 
     <Color x:Key="White">#FFFFFF</Color>
     <Color x:Key="Black">#0F1115</Color>
-    <Color x:Key="Magenta">#CCFF00</Color>
+    <Color x:Key="Magenta">#22C55E</Color>
     <Color x:Key="MidnightBlue">#171A21</Color>
     <Color x:Key="OffBlack">#0F1115</Color>
 

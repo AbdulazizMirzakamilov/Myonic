@@ -89,6 +89,7 @@ public sealed class DayCompletedSessionItem
     public int ExercisesCount { get; init; }
     public int SetsCount { get; init; }
     public List<DayCompletedExerciseItem> Exercises { get; init; } = [];
+    public bool HasExercises => Exercises != null && Exercises.Count > 0;
 }
 
 public sealed class DayCompletedExerciseItem

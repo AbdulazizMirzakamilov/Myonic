@@ -12,7 +12,7 @@ public class DayBgColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return isDark ? Color.FromArgb("#CCFF00") : Color.FromArgb("#84CC16");
+            return isDark ? Color.FromArgb("#22C55E") : Color.FromArgb("#16A34A");
         }
         else
         {
@@ -72,7 +72,7 @@ public class DayStrokeColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return isDark ? Color.FromArgb("#CCFF00") : Color.FromArgb("#84CC16");
+            return isDark ? Color.FromArgb("#22C55E") : Color.FromArgb("#16A34A");
         }
         else
         {

@@ -452,9 +452,12 @@
                                         StrokeThickness="1"
                                         StrokeShape="RoundRectangle 14"
                                         Padding="{OnIdiom Phone=16, Desktop=20}">
-                                    <Grid ColumnDefinitions="{OnIdiom Phone='*', Desktop='360,*'}" ColumnSpacing="20" RowSpacing="14">
+                                    <Grid ColumnDefinitions="{OnIdiom Phone='*', Desktop='360,*'}"
+                                          RowDefinitions="{OnIdiom Phone='Auto,Auto', Desktop='*'}"
+                                          ColumnSpacing="20"
+                                          RowSpacing="14">
                                         <!-- Left Side: Summary & Action -->
-                                        <VerticalStackLayout Spacing="12">
+                                        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="12">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <VerticalStackLayout Spacing="2">
                                                     <Label Text="{Binding Title}"
@@ -493,8 +496,9 @@
                                         </VerticalStackLayout>
 
                                         <!-- Right Side: Executed Sets Breakdown -->
-                                        <VerticalStackLayout Grid.Column="{OnIdiom Phone=0, Desktop=1}"
-                                                             Grid.Row="{OnIdiom Phone=1, Desktop=0}"
+                                        <VerticalStackLayout Grid.Row="{OnIdiom Phone=1, Desktop=0}"
+                                                             Grid.Column="{OnIdiom Phone=0, Desktop=1}"
+                                                             IsVisible="{Binding HasExercises}"
                                                              Spacing="8">
                                             <Label Text="Выполненные упражнения:"
                                                    TextColor="{DynamicResource KineticTextMuted}"
@@ -553,9 +557,12 @@
                                         StrokeThickness="1"
                                         StrokeShape="RoundRectangle 14"
                                         Padding="{OnIdiom Phone=16, Desktop=22}">
-                                    <Grid ColumnDefinitions="{OnIdiom Phone='*', Desktop='340,*'}" ColumnSpacing="24" RowSpacing="14">
+                                    <Grid ColumnDefinitions="{OnIdiom Phone='*', Desktop='340,*'}"
+                                          RowDefinitions="{OnIdiom Phone='Auto,Auto', Desktop='*'}"
+                                          ColumnSpacing="24"
+                                          RowSpacing="14">
                                         <!-- Left Side: Workout Title, Program Badge, Start Action -->
-                                        <VerticalStackLayout Spacing="14">
+                                        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="14">
                                             <VerticalStackLayout Spacing="4">
                                                 <Border BackgroundColor="{DynamicResource KineticWell}"
                                                         StrokeThickness="0"
@@ -589,8 +596,9 @@
                                         </VerticalStackLayout>
 
                                         <!-- Right Side: Planned Exercise List -->
-                                        <VerticalStackLayout Grid.Column="{OnIdiom Phone=0, Desktop=1}"
-                                                             Grid.Row="{OnIdiom Phone=1, Desktop=0}"
+                                        <VerticalStackLayout Grid.Row="{OnIdiom Phone=1, Desktop=0}"
+                                                             Grid.Column="{OnIdiom Phone=0, Desktop=1}"
+                                                             IsVisible="{Binding HasExercises}"
                                                              Spacing="8">
                                             <Label Text="План упражнений на сегодня:"
                                                    TextColor="{DynamicResource KineticTextMuted}"

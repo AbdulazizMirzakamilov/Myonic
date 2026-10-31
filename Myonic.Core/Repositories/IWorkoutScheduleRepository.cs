@@ -18,6 +18,7 @@ public class PlannedWorkoutSummary
     public DayOfWeek? DayOfWeek { get; set; }
     public int ExerciseCount { get; set; }
     public List<PlannedExerciseItem> Exercises { get; set; } = [];
+    public bool HasExercises => Exercises != null && Exercises.Count > 0;
 }
 
 public interface IWorkoutScheduleRepository

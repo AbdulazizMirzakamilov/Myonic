@@ -14,7 +14,7 @@ public class ActiveNavBgConverter : IValueConverter
             {
                 return volt;
             }
-            return Color.FromArgb("#CCFF00");
+            return Color.FromArgb("#22C55E");
         }
         return Colors.Transparent;
     }
@@ -57,7 +57,7 @@ public class ActiveNavStrokeConverter : IValueConverter
             {
                 return volt;
             }
-            return Color.FromArgb("#CCFF00");
+            return Color.FromArgb("#22C55E");
         }
         return Colors.Transparent;
     }
