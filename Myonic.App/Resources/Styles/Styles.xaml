@@ -404,6 +404,7 @@
         <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
         <Setter Property="BackgroundColor" Value="{DynamicResource KineticCanvas}" />
+        <Setter Property="Shell.TabBarIsVisible" Value="{OnIdiom Phone=True, Desktop=False}" />
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
@@ -450,10 +451,6 @@
         <Setter Property="BarTextColor" Value="{DynamicResource KineticVolt}" />
         <Setter Property="UnselectedTabColor" Value="{DynamicResource KineticTextMuted}" />
         <Setter Property="SelectedTabColor" Value="{DynamicResource KineticVolt}" />
-    </Style>
-
-    <Style TargetType="Page" ApplyToDerivedTypes="True">
-        <Setter Property="Shell.TabBarIsVisible" Value="{OnIdiom Phone=True, Desktop=False}" />
     </Style>
 
 </ResourceDictionary>
