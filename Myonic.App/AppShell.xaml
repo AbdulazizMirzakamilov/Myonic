@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="Myonic.AppShell"
+    x:Name="ThisShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Myonic.Pages"
+    xmlns:converters="clr-namespace:Myonic.Converters"
     Title="Myonic"
     FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}"
     FlyoutWidth="260"
@@ -17,6 +19,15 @@
     Shell.TabBarUnselectedColor="{DynamicResource KineticTextMuted}"
     Shell.FlyoutBackgroundColor="{DynamicResource KineticSurface}"
     Shell.FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}">
+
+    <Shell.Resources>
+        <ResourceDictionary>
+            <converters:ActiveNavBgConverter x:Key="ActiveNavBgConverter" />
+            <converters:ActiveNavTextColorConverter x:Key="ActiveNavTextColorConverter" />
+            <converters:ActiveNavStrokeConverter x:Key="ActiveNavStrokeConverter" />
+            <converters:ActiveNavFontConverter x:Key="ActiveNavFontConverter" />
+        </ResourceDictionary>
+    </Shell.Resources>
 
     <!-- Desktop Sidebar Header -->
     <Shell.FlyoutHeader>
@@ -47,15 +58,123 @@
         </VerticalStackLayout>
     </Shell.FlyoutHeader>
 
+    <!-- Desktop Sidebar Menu Items -->
+    <Shell.FlyoutContent>
+        <VerticalStackLayout Padding="14,10" Spacing="6" BindingContext="{x:Reference ThisShell}">
+            <!-- 1. Расписание -->
+            <Border BackgroundColor="{Binding IsScheduleActive, Converter={StaticResource ActiveNavBgConverter}}"
+                    Stroke="{Binding IsScheduleActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="14,11">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateDesktopCommand}" CommandParameter="SchedulePage" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="📅" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Label Grid.Column="1"
+                           Text="Расписание"
+                           FontSize="14"
+                           FontAttributes="{Binding IsScheduleActive, Converter={StaticResource ActiveNavFontConverter}}"
+                           TextColor="{Binding IsScheduleActive, Converter={StaticResource ActiveNavTextColorConverter}}"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- 2. Тренинг -->
+            <Border BackgroundColor="{Binding IsTrainingActive, Converter={StaticResource ActiveNavBgConverter}}"
+                    Stroke="{Binding IsTrainingActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="14,11">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateDesktopCommand}" CommandParameter="ProgramsPage" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="🏋️" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Label Grid.Column="1"
+                           Text="Тренинг"
+                           FontSize="14"
+                           FontAttributes="{Binding IsTrainingActive, Converter={StaticResource ActiveNavFontConverter}}"
+                           TextColor="{Binding IsTrainingActive, Converter={StaticResource ActiveNavTextColorConverter}}"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- 3. Анализ -->
+            <Border BackgroundColor="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavBgConverter}}"
+                    Stroke="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="14,11">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateDesktopCommand}" CommandParameter="WorkoutHistoryPage" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="📈" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Label Grid.Column="1"
+                           Text="Анализ"
+                           FontSize="14"
+                           FontAttributes="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavFontConverter}}"
+                           TextColor="{Binding IsAnalysisActive, Converter={StaticResource ActiveNavTextColorConverter}}"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- 4. 1RM -->
+            <Border BackgroundColor="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavBgConverter}}"
+                    Stroke="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="14,11">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateDesktopCommand}" CommandParameter="OneRepMaxPage" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="🧮" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Label Grid.Column="1"
+                           Text="1RM"
+                           FontSize="14"
+                           FontAttributes="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavFontConverter}}"
+                           TextColor="{Binding IsOneRepMaxActive, Converter={StaticResource ActiveNavTextColorConverter}}"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- 5. Профиль -->
+            <Border BackgroundColor="{Binding IsProfileActive, Converter={StaticResource ActiveNavBgConverter}}"
+                    Stroke="{Binding IsProfileActive, Converter={StaticResource ActiveNavStrokeConverter}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="14,11">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateDesktopCommand}" CommandParameter="ProfilePage" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="👤" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Label Grid.Column="1"
+                           Text="Профиль"
+                           FontSize="14"
+                           FontAttributes="{Binding IsProfileActive, Converter={StaticResource ActiveNavFontConverter}}"
+                           TextColor="{Binding IsProfileActive, Converter={StaticResource ActiveNavTextColorConverter}}"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </Shell.FlyoutContent>
+
     <!-- Desktop Sidebar Footer -->
     <Shell.FlyoutFooter>
-        <VerticalStackLayout Padding="20,14,20,20" Spacing="10">
+        <VerticalStackLayout Padding="20,14,20,20" Spacing="10" BindingContext="{x:Reference ThisShell}">
             <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
             <Border BackgroundColor="{DynamicResource KineticWell}"
                     Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 10"
                     Padding="12,10">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateDesktopCommand}" CommandParameter="ProfilePage" />
+                </Border.GestureRecognizers>
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
                     <Label Text="👤" FontSize="18" VerticalOptions="Center" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">

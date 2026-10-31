@@ -139,7 +139,7 @@
                                     <Ellipse WidthRequest="6"
                                              HeightRequest="6"
                                              Fill="{DynamicResource KineticIceBlue}"
-                                             IsVisible="{Binding HasPlannedWorkout}"
+                                             IsVisible="{Binding ShowPlannedIndicator}"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center" />
                                 </Grid>
@@ -181,7 +181,7 @@
                                     <Ellipse WidthRequest="6"
                                              HeightRequest="6"
                                              Fill="{DynamicResource KineticIceBlue}"
-                                             IsVisible="{Binding HasPlannedWorkout}"
+                                             IsVisible="{Binding ShowPlannedIndicator}"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center" />
                                 </Grid>
@@ -223,7 +223,7 @@
                                     <Ellipse WidthRequest="6"
                                              HeightRequest="6"
                                              Fill="{DynamicResource KineticIceBlue}"
-                                             IsVisible="{Binding HasPlannedWorkout}"
+                                             IsVisible="{Binding ShowPlannedIndicator}"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center" />
                                 </Grid>
@@ -265,7 +265,7 @@
                                     <Ellipse WidthRequest="6"
                                              HeightRequest="6"
                                              Fill="{DynamicResource KineticIceBlue}"
-                                             IsVisible="{Binding HasPlannedWorkout}"
+                                             IsVisible="{Binding ShowPlannedIndicator}"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center" />
                                 </Grid>
@@ -307,7 +307,7 @@
                                     <Ellipse WidthRequest="6"
                                              HeightRequest="6"
                                              Fill="{DynamicResource KineticIceBlue}"
-                                             IsVisible="{Binding HasPlannedWorkout}"
+                                             IsVisible="{Binding ShowPlannedIndicator}"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center" />
                                 </Grid>
@@ -349,7 +349,7 @@
                                     <Ellipse WidthRequest="6"
                                              HeightRequest="6"
                                              Fill="{DynamicResource KineticIceBlue}"
-                                             IsVisible="{Binding HasPlannedWorkout}"
+                                             IsVisible="{Binding ShowPlannedIndicator}"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center" />
                                 </Grid>
@@ -391,7 +391,7 @@
                                     <Ellipse WidthRequest="6"
                                              HeightRequest="6"
                                              Fill="{DynamicResource KineticIceBlue}"
-                                             IsVisible="{Binding HasPlannedWorkout}"
+                                             IsVisible="{Binding ShowPlannedIndicator}"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center" />
                                 </Grid>

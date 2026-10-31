@@ -121,6 +121,8 @@ public class ThemeService : IThemeService
 
 #if ANDROID
         UpdateAndroidSystemBars(dark);
+#elif WINDOWS
+        UpdateWindowsTitleBar(dark);
 #endif
 
         ThemeChanged?.Invoke(dark);
@@ -154,6 +156,23 @@ public class ThemeService : IThemeService
         catch
         {
             // Fallback for safety across OEM Android skins
+        }
+    }
+#endif
+
+#if WINDOWS
+    private static void UpdateWindowsTitleBar(bool isDark)
+    {
+        try
+        {
+            var window = Application.Current?.Windows?.FirstOrDefault();
+            if (window != null)
+            {
+                App.ApplyWindowsTitleBar(window, isDark);
+            }
+        }
+        catch
+        {
         }
     }
 #endif

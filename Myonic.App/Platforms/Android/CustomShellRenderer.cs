@@ -71,6 +71,10 @@ public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearance
 
         bottomView.Elevation = 14 * density;
 
+        // Reset child subpages when active tab is re-selected
+        bottomView.ItemReselected -= OnBottomViewItemReselected;
+        bottomView.ItemReselected += OnBottomViewItemReselected;
+
         // 4. Apply colors according to current theme
         bool isDark = Application.Current?.UserAppTheme != AppTheme.Light;
         ApplyThemeColors(bottomView, isDark);
@@ -111,6 +115,20 @@ public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearance
         bottomView.Background = shape;
 
         bottomView.ItemRippleColor = ColorStateList.ValueOf(global::Android.Graphics.Color.ParseColor(rippleHex));
+    }
+
+    private static void OnBottomViewItemReselected(object? sender, Google.Android.Material.Navigation.NavigationBarView.ItemReselectedEventArgs e)
+    {
+        try
+        {
+            if (Microsoft.Maui.Controls.Shell.Current is AppShell appShell)
+            {
+                appShell.ResetSubpagesToRoot();
+            }
+        }
+        catch
+        {
+        }
     }
 }
 #endif

@@ -50,14 +50,28 @@ public sealed class CalendarDayItem : ObservableObject
     public bool HasCompletedWorkout
     {
         get => _hasCompletedWorkout;
-        set => SetProperty(ref _hasCompletedWorkout, value);
+        set
+        {
+            if (SetProperty(ref _hasCompletedWorkout, value))
+            {
+                OnPropertyChanged(nameof(ShowPlannedIndicator));
+            }
+        }
     }
 
     public bool HasPlannedWorkout
     {
         get => _hasPlannedWorkout;
-        set => SetProperty(ref _hasPlannedWorkout, value);
+        set
+        {
+            if (SetProperty(ref _hasPlannedWorkout, value))
+            {
+                OnPropertyChanged(nameof(ShowPlannedIndicator));
+            }
+        }
     }
+
+    public bool ShowPlannedIndicator => HasPlannedWorkout && !HasCompletedWorkout;
 
     public void NotifyThemeChanged()
     {
