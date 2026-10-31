@@ -328,12 +328,35 @@ public partial class ScheduleViewModel : ObservableObject
 
         HasCompletedWorkouts = CompletedSessions.Count > 0;
 
-        // 2. Load planned workouts for selected date
+        // 2. Load planned workouts for selected date (excluding any that are already completed)
         PlannedWorkouts.Clear();
         var planned = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(SelectedDate);
+
+        var completedTitles = CompletedSessions
+            .Select(s => s.Title?.Trim() ?? string.Empty)
+            .Where(t => !string.IsNullOrEmpty(t))
+            .ToList();
+
         foreach (var p in planned)
         {
-            PlannedWorkouts.Add(p);
+            var pTitle = p.WorkoutName?.Trim() ?? string.Empty;
+
+            var isCompleted = completedTitles.Any(t =>
+                string.Equals(t, pTitle, StringComparison.OrdinalIgnoreCase) ||
+                (pTitle.Length > 0 && t.Contains(pTitle, StringComparison.OrdinalIgnoreCase)) ||
+                (t.Length > 0 && pTitle.Contains(t, StringComparison.OrdinalIgnoreCase)));
+
+            // If a workout was completed on this date and only 1 workout was planned for the day,
+            // treat that planned workout as completed
+            if (!isCompleted && planned.Count == 1 && CompletedSessions.Count > 0)
+            {
+                isCompleted = true;
+            }
+
+            if (!isCompleted)
+            {
+                PlannedWorkouts.Add(p);
+            }
         }
 
         HasPlannedWorkouts = PlannedWorkouts.Count > 0;

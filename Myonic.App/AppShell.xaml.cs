@@ -48,6 +48,7 @@ namespace Myonic
         public AppShell()
         {
             InitializeComponent();
+            BindingContext = this;
             NavigateDesktopCommand = new Command<string>(async route => await NavigateDesktopAsync(route));
 
             Routing.RegisterRoute(nameof(Pages.ExerciseDetailPage), typeof(Pages.ExerciseDetailPage));
@@ -62,12 +63,21 @@ namespace Myonic
             Routing.RegisterRoute(nameof(Pages.SettingsPage), typeof(Pages.SettingsPage));
         }
 
+        public async void OnNavButtonClicked(object? sender, EventArgs e)
+        {
+            if (sender is Button btn && btn.ClassId is string route)
+            {
+                await NavigateDesktopAsync(route);
+            }
+        }
+
         private async Task NavigateDesktopAsync(string? route)
         {
             if (string.IsNullOrWhiteSpace(route)) return;
 
             try
             {
+                UpdateActiveDesktopTab(route);
                 // Absolute routing ("//Route") switches to target tab and resets child navigation stack to root
                 await GoToAsync($"//{route}");
                 ResetSubpagesToRoot();
