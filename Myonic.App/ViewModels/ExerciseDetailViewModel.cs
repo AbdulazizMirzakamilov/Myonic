@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -54,10 +54,10 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
     private bool _hasDescription;
 
     [ObservableProperty]
-    private string _allTimeMaxWeightText = "—";
+    private string _allTimeMaxWeightText = "–";
 
     [ObservableProperty]
-    private string _allTimeBest1RmText = "—";
+    private string _allTimeBest1RmText = "–";
 
     [ObservableProperty]
     private string _totalSessionsText = "0";
@@ -103,8 +103,8 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
             Description = summary.Description;
             HasDescription = !string.IsNullOrWhiteSpace(summary.Description);
 
-            AllTimeMaxWeightText = summary.AllTimeMaxWeight > 0 ? $"{summary.AllTimeMaxWeight} кг" : "—";
-            AllTimeBest1RmText = summary.AllTimeBest1Rm > 0 ? $"{summary.AllTimeBest1Rm} кг" : "—";
+            AllTimeMaxWeightText = summary.AllTimeMaxWeight > 0 ? $"{summary.AllTimeMaxWeight} кг" : "–";
+            AllTimeBest1RmText = summary.AllTimeBest1Rm > 0 ? $"{summary.AllTimeBest1Rm} кг" : "–";
             TotalSessionsText = summary.TotalSessionsCount.ToString();
             TotalSetsText = summary.TotalSetsCount.ToString();
             HasHistory = summary.Sessions.Count > 0;
@@ -226,3 +226,4 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
         await Shell.Current.GoToAsync($"{nameof(ExerciseEditPage)}?id={ExerciseId}");
     }
 }
+

@@ -2,8 +2,11 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Myonic.Core.Calendar;
+using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 using Myonic.Pages;
+using Myonic.Services;
 
 namespace Myonic.ViewModels;
 
@@ -14,8 +17,10 @@ public sealed class CalendarDayItem : ObservableObject
     private string _dayNumber = string.Empty;
     private bool _isToday;
     private bool _isSelected;
+    private bool _isCurrentMonth = true;
     private bool _hasCompletedWorkout;
     private bool _hasPlannedWorkout;
+    private bool _hasMissedWorkout;
 
     public DateTime Date
     {
@@ -47,6 +52,12 @@ public sealed class CalendarDayItem : ObservableObject
         set => SetProperty(ref _isSelected, value);
     }
 
+    public bool IsCurrentMonth
+    {
+        get => _isCurrentMonth;
+        set => SetProperty(ref _isCurrentMonth, value);
+    }
+
     public bool HasCompletedWorkout
     {
         get => _hasCompletedWorkout;
@@ -55,6 +66,8 @@ public sealed class CalendarDayItem : ObservableObject
             if (SetProperty(ref _hasCompletedWorkout, value))
             {
                 OnPropertyChanged(nameof(ShowPlannedIndicator));
+                OnPropertyChanged(nameof(ShowMissedIndicator));
+                OnPropertyChanged(nameof(HasAnyWorkout));
             }
         }
     }
@@ -67,11 +80,27 @@ public sealed class CalendarDayItem : ObservableObject
             if (SetProperty(ref _hasPlannedWorkout, value))
             {
                 OnPropertyChanged(nameof(ShowPlannedIndicator));
+                OnPropertyChanged(nameof(HasAnyWorkout));
+            }
+        }
+    }
+
+    public bool HasMissedWorkout
+    {
+        get => _hasMissedWorkout;
+        set
+        {
+            if (SetProperty(ref _hasMissedWorkout, value))
+            {
+                OnPropertyChanged(nameof(ShowMissedIndicator));
+                OnPropertyChanged(nameof(HasAnyWorkout));
             }
         }
     }
 
     public bool ShowPlannedIndicator => HasPlannedWorkout && !HasCompletedWorkout;
+    public bool ShowMissedIndicator => HasMissedWorkout && !HasCompletedWorkout;
+    public bool HasAnyWorkout => HasCompletedWorkout || ShowPlannedIndicator || ShowMissedIndicator;
 
     public void NotifyThemeChanged()
     {
@@ -80,29 +109,31 @@ public sealed class CalendarDayItem : ObservableObject
     }
 }
 
-public sealed class DayCompletedSessionItem
+public sealed class CalendarWeekRowItem
 {
-    public int SessionId { get; init; }
-    public string Title { get; init; } = string.Empty;
-    public string TimeText { get; init; } = string.Empty;
-    public string DurationText { get; init; } = string.Empty;
-    public int ExercisesCount { get; init; }
-    public int SetsCount { get; init; }
-    public List<DayCompletedExerciseItem> Exercises { get; init; } = [];
-    public bool HasExercises => Exercises != null && Exercises.Count > 0;
-}
+    public CalendarDayItem Day0 { get; }
+    public CalendarDayItem Day1 { get; }
+    public CalendarDayItem Day2 { get; }
+    public CalendarDayItem Day3 { get; }
+    public CalendarDayItem Day4 { get; }
+    public CalendarDayItem Day5 { get; }
+    public CalendarDayItem Day6 { get; }
 
-public sealed class DayCompletedExerciseItem
-{
-    public string ExerciseName { get; init; } = string.Empty;
-    public List<string> SetsSummary { get; init; } = [];
+    public CalendarWeekRowItem(
+        CalendarDayItem d0, CalendarDayItem d1, CalendarDayItem d2,
+        CalendarDayItem d3, CalendarDayItem d4, CalendarDayItem d5, CalendarDayItem d6)
+    {
+        Day0 = d0; Day1 = d1; Day2 = d2;
+        Day3 = d3; Day4 = d4; Day5 = d5; Day6 = d6;
+    }
 }
 
 public partial class ScheduleViewModel : ObservableObject, IDisposable
 {
+    private readonly ICalendarService _calendarService;
     private readonly IWorkoutSessionRepository _sessionRepo;
     private readonly IWorkoutScheduleRepository _scheduleRepo;
-    private readonly Myonic.Services.IThemeService _themeService;
+    private readonly IThemeService _themeService;
     private readonly Action<bool> _themeChangedHandler;
     private bool _isDisposed;
 
@@ -110,6 +141,9 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private DateTime _selectedDate = DateTime.Today;
+
+    [ObservableProperty]
+    private DateTime _currentPeriodDate = DateTime.Today;
 
     [ObservableProperty]
     private string _monthYearHeader = string.Empty;
@@ -121,16 +155,12 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     private string _selectedDateFormatted = string.Empty;
 
     [ObservableProperty]
-    private ActiveSessionSummary? _activeSession;
+    private bool _isMonthView = true;
+
+    public bool IsWeekView => !IsMonthView;
 
     [ObservableProperty]
-    private bool _hasActiveSession;
-
-    [ObservableProperty]
-    private bool _hasCompletedWorkouts;
-
-    [ObservableProperty]
-    private bool _hasPlannedWorkouts;
+    private bool _hasWorkouts;
 
     [ObservableProperty]
     private bool _isRestDay;
@@ -139,9 +169,10 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     private bool _isLoading;
 
     public ObservableCollection<CalendarDayItem> WeekDays { get; } = [];
-    public ObservableCollection<DayCompletedSessionItem> CompletedSessions { get; } = [];
-    public ObservableCollection<PlannedWorkoutSummary> PlannedWorkouts { get; } = [];
+    public ObservableCollection<CalendarWeekRowItem> MonthWeeks { get; } = [];
+    public ObservableCollection<CalendarWorkoutItem> Workouts { get; } = [];
 
+    // Dedicated day items for fixed column grid bindings on SchedulePage
     public CalendarDayItem Day0 { get; } = new();
     public CalendarDayItem Day1 { get; } = new();
     public CalendarDayItem Day2 { get; } = new();
@@ -150,17 +181,20 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     public CalendarDayItem Day5 { get; } = new();
     public CalendarDayItem Day6 { get; } = new();
 
-    public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+    public IActiveWorkoutTracker ActiveWorkoutTracker { get; }
 
     public ScheduleViewModel(
+        ICalendarService calendarService,
         IWorkoutSessionRepository sessionRepo,
         IWorkoutScheduleRepository scheduleRepo,
-        Myonic.Services.IThemeService themeService,
-        Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
+        IThemeService themeService,
+        IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
+        _calendarService = calendarService;
         _sessionRepo = sessionRepo;
         _scheduleRepo = scheduleRepo;
-        ActiveWorkoutTracker = activeWorkoutTracker ?? new Myonic.Services.ActiveWorkoutTracker(sessionRepo);
+        _themeService = themeService;
+        ActiveWorkoutTracker = activeWorkoutTracker ?? new ActiveWorkoutTracker(sessionRepo);
 
         WeekDays.Add(Day0);
         WeekDays.Add(Day1);
@@ -169,13 +203,23 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         WeekDays.Add(Day4);
         WeekDays.Add(Day5);
         WeekDays.Add(Day6);
-        _themeService = themeService;
-        _themeChangedHandler = _ => {
+
+        _themeChangedHandler = _ =>
+        {
             foreach (var d in WeekDays) d.NotifyThemeChanged();
+            foreach (var w in MonthWeeks)
+            {
+                w.Day0.NotifyThemeChanged();
+                w.Day1.NotifyThemeChanged();
+                w.Day2.NotifyThemeChanged();
+                w.Day3.NotifyThemeChanged();
+                w.Day4.NotifyThemeChanged();
+                w.Day5.NotifyThemeChanged();
+                w.Day6.NotifyThemeChanged();
+            }
         };
     }
 
-    private bool _isInitialized;
 
     public void SubscribeThemeEvents()
     {
@@ -188,6 +232,8 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         _themeService.ThemeChanged -= _themeChangedHandler;
     }
 
+    public Task InitializeAsync() => RefreshCalendarAsync();
+
     public void Dispose()
     {
         if (_isDisposed) return;
@@ -195,72 +241,141 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         UnsubscribeThemeEvents();
     }
 
-    [RelayCommand]
-    public async Task InitializeAsync()
+    partial void OnIsMonthViewChanged(bool value)
     {
-        if (!_isInitialized)
-        {
-            _isInitialized = true;
-            SelectedDate = DateTime.Today;
-        }
-
-        await RefreshWeekAsync();
+        OnPropertyChanged(nameof(IsWeekView));
+        UpdateHeaders();
     }
 
     [RelayCommand]
-    public async Task RefreshWeekAsync()
+    public void SwitchToMonthView()
     {
+        IsMonthView = true;
+    }
+
+    [RelayCommand]
+    public void SwitchToWeekView()
+    {
+        IsMonthView = false;
+    }
+
+    [RelayCommand]
+    public void ToggleCalendarViewMode()
+    {
+        IsMonthView = !IsMonthView;
+    }
+
+    [RelayCommand]
+    public async Task RefreshCalendarAsync()
+    {
+        if (IsLoading) return;
+
         IsLoading = true;
         try
         {
-            // Active session banner
             await ActiveWorkoutTracker.RefreshAsync();
-            ActiveSession = await _sessionRepo.GetActiveSessionSummaryAsync();
-            HasActiveSession = ActiveSession != null;
 
-            // Determine Monday of current week
-            var current = SelectedDate;
-            var diff = (7 + (current.DayOfWeek - DayOfWeek.Monday)) % 7;
-            var monday = current.AddDays(-diff).Date;
-            var sunday = monday.AddDays(6).Date;
+            var current = CurrentPeriodDate;
+            UpdateHeaders();
 
-            // Headers
-            MonthYearHeader = monday.ToString("MMMM yyyy", RussianCulture);
-            var calendar = RussianCulture.Calendar;
-            var weekNum = calendar.GetWeekOfYear(monday, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-            WeekNumberHeader = $"Неделя {weekNum}";
+            // 1. Calculate week bounds (Monday to Sunday)
+            var dayOfWeek = (int)current.DayOfWeek;
+            var daysFromMonday = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
+            var weekStart = current.Date.AddDays(-daysFromMonday);
+            var weekEnd = weekStart.AddDays(6);
 
-            // Fast parallel queries for week indicators
-            var completedDatesTask = _sessionRepo.GetCompletedSessionDatesAsync(monday, sunday.AddDays(1));
-            var plannedIndicatorsTask = _scheduleRepo.GetPlannedDayIndicatorsForWeekAsync(monday, sunday);
+            // 2. Calculate month grid bounds
+            var firstOfMonth = new DateTime(current.Year, current.Month, 1);
+            var lastOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
 
-            await Task.WhenAll(completedDatesTask, plannedIndicatorsTask);
+            var firstDow = (int)firstOfMonth.DayOfWeek;
+            var daysBefore = firstDow == 0 ? 6 : firstDow - 1;
+            var gridStart = firstOfMonth.AddDays(-daysBefore);
 
-            var completedSet = new HashSet<DateTime>((await completedDatesTask).Select(d => d.Date));
-            var (defaultDays, scheduledDates) = await plannedIndicatorsTask;
+            var lastDow = (int)lastOfMonth.DayOfWeek;
+            var daysAfter = lastDow == 0 ? 0 : 7 - lastDow;
+            var gridEnd = lastOfMonth.AddDays(daysAfter);
 
-            var dayNames = new[] { "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС" };
-            var days = new[] { Day0, Day1, Day2, Day3, Day4, Day5, Day6 };
+            // Fetch indicators for the union range
+            var overallStart = weekStart < gridStart ? weekStart : gridStart;
+            var overallEnd = weekEnd > gridEnd ? weekEnd : gridEnd;
+            var indicators = await _calendarService.GetIndicatorsForRangeAsync(overallStart, overallEnd);
 
+            // 3. Populate 7 days of WeekDays
+            var dayNames = new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
             for (int i = 0; i < 7; i++)
             {
-                var dayDate = monday.AddDays(i);
-                var isSelected = dayDate.Date == SelectedDate.Date;
-                var isToday = dayDate.Date == DateTime.Today;
-                var hasCompleted = completedSet.Contains(dayDate.Date);
-                var hasPlanned = defaultDays.Contains(dayDate.DayOfWeek) || scheduledDates.Contains(dayDate.Date);
+                var d = weekStart.AddDays(i);
+                var item = WeekDays[i];
 
-                var item = days[i];
-                item.Date = dayDate;
+                item.Date = d;
                 item.DayName = dayNames[i];
-                item.DayNumber = dayDate.Day.ToString();
-                item.IsToday = isToday;
-                item.IsSelected = isSelected;
-                item.HasCompletedWorkout = hasCompleted;
-                item.HasPlannedWorkout = hasPlanned;
+                item.DayNumber = d.Day.ToString();
+                item.IsToday = d.Date == DateTime.Today;
+                item.IsSelected = d.Date == SelectedDate.Date;
+                item.IsCurrentMonth = d.Month == current.Month;
+
+                if (indicators.TryGetValue(d.Date, out var ind))
+                {
+                    item.HasCompletedWorkout = ind.HasCompleted;
+                    item.HasPlannedWorkout = ind.HasPlanned;
+                    item.HasMissedWorkout = ind.HasMissed;
+                }
+                else
+                {
+                    item.HasCompletedWorkout = false;
+                    item.HasPlannedWorkout = false;
+                    item.HasMissedWorkout = false;
+                }
             }
 
-            await LoadSelectedDateDetailsAsync();
+            // 4. Populate Month Grid (MonthWeeks)
+            MonthWeeks.Clear();
+            var totalDays = (gridEnd - gridStart).Days + 1;
+            var numWeeks = totalDays / 7;
+            var curDate = gridStart;
+
+            for (int w = 0; w < numWeeks; w++)
+            {
+                var rowDays = new CalendarDayItem[7];
+                for (int d = 0; d < 7; d++)
+                {
+                    var isSelected = curDate.Date == SelectedDate.Date;
+                    var isToday = curDate.Date == DateTime.Today;
+                    var isCurrentMonth = curDate.Month == current.Month;
+
+                    var hasCompleted = false;
+                    var hasPlanned = false;
+                    var hasMissed = false;
+
+                    if (indicators.TryGetValue(curDate.Date, out var ind))
+                    {
+                        hasCompleted = ind.HasCompleted;
+                        hasPlanned = ind.HasPlanned;
+                        hasMissed = ind.HasMissed;
+                    }
+
+                    rowDays[d] = new CalendarDayItem
+                    {
+                        Date = curDate,
+                        DayName = dayNames[d],
+                        DayNumber = curDate.Day.ToString(),
+                        IsToday = isToday,
+                        IsSelected = isSelected,
+                        IsCurrentMonth = isCurrentMonth,
+                        HasCompletedWorkout = hasCompleted,
+                        HasPlannedWorkout = hasPlanned,
+                        HasMissedWorkout = hasMissed
+                    };
+
+                    curDate = curDate.AddDays(1);
+                }
+
+                MonthWeeks.Add(new CalendarWeekRowItem(
+                    rowDays[0], rowDays[1], rowDays[2], rowDays[3], rowDays[4], rowDays[5], rowDays[6]));
+            }
+
+            await LoadWorkoutsForSelectedDateAsync();
         }
         finally
         {
@@ -268,140 +383,150 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         }
     }
 
+    private void UpdateHeaders()
+    {
+        var target = IsMonthView ? CurrentPeriodDate : SelectedDate;
+        var monthName = target.ToString("MMMM", RussianCulture);
+        if (!string.IsNullOrEmpty(monthName))
+        {
+            monthName = char.ToUpper(monthName[0]) + monthName[1..];
+        }
+        MonthYearHeader = $"{monthName} {target.Year}";
+
+        var cal = RussianCulture.Calendar;
+        var weekNum = cal.GetWeekOfYear(target, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        WeekNumberHeader = $"НЕДЕЛЯ {weekNum}";
+
+        var dayName = SelectedDate.ToString("dddd", RussianCulture);
+        if (!string.IsNullOrEmpty(dayName))
+        {
+            dayName = char.ToUpper(dayName[0]) + dayName[1..];
+        }
+        SelectedDateFormatted = $"{dayName}, {SelectedDate:d MMMM yyyy}";
+    }
+
     [RelayCommand]
     public async Task SelectDayAsync(CalendarDayItem? day)
     {
         if (day == null) return;
-
         SelectedDate = day.Date;
+
+        // If day belongs to another month, update CurrentPeriodDate
+        if (day.Date.Month != CurrentPeriodDate.Month || day.Date.Year != CurrentPeriodDate.Year)
+        {
+            CurrentPeriodDate = day.Date;
+            await RefreshCalendarAsync();
+            return;
+        }
+
+        UpdateHeaders();
 
         foreach (var d in WeekDays)
             d.IsSelected = d.Date.Date == SelectedDate.Date;
 
-        await LoadSelectedDateDetailsAsync();
+        foreach (var week in MonthWeeks)
+        {
+            week.Day0.IsSelected = week.Day0.Date.Date == SelectedDate.Date;
+            week.Day1.IsSelected = week.Day1.Date.Date == SelectedDate.Date;
+            week.Day2.IsSelected = week.Day2.Date.Date == SelectedDate.Date;
+            week.Day3.IsSelected = week.Day3.Date.Date == SelectedDate.Date;
+            week.Day4.IsSelected = week.Day4.Date.Date == SelectedDate.Date;
+            week.Day5.IsSelected = week.Day5.Date.Date == SelectedDate.Date;
+            week.Day6.IsSelected = week.Day6.Date.Date == SelectedDate.Date;
+        }
+
+        await LoadWorkoutsForSelectedDateAsync();
+    }
+
+    private async Task LoadWorkoutsForSelectedDateAsync()
+    {
+        var items = await _calendarService.GetWorkoutsForDateAsync(SelectedDate);
+
+        Workouts.Clear();
+        foreach (var item in items)
+        {
+            Workouts.Add(item);
+        }
+
+        HasWorkouts = Workouts.Count > 0;
+        IsRestDay = !HasWorkouts;
     }
 
     [RelayCommand]
     public async Task PreviousWeekAsync()
     {
+        CurrentPeriodDate = CurrentPeriodDate.AddDays(-7);
         SelectedDate = SelectedDate.AddDays(-7);
-        await RefreshWeekAsync();
+        await RefreshCalendarAsync();
     }
 
     [RelayCommand]
     public async Task NextWeekAsync()
     {
+        CurrentPeriodDate = CurrentPeriodDate.AddDays(7);
         SelectedDate = SelectedDate.AddDays(7);
-        await RefreshWeekAsync();
+        await RefreshCalendarAsync();
+    }
+
+    [RelayCommand]
+    public async Task PreviousMonthAsync()
+    {
+        CurrentPeriodDate = CurrentPeriodDate.AddMonths(-1);
+        SelectedDate = new DateTime(CurrentPeriodDate.Year, CurrentPeriodDate.Month, Math.Min(SelectedDate.Day, DateTime.DaysInMonth(CurrentPeriodDate.Year, CurrentPeriodDate.Month)));
+        await RefreshCalendarAsync();
+    }
+
+    [RelayCommand]
+    public async Task NextMonthAsync()
+    {
+        CurrentPeriodDate = CurrentPeriodDate.AddMonths(1);
+        SelectedDate = new DateTime(CurrentPeriodDate.Year, CurrentPeriodDate.Month, Math.Min(SelectedDate.Day, DateTime.DaysInMonth(CurrentPeriodDate.Year, CurrentPeriodDate.Month)));
+        await RefreshCalendarAsync();
+    }
+
+    [RelayCommand]
+    public async Task PreviousPeriodAsync()
+    {
+        if (IsMonthView)
+            await PreviousMonthAsync();
+        else
+            await PreviousWeekAsync();
+    }
+
+    [RelayCommand]
+    public async Task NextPeriodAsync()
+    {
+        if (IsMonthView)
+            await NextMonthAsync();
+        else
+            await NextWeekAsync();
     }
 
     [RelayCommand]
     public async Task TodayAsync()
     {
+        CurrentPeriodDate = DateTime.Today;
         SelectedDate = DateTime.Today;
-        await RefreshWeekAsync();
-    }
-
-    private async Task LoadSelectedDateDetailsAsync()
-    {
-        SelectedDateFormatted = SelectedDate.ToString("dddd, d MMMM yyyy", RussianCulture);
-
-        // 1. Load completed workouts for selected date
-        CompletedSessions.Clear();
-        var sessions = await _sessionRepo.GetSessionsForDateAsync(SelectedDate);
-
-        foreach (var s in sessions)
-        {
-            var duration = (s.FinishedAt ?? DateTime.UtcNow) - s.StartedAt;
-            var durationText = duration.TotalHours >= 1
-                ? $"{(int)duration.TotalHours} ч {duration.Minutes} мин"
-                : $"{duration.Minutes} мин";
-
-            var timeText = s.FinishedAt.HasValue
-                ? $"{s.StartedAt.ToLocalTime():HH:mm} – {s.FinishedAt.Value.ToLocalTime():HH:mm}"
-                : $"{s.StartedAt.ToLocalTime():HH:mm}";
-
-            var totalSets = s.Exercises.Sum(e => e.Sets.Count);
-
-            var exItems = new List<DayCompletedExerciseItem>();
-            foreach (var ex in s.Exercises)
-            {
-                var setLines = new List<string>();
-                foreach (var set in ex.Sets)
-                {
-                    var line = $"Сет {set.SetNumber}: {set.Weight:0.##} кг × {set.Reps}";
-                    if (set.Rpe.HasValue)
-                        line += $" @ {set.Rpe.Value:0.#}";
-                    setLines.Add(line);
-                }
-
-                exItems.Add(new DayCompletedExerciseItem
-                {
-                    ExerciseName = ex.ExerciseName,
-                    SetsSummary = setLines
-                });
-            }
-
-            CompletedSessions.Add(new DayCompletedSessionItem
-            {
-                SessionId = s.Id,
-                Title = s.Title,
-                TimeText = timeText,
-                DurationText = durationText,
-                ExercisesCount = s.Exercises.Count,
-                SetsCount = totalSets,
-                Exercises = exItems
-            });
-        }
-
-        HasCompletedWorkouts = CompletedSessions.Count > 0;
-
-        // 2. Load planned workouts for selected date (excluding any that are already completed)
-        PlannedWorkouts.Clear();
-        var planned = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(SelectedDate);
-
-        var completedTitles = CompletedSessions
-            .Select(s => s.Title?.Trim() ?? string.Empty)
-            .Where(t => !string.IsNullOrEmpty(t))
-            .ToList();
-
-        foreach (var p in planned)
-        {
-            var pTitle = p.WorkoutName?.Trim() ?? string.Empty;
-
-            var isCompleted = completedTitles.Any(t =>
-                string.Equals(t, pTitle, StringComparison.OrdinalIgnoreCase) ||
-                (pTitle.Length > 0 && t.Contains(pTitle, StringComparison.OrdinalIgnoreCase)) ||
-                (t.Length > 0 && pTitle.Contains(t, StringComparison.OrdinalIgnoreCase)));
-
-            // If a workout was completed on this date and only 1 workout was planned for the day,
-            // treat that planned workout as completed
-            if (!isCompleted && planned.Count == 1 && CompletedSessions.Count > 0)
-            {
-                isCompleted = true;
-            }
-
-            if (!isCompleted)
-            {
-                PlannedWorkouts.Add(p);
-            }
-        }
-
-        HasPlannedWorkouts = PlannedWorkouts.Count > 0;
-        IsRestDay = !HasCompletedWorkouts && !HasPlannedWorkouts;
+        await RefreshCalendarAsync();
     }
 
     [RelayCommand]
-    public async Task OpenSessionDetailAsync(DayCompletedSessionItem? session)
+    public async Task OpenFullCalendarAsync()
     {
-        if (session == null) return;
-        await Shell.Current.GoToAsync($"{nameof(WorkoutSessionDetailPage)}?sessionId={session.SessionId}");
+        await Shell.Current.GoToAsync(nameof(CalendarFullPage));
     }
 
     [RelayCommand]
-    public async Task StartPlannedWorkoutAsync(PlannedWorkoutSummary? workout)
+    public async Task OpenWorkoutDetailAsync(CalendarWorkoutItem? item)
     {
-        if (workout == null) return;
+        if (item == null || !item.SessionId.HasValue) return;
+        await Shell.Current.GoToAsync($"{nameof(WorkoutSessionDetailPage)}?sessionId={item.SessionId.Value}");
+    }
+
+    [RelayCommand]
+    public async Task StartPlannedWorkoutAsync(CalendarWorkoutItem? workout)
+    {
+        if (workout == null || !workout.ProgramWorkoutId.HasValue) return;
 
         // Check if there's already an active session
         var active = await _sessionRepo.GetActiveSessionSummaryAsync();
@@ -418,8 +543,8 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(workout.ProgramWorkoutId);
-        ActiveWorkoutTracker.NotifySessionStarted(sessionId, workout.WorkoutName);
+        var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(workout.ProgramWorkoutId.Value);
+        ActiveWorkoutTracker.NotifySessionStarted(sessionId, workout.Title);
         await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
     }
 
@@ -456,13 +581,6 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    public async Task ResumeActiveSessionAsync()
-    {
-        if (ActiveSession == null) return;
-        await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={ActiveSession.Id}");
-    }
-
-    [RelayCommand]
     public async Task ChooseProgramWorkoutAsync()
     {
         var allWorkouts = await _scheduleRepo.GetAllAvailableProgramWorkoutsAsync();
@@ -472,7 +590,7 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var titles = allWorkouts.Select(w => $"{w.ProgramName} — {w.WorkoutName}").ToArray();
+        var titles = allWorkouts.Select(w => $"{w.ProgramName} – {w.WorkoutName}").ToArray();
         var selectedTitle = await Shell.Current.DisplayActionSheetAsync(
             "Выберите тренировку для старта",
             "Отмена",
@@ -482,10 +600,15 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         if (selectedTitle == null || selectedTitle == "Отмена")
             return;
 
-        var chosen = allWorkouts.FirstOrDefault(w => $"{w.ProgramName} — {w.WorkoutName}" == selectedTitle);
+        var chosen = allWorkouts.FirstOrDefault(w => $"{w.ProgramName} – {w.WorkoutName}" == selectedTitle);
         if (chosen != null)
         {
-            await StartPlannedWorkoutAsync(chosen);
+            var item = new CalendarWorkoutItem
+            {
+                ProgramWorkoutId = chosen.ProgramWorkoutId,
+                Title = chosen.WorkoutName
+            };
+            await StartPlannedWorkoutAsync(item);
         }
     }
 }

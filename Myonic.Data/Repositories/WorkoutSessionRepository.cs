@@ -427,12 +427,8 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
 
             foreach (var s in sets)
             {
-                double est1Rm = s.Weight;
-                if (s.Weight > 0 && s.Reps > 1)
-                {
-                    var cappedReps = Math.Min(s.Reps, OneRepMaxCalculator.MaxReps);
-                    est1Rm = Math.Round(OneRepMaxCalculator.Calculate(OneRepMaxFormula.Epley, s.Weight, cappedReps), 1);
-                }
+                // Only actual 1-rep sets count as 1RM (no automatic formula estimation)
+                double est1Rm = s.Reps == 1 ? s.Weight : 0;
 
                 if (s.Weight > maxWeightInSession) maxWeightInSession = s.Weight;
                 if (est1Rm > best1RmInSession) best1RmInSession = est1Rm;

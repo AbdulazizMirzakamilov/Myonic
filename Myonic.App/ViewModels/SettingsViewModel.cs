@@ -20,11 +20,7 @@ public partial class SettingsViewModel : ObservableObject
         // Load current theme index (0: Dark, 1: Light, 2: System)
         _selectedThemeIndex = (int)_themeService.CurrentThemeMode;
 
-        // Load unit preferences (default: kg)
-        _isKg = Preferences.Get("weight_unit_kg", true);
-
         // Load workout preferences
-        _autoCalculate1Rm = Preferences.Get("auto_calc_1rm", true);
         _showPrBadges = Preferences.Get("show_pr_badges", true);
         _soundVibrationEnabled = Preferences.Get("sound_vibration_enabled", true);
 
@@ -33,12 +29,6 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private int _selectedThemeIndex;
-
-    [ObservableProperty]
-    private bool _isKg;
-
-    [ObservableProperty]
-    private bool _autoCalculate1Rm;
 
     [ObservableProperty]
     private bool _showPrBadges;
@@ -61,16 +51,6 @@ public partial class SettingsViewModel : ObservableObject
         {
             _themeService.SetThemeMode((AppThemeMode)value);
         }
-    }
-
-    partial void OnIsKgChanged(bool value)
-    {
-        Preferences.Set("weight_unit_kg", value);
-    }
-
-    partial void OnAutoCalculate1RmChanged(bool value)
-    {
-        Preferences.Set("auto_calc_1rm", value);
     }
 
     partial void OnShowPrBadgesChanged(bool value)

@@ -54,11 +54,9 @@ public class PersonalRecordRepositoryTests : IAsyncLifetime
         var set = await _sessionRepo.AddSetAsync(_workoutExerciseId, 100, 5, 8.0);
         var newPrs = await _repo.CheckAndRecordNewPrsAsync(_workoutExerciseId, set.Id, 100, 5);
 
-        // 100x5 should set MaxWeight (100), 1RM (~116.7), and 5RM (100)
-        Assert.Equal(3, newPrs.Count);
+        // 100x5 should set MaxWeight (100) without automatic Epley 1RM calculation
+        Assert.Single(newPrs);
         Assert.Contains(newPrs, p => p.Type == RecordType.MaxWeight && p.Weight == 100);
-        Assert.Contains(newPrs, p => p.Type == RecordType.FiveRepMax && p.Weight == 100);
-        Assert.Contains(newPrs, p => p.Type == RecordType.OneRepMax && p.Weight == 116.7);
     }
 
     [Fact]

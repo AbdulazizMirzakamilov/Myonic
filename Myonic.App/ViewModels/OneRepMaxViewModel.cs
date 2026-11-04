@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -33,7 +33,7 @@ public partial class OneRepMaxViewModel : ObservableObject
     private int _selectedRepsIndex = 4; // 5 reps by default
 
     [ObservableProperty]
-    private string _averageText = "—";
+    private string _averageText = "–";
 
     [ObservableProperty]
     private bool _hasResult;
@@ -157,3 +157,4 @@ public partial class OneRepMaxViewModel : ObservableObject
         _ => formula.ToString()
     };
 }
+

@@ -98,7 +98,7 @@
                                TextColor="{DynamicResource KineticIceBlue}"
                                FontSize="22"
                                FontAttributes="Bold" />
-                        <Label Text="Расчёт по Эпли"
+                        <Label Text="Фактический (1 повт.)"
                                TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="11" />
                     </VerticalStackLayout>

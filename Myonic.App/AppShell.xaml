@@ -130,46 +130,7 @@
                         VerticalOptions="Fill" />
             </Grid>
 
-            <!-- 3. Анализ -->
-            <Grid HeightRequest="46">
-                <Border BackgroundColor="Transparent"
-                        Stroke="Transparent"
-                        StrokeThickness="1"
-                        StrokeShape="RoundRectangle 10"
-                        Padding="14,0"
-                        InputTransparent="True">
-                    <Border.Triggers>
-                        <DataTrigger TargetType="Border" Binding="{Binding IsAnalysisActive}" Value="True">
-                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
-                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
-                        </DataTrigger>
-                    </Border.Triggers>
-                    <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
-                        <Label Text="📈" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
-                        <Label Grid.Column="1"
-                               Text="Анализ"
-                               FontSize="14"
-                               TextColor="{DynamicResource KineticTextSecondary}"
-                               VerticalOptions="Center">
-                            <Label.Triggers>
-                                <DataTrigger TargetType="Label" Binding="{Binding IsAnalysisActive}" Value="True">
-                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
-                                    <Setter Property="FontAttributes" Value="Bold" />
-                                </DataTrigger>
-                            </Label.Triggers>
-                        </Label>
-                    </Grid>
-                </Border>
-                <Button BackgroundColor="Transparent"
-                        BorderColor="Transparent"
-                        BorderWidth="0"
-                        Clicked="OnNavButtonClicked"
-                        ClassId="WorkoutHistoryPage"
-                        HorizontalOptions="Fill"
-                        VerticalOptions="Fill" />
-            </Grid>
-
-            <!-- 4. 1RM -->
+            <!-- 3. 1RM -->
             <Grid HeightRequest="46">
                 <Border BackgroundColor="Transparent"
                         Stroke="Transparent"
@@ -208,7 +169,7 @@
                         VerticalOptions="Fill" />
             </Grid>
 
-            <!-- 5. Профиль -->
+            <!-- 4. Профиль -->
             <Grid HeightRequest="46">
                 <Border BackgroundColor="Transparent"
                         Stroke="Transparent"
@@ -258,12 +219,19 @@
                         Stroke="{DynamicResource KineticBorder}"
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 10"
-                        Padding="12,10"
-                        InputTransparent="True">
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <Label Text="👤" FontSize="18" VerticalOptions="Center" />
+                        Padding="12,8">
+                    <Grid ColumnDefinitions="32,*" ColumnSpacing="10" VerticalOptions="Center">
+                        <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeShape="RoundRectangle 16"
+                                WidthRequest="32"
+                                HeightRequest="32"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center">
+                            <Label Text="⚡" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
                         <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
-                            <Label Text="Атлет"
+                            <Label Text="Myonic Athlete"
                                    TextColor="{DynamicResource KineticText}"
                                    FontSize="13"
                                    FontAttributes="Bold" />
@@ -301,15 +269,6 @@
                 Icon="tab_workout.svg"
                 ContentTemplate="{DataTemplate pages:ProgramsPage}"
                 Route="ProgramsPage"
-                Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}" />
-        </Tab>
-
-        <Tab Title="Анализ" Icon="tab_analysis.svg" Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
-            <ShellContent
-                Title="Анализ"
-                Icon="tab_analysis.svg"
-                ContentTemplate="{DataTemplate pages:WorkoutHistoryPage}"
-                Route="WorkoutHistoryPage"
                 Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}" />
         </Tab>
 

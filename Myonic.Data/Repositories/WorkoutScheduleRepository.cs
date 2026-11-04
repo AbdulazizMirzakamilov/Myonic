@@ -16,9 +16,9 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
         var targetDate = date.Date;
         var dayOfWeek = date.DayOfWeek;
 
-        // 1. Explicitly scheduled workouts on this date
+        // 1. Explicitly scheduled workouts on this date (excluding cancelled)
         var scheduledEntries = await db.Table<ScheduledWorkout>()
-            .Where(sw => sw.Date == targetDate)
+            .Where(sw => sw.Date == targetDate && sw.Status != ScheduledWorkoutStatus.Cancelled)
             .ToListAsync();
 
         var scheduledWorkoutIds = scheduledEntries.Select(sw => sw.ProgramWorkoutId).ToHashSet();
@@ -31,10 +31,26 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
             WHERE pw.DefaultDayOfWeek = ? AND p.IsArchived = 0
             """, (int)dayOfWeek);
 
+        // Exclude workouts rescheduled away from targetDate or cancelled on targetDate
+        var movedAwayIds = (await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.OriginalDate == targetDate && sw.Date != targetDate)
+            .ToListAsync())
+            .Select(sw => sw.ProgramWorkoutId)
+            .ToHashSet();
+
+        var cancelledIds = (await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.Date == targetDate && sw.Status == ScheduledWorkoutStatus.Cancelled)
+            .ToListAsync())
+            .Select(sw => sw.ProgramWorkoutId)
+            .ToHashSet();
+
         var matchedWorkoutIds = new HashSet<int>(scheduledWorkoutIds);
         foreach (var dw in defaultDayWorkouts)
         {
-            matchedWorkoutIds.Add(dw.Id);
+            if (!movedAwayIds.Contains(dw.Id) && !cancelledIds.Contains(dw.Id))
+            {
+                matchedWorkoutIds.Add(dw.Id);
+            }
         }
 
         var result = new List<PlannedWorkoutSummary>();
@@ -93,7 +109,7 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
         }
 
         var scheduled = await db.Table<ScheduledWorkout>()
-            .Where(sw => sw.Date >= fromDate.Date && sw.Date <= toDate.Date)
+            .Where(sw => sw.Date >= fromDate.Date && sw.Date <= toDate.Date && sw.Status != ScheduledWorkoutStatus.Cancelled)
             .ToListAsync();
 
         var scheduledDates = new HashSet<DateTime>(scheduled.Select(s => s.Date.Date));

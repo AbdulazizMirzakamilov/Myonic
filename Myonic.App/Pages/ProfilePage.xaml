@@ -188,30 +188,6 @@
                 </Grid>
             </Border>
 
-            <!-- Workout History & Plan/Fact -->
-            <Border BackgroundColor="{DynamicResource KineticSurface}"
-                    Stroke="{DynamicResource KineticBorder}"
-                    StrokeThickness="1"
-                    StrokeShape="RoundRectangle 14"
-                    Padding="16,14">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding OpenWorkoutHistoryCommand}" />
-                </Border.GestureRecognizers>
-                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
-                    <Label Text="📈" FontSize="20" VerticalOptions="Center" />
-                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                        <Label Text="История всех тренировок"
-                               TextColor="{DynamicResource KineticText}"
-                               FontSize="15"
-                               FontAttributes="Bold" />
-                        <Label Text="Сводка, разбор план / факт"
-                               TextColor="{DynamicResource KineticTextSecondary}"
-                               FontSize="12" />
-                    </VerticalStackLayout>
-                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
-                </Grid>
-            </Border>
-
             <!-- Settings Header -->
             <Label Text="НАСТРОЙКИ"
                    TextColor="{DynamicResource KineticTextMuted}"
@@ -235,7 +211,7 @@
                                TextColor="{DynamicResource KineticText}"
                                FontSize="15"
                                FontAttributes="Bold" />
-                        <Label Text="Тема оформления, светлый фон, единицы веса"
+                        <Label Text="Тема оформления, светлый фон, тактильный отклик"
                                TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="12" />
                     </VerticalStackLayout>

@@ -73,12 +73,6 @@ public partial class ProfileViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public async Task OpenWorkoutHistoryAsync()
-    {
-        await Shell.Current.GoToAsync("//WorkoutHistoryPage");
-    }
-
-    [RelayCommand]
     public async Task OpenSettingsAsync()
     {
         await Shell.Current.GoToAsync(nameof(SettingsPage));
@@ -95,12 +89,12 @@ public partial class ProfileViewModel : ObservableObject
     {
         await Shell.Current.DisplayAlertAsync(
             "О приложении Myonic",
-            "Myonic — трекер силовых тренировок и прогрессии нагрузок.\n\n" +
+            "Myonic – трекер силовых тренировок и прогрессии нагрузок.\n\n" +
             "• Версия: 1.0 (MVP)\n" +
             "• Платформа: .NET 10 MAUI\n" +
             "• База данных: SQLite-net\n" +
             "• Дизайн-система: Kinetic Obsidian\n" +
-            "• RPE & Epley 1RM анализ\n\n" +
+            "• RPE & личные рекорды\n\n" +
             "Разработано для максимальной производительности и чёткого прогресса.",
             "OK");
     }

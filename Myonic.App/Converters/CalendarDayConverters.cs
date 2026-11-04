@@ -1,4 +1,5 @@
 using System.Globalization;
+using Myonic.Core.Calendar;
 using Myonic.Services;
 
 namespace Myonic.Converters;
@@ -49,7 +50,7 @@ public class DayTextColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return Color.FromArgb("#0F172A"); // Always clear high-contrast dark text on bright lime
+            return Color.FromArgb("#0F172A"); // High-contrast dark text on bright lime
         }
         else
         {
@@ -69,7 +70,7 @@ public class DayTextMutedColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return Color.FromArgb("#1E293B"); // Clear dark slate on selected lime
+            return Color.FromArgb("#1E293B");
         }
         else
         {
@@ -125,6 +126,36 @@ public class DayCompletedIconColorConverter : IValueConverter
         {
             return isDark ? Color.FromArgb("#10B981") : Color.FromArgb("#059669");
         }
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
+public class MonthDayOpacityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is true ? 1.0 : 0.35;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
+public class StatusColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is CalendarWorkoutStatus status)
+        {
+            return status switch
+            {
+                CalendarWorkoutStatus.Completed => Color.FromArgb("#10B981"), // KineticEmerald
+                CalendarWorkoutStatus.Planned => Color.FromArgb("#38BDF8"),   // KineticIceBlue
+                CalendarWorkoutStatus.Missed => Color.FromArgb("#FF385C"),    // KineticCrimson
+                _ => Color.FromArgb("#94A3B8")
+            };
+        }
+        return Color.FromArgb("#94A3B8");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();

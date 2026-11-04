@@ -9,7 +9,6 @@ namespace Myonic
     {
         private bool _isScheduleActive = true;
         private bool _isTrainingActive;
-        private bool _isAnalysisActive;
         private bool _isOneRepMaxActive;
         private bool _isProfileActive;
 
@@ -23,12 +22,6 @@ namespace Myonic
         {
             get => _isTrainingActive;
             set => SetProperty(ref _isTrainingActive, value);
-        }
-
-        public bool IsAnalysisActive
-        {
-            get => _isAnalysisActive;
-            set => SetProperty(ref _isAnalysisActive, value);
         }
 
         public bool IsOneRepMaxActive
@@ -51,6 +44,7 @@ namespace Myonic
             BindingContext = this;
             NavigateDesktopCommand = new Command<string>(async route => await NavigateDesktopAsync(route));
 
+            Routing.RegisterRoute(nameof(Pages.CalendarFullPage), typeof(Pages.CalendarFullPage));
             Routing.RegisterRoute(nameof(Pages.ExerciseDetailPage), typeof(Pages.ExerciseDetailPage));
             Routing.RegisterRoute(nameof(Pages.ExercisesPage), typeof(Pages.ExercisesPage));
             Routing.RegisterRoute(nameof(Pages.PersonalRecordsPage), typeof(Pages.PersonalRecordsPage));
@@ -126,14 +120,13 @@ namespace Myonic
 
             bool schedule = false;
             bool training = false;
-            bool analysis = false;
             bool oneRepMax = false;
             bool profile = false;
 
             // Exclusive evaluation: specific subpages take precedence over the section they were pushed from
-            if (loc.Contains("workoutsessiondetail") || loc.Contains("workouthistory"))
+            if (loc.Contains("workoutsessiondetail") || loc.Contains("calendarfull") || loc.Contains("schedule"))
             {
-                analysis = true;
+                schedule = true;
             }
             else if (loc.Contains("activeworkout") || loc.Contains("exercise") || loc.Contains("program") || loc.Contains("workoutedit"))
             {
@@ -154,7 +147,6 @@ namespace Myonic
 
             IsScheduleActive = schedule;
             IsTrainingActive = training;
-            IsAnalysisActive = analysis;
             IsOneRepMaxActive = oneRepMax;
             IsProfileActive = profile;
         }
@@ -194,7 +186,6 @@ namespace Myonic
         {
             OnPropertyChanged(nameof(IsScheduleActive));
             OnPropertyChanged(nameof(IsTrainingActive));
-            OnPropertyChanged(nameof(IsAnalysisActive));
             OnPropertyChanged(nameof(IsOneRepMaxActive));
             OnPropertyChanged(nameof(IsProfileActive));
         }

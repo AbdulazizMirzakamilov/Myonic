@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Logging;
+using Myonic.Core.Calendar;
 using Myonic.Core.Repositories;
 using Myonic.Data;
 using Myonic.Data.Repositories;
+using Myonic.Data.Services;
 using Myonic.Pages;
 using Myonic.ViewModels;
 
@@ -76,8 +78,10 @@ namespace Myonic
 
             // Schedule & Unified Calendar
             builder.Services.AddSingleton<IWorkoutScheduleRepository, WorkoutScheduleRepository>();
-            builder.Services.AddTransient<ScheduleViewModel>();
+            builder.Services.AddSingleton<ICalendarService, CalendarService>();
+            builder.Services.AddSingleton<ScheduleViewModel>();
             builder.Services.AddTransient<SchedulePage>();
+            builder.Services.AddTransient<CalendarFullPage>();
 
             // Profile
             builder.Services.AddTransient<ProfileViewModel>();

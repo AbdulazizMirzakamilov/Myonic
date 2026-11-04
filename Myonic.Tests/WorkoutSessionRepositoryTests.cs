@@ -222,8 +222,8 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         Assert.Equal(2, history.TotalSessionsCount);
         Assert.Equal(4, history.TotalSetsCount);
         Assert.Equal(100.0, history.AllTimeMaxWeight);
-        // Epley for 80x8: 80 * (1 + 8/30.0) = 101.3. For 90x5: 90 * (1 + 5/30.0) = 105.0. For 100x1 = 100. Best is 105.0
-        Assert.Equal(105.0, history.AllTimeBest1Rm);
+        // Only actual 1-rep sets count as 1RM (100kg x 1)
+        Assert.Equal(100.0, history.AllTimeBest1Rm);
         Assert.Equal(2, history.Sessions.Count);
         Assert.Equal("Грудь 2", history.Sessions[0].WorkoutTitle);
         Assert.Equal(2, history.Sessions[0].Sets.Count);

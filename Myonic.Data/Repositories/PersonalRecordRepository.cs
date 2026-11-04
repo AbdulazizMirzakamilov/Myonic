@@ -1,4 +1,3 @@
-using Myonic.Core.Calculators;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 
@@ -109,7 +108,7 @@ public sealed class PersonalRecordRepository : IPersonalRecordRepository
         var newPrs = new List<PersonalRecordItem>();
         var now = DateTime.UtcNow;
 
-        // 1. Check MaxWeight
+        // Check MaxWeight - actual weight lifted during workout (no automatic formula estimations)
         var currentMaxWeight = await db.ExecuteScalarAsync<double?>(
             "SELECT MAX(Weight) FROM PersonalRecord WHERE ExerciseId = ? AND Type = ?",
             we.ExerciseId,
@@ -138,75 +137,6 @@ public sealed class PersonalRecordRepository : IPersonalRecordRepository
                 AchievedAt = pr.AchievedAt,
                 SetEntryId = pr.SetEntryId
             });
-        }
-
-        // 2. Check 1RM (OneRepMax)
-        double est1Rm = reps == 1
-            ? weight
-            : Math.Round(OneRepMaxCalculator.Calculate(OneRepMaxFormula.Epley, weight, Math.Min(reps, OneRepMaxCalculator.MaxReps)), 1);
-
-        var current1Rm = await db.ExecuteScalarAsync<double?>(
-            "SELECT MAX(Weight) FROM PersonalRecord WHERE ExerciseId = ? AND Type = ?",
-            we.ExerciseId,
-            (int)RecordType.OneRepMax);
-
-        if (current1Rm == null || est1Rm > current1Rm.Value)
-        {
-            var pr = new PersonalRecord
-            {
-                ExerciseId = we.ExerciseId,
-                Type = RecordType.OneRepMax,
-                Weight = est1Rm,
-                Reps = reps,
-                AchievedAt = now,
-                SetEntryId = setEntryId
-            };
-            await db.InsertAsync(pr);
-            newPrs.Add(new PersonalRecordItem
-            {
-                Id = pr.Id,
-                ExerciseId = pr.ExerciseId,
-                ExerciseName = exercise.Name,
-                Type = pr.Type,
-                Weight = pr.Weight,
-                Reps = pr.Reps,
-                AchievedAt = pr.AchievedAt,
-                SetEntryId = pr.SetEntryId
-            });
-        }
-
-        // 3. Check 5RM (FiveRepMax) - when reps >= 5
-        if (reps >= 5)
-        {
-            var current5Rm = await db.ExecuteScalarAsync<double?>(
-                "SELECT MAX(Weight) FROM PersonalRecord WHERE ExerciseId = ? AND Type = ?",
-                we.ExerciseId,
-                (int)RecordType.FiveRepMax);
-
-            if (current5Rm == null || weight > current5Rm.Value)
-            {
-                var pr = new PersonalRecord
-                {
-                    ExerciseId = we.ExerciseId,
-                    Type = RecordType.FiveRepMax,
-                    Weight = weight,
-                    Reps = reps,
-                    AchievedAt = now,
-                    SetEntryId = setEntryId
-                };
-                await db.InsertAsync(pr);
-                newPrs.Add(new PersonalRecordItem
-                {
-                    Id = pr.Id,
-                    ExerciseId = pr.ExerciseId,
-                    ExerciseName = exercise.Name,
-                    Type = pr.Type,
-                    Weight = pr.Weight,
-                    Reps = pr.Reps,
-                    AchievedAt = pr.AchievedAt,
-                    SetEntryId = pr.SetEntryId
-                });
-            }
         }
 
         return newPrs;

@@ -53,7 +53,7 @@
 
                     <!-- Reps & RepsMax -->
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="Повторения (от — до) *"
+                        <Label Text="Повторения (от – до) *"
                                TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
@@ -66,7 +66,7 @@
                                    BackgroundColor="{DynamicResource KineticWell}"
                                    HeightRequest="44" />
                             <Label Grid.Column="1"
-                                   Text="—"
+                                   Text="–"
                                    TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="18"
                                    FontAttributes="Bold"
@@ -116,7 +116,7 @@
                                    BackgroundColor="{DynamicResource KineticWell}"
                                    HeightRequest="44" />
                             <Label Grid.Column="1"
-                                   Text="—"
+                                   Text="–"
                                    TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="18"
                                    FontAttributes="Bold"
@@ -158,12 +158,12 @@
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Editor Text="{Binding Notes}"
-                                Placeholder="Например, пауза в нижней точке 1 сек..."
-                                PlaceholderColor="{DynamicResource KineticTextMuted}"
-                                TextColor="{DynamicResource KineticText}"
-                                BackgroundColor="{DynamicResource KineticWell}"
-                                AutoSize="TextChanges"
-                                HeightRequest="70" />
+                                 Placeholder="Например, пауза в нижней точке 1 сек..."
+                                 PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                 TextColor="{DynamicResource KineticText}"
+                                 BackgroundColor="{DynamicResource KineticWell}"
+                                 AutoSize="TextChanges"
+                                 HeightRequest="70" />
                     </VerticalStackLayout>
 
                     <!-- Save button -->

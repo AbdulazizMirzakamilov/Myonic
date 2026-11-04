@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -187,7 +187,7 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
                 if (an.PlannedRpe.HasValue || an.ActualAvgRpe.HasValue)
                 {
                     var planPart = an.PlannedRpe.HasValue ? $"план {an.PlannedRpe.Value:0.#}" : "без плана";
-                    var factPart = an.ActualAvgRpe.HasValue ? $"ср. {an.ActualAvgRpe.Value:0.#}" : "—";
+                    var factPart = an.ActualAvgRpe.HasValue ? $"ср. {an.ActualAvgRpe.Value:0.#}" : "–";
                     rpeComparison = $"RPE: {factPart} ({planPart})";
                 }
 
@@ -214,3 +214,4 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
         }
     }
 }
+
