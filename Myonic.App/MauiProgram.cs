@@ -81,7 +81,6 @@ namespace Myonic
             builder.Services.AddSingleton<ICalendarService, CalendarService>();
             builder.Services.AddSingleton<ScheduleViewModel>();
             builder.Services.AddTransient<SchedulePage>();
-            builder.Services.AddTransient<CalendarFullPage>();
 
             // Profile
             builder.Services.AddTransient<ProfileViewModel>();

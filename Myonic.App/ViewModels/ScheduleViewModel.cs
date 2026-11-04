@@ -20,7 +20,6 @@ public sealed class CalendarDayItem : ObservableObject
     private bool _isCurrentMonth = true;
     private bool _hasCompletedWorkout;
     private bool _hasPlannedWorkout;
-    private bool _hasMissedWorkout;
 
     public DateTime Date
     {
@@ -66,7 +65,6 @@ public sealed class CalendarDayItem : ObservableObject
             if (SetProperty(ref _hasCompletedWorkout, value))
             {
                 OnPropertyChanged(nameof(ShowPlannedIndicator));
-                OnPropertyChanged(nameof(ShowMissedIndicator));
                 OnPropertyChanged(nameof(HasAnyWorkout));
             }
         }
@@ -85,22 +83,9 @@ public sealed class CalendarDayItem : ObservableObject
         }
     }
 
-    public bool HasMissedWorkout
-    {
-        get => _hasMissedWorkout;
-        set
-        {
-            if (SetProperty(ref _hasMissedWorkout, value))
-            {
-                OnPropertyChanged(nameof(ShowMissedIndicator));
-                OnPropertyChanged(nameof(HasAnyWorkout));
-            }
-        }
-    }
-
     public bool ShowPlannedIndicator => HasPlannedWorkout && !HasCompletedWorkout;
-    public bool ShowMissedIndicator => HasMissedWorkout && !HasCompletedWorkout;
-    public bool HasAnyWorkout => HasCompletedWorkout || ShowPlannedIndicator || ShowMissedIndicator;
+    public bool ShowMissedIndicator => false;
+    public bool HasAnyWorkout => HasCompletedWorkout || ShowPlannedIndicator;
 
     public void NotifyThemeChanged()
     {
@@ -155,9 +140,12 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     private string _selectedDateFormatted = string.Empty;
 
     [ObservableProperty]
-    private bool _isMonthView = true;
+    private bool _isMonthView = false;
 
     public bool IsWeekView => !IsMonthView;
+
+    [ObservableProperty]
+    private bool _isLoading;
 
     [ObservableProperty]
     private bool _hasWorkouts;
@@ -165,23 +153,21 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _isRestDay;
 
-    [ObservableProperty]
-    private bool _isLoading;
+    public IActiveWorkoutTracker ActiveWorkoutTracker { get; }
 
     public ObservableCollection<CalendarDayItem> WeekDays { get; } = [];
+
     public ObservableCollection<CalendarWeekRowItem> MonthWeeks { get; } = [];
+
     public ObservableCollection<CalendarWorkoutItem> Workouts { get; } = [];
 
-    // Dedicated day items for fixed column grid bindings on SchedulePage
-    public CalendarDayItem Day0 { get; } = new();
-    public CalendarDayItem Day1 { get; } = new();
-    public CalendarDayItem Day2 { get; } = new();
-    public CalendarDayItem Day3 { get; } = new();
-    public CalendarDayItem Day4 { get; } = new();
-    public CalendarDayItem Day5 { get; } = new();
-    public CalendarDayItem Day6 { get; } = new();
-
-    public IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+    public CalendarDayItem Day0 => WeekDays[0];
+    public CalendarDayItem Day1 => WeekDays[1];
+    public CalendarDayItem Day2 => WeekDays[2];
+    public CalendarDayItem Day3 => WeekDays[3];
+    public CalendarDayItem Day4 => WeekDays[4];
+    public CalendarDayItem Day5 => WeekDays[5];
+    public CalendarDayItem Day6 => WeekDays[6];
 
     public ScheduleViewModel(
         ICalendarService calendarService,
@@ -196,17 +182,19 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         _themeService = themeService;
         ActiveWorkoutTracker = activeWorkoutTracker ?? new ActiveWorkoutTracker(sessionRepo);
 
-        WeekDays.Add(Day0);
-        WeekDays.Add(Day1);
-        WeekDays.Add(Day2);
-        WeekDays.Add(Day3);
-        WeekDays.Add(Day4);
-        WeekDays.Add(Day5);
-        WeekDays.Add(Day6);
+        for (int i = 0; i < 7; i++)
+        {
+            WeekDays.Add(new CalendarDayItem());
+        }
+
+        UpdateHeaders();
 
         _themeChangedHandler = _ =>
         {
-            foreach (var d in WeekDays) d.NotifyThemeChanged();
+            foreach (var d in WeekDays)
+            {
+                d.NotifyThemeChanged();
+            }
             foreach (var w in MonthWeeks)
             {
                 w.Day0.NotifyThemeChanged();
@@ -219,7 +207,6 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
             }
         };
     }
-
 
     public void SubscribeThemeEvents()
     {
@@ -248,21 +235,29 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    public void SwitchToMonthView()
+    public async Task SwitchToMonthViewAsync()
     {
+        if (IsMonthView) return;
         IsMonthView = true;
+        CurrentPeriodDate = SelectedDate;
+        await RefreshCalendarAsync();
     }
 
     [RelayCommand]
-    public void SwitchToWeekView()
+    public async Task SwitchToWeekViewAsync()
     {
+        if (!IsMonthView) return;
         IsMonthView = false;
+        CurrentPeriodDate = SelectedDate;
+        await RefreshCalendarAsync();
     }
 
     [RelayCommand]
-    public void ToggleCalendarViewMode()
+    public async Task ToggleCalendarViewModeAsync()
     {
         IsMonthView = !IsMonthView;
+        CurrentPeriodDate = SelectedDate;
+        await RefreshCalendarAsync();
     }
 
     [RelayCommand]
@@ -319,13 +314,11 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
                 {
                     item.HasCompletedWorkout = ind.HasCompleted;
                     item.HasPlannedWorkout = ind.HasPlanned;
-                    item.HasMissedWorkout = ind.HasMissed;
                 }
                 else
                 {
                     item.HasCompletedWorkout = false;
                     item.HasPlannedWorkout = false;
-                    item.HasMissedWorkout = false;
                 }
             }
 
@@ -346,13 +339,11 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
 
                     var hasCompleted = false;
                     var hasPlanned = false;
-                    var hasMissed = false;
 
                     if (indicators.TryGetValue(curDate.Date, out var ind))
                     {
                         hasCompleted = ind.HasCompleted;
                         hasPlanned = ind.HasPlanned;
-                        hasMissed = ind.HasMissed;
                     }
 
                     rowDays[d] = new CalendarDayItem
@@ -364,8 +355,7 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
                         IsSelected = isSelected,
                         IsCurrentMonth = isCurrentMonth,
                         HasCompletedWorkout = hasCompleted,
-                        HasPlannedWorkout = hasPlanned,
-                        HasMissedWorkout = hasMissed
+                        HasPlannedWorkout = hasPlanned
                     };
 
                     curDate = curDate.AddDays(1);
@@ -472,7 +462,10 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     public async Task PreviousMonthAsync()
     {
         CurrentPeriodDate = CurrentPeriodDate.AddMonths(-1);
-        SelectedDate = new DateTime(CurrentPeriodDate.Year, CurrentPeriodDate.Month, Math.Min(SelectedDate.Day, DateTime.DaysInMonth(CurrentPeriodDate.Year, CurrentPeriodDate.Month)));
+        SelectedDate = new DateTime(
+            CurrentPeriodDate.Year,
+            CurrentPeriodDate.Month,
+            Math.Min(SelectedDate.Day, DateTime.DaysInMonth(CurrentPeriodDate.Year, CurrentPeriodDate.Month)));
         await RefreshCalendarAsync();
     }
 
@@ -480,7 +473,10 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     public async Task NextMonthAsync()
     {
         CurrentPeriodDate = CurrentPeriodDate.AddMonths(1);
-        SelectedDate = new DateTime(CurrentPeriodDate.Year, CurrentPeriodDate.Month, Math.Min(SelectedDate.Day, DateTime.DaysInMonth(CurrentPeriodDate.Year, CurrentPeriodDate.Month)));
+        SelectedDate = new DateTime(
+            CurrentPeriodDate.Year,
+            CurrentPeriodDate.Month,
+            Math.Min(SelectedDate.Day, DateTime.DaysInMonth(CurrentPeriodDate.Year, CurrentPeriodDate.Month)));
         await RefreshCalendarAsync();
     }
 
@@ -508,12 +504,6 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         CurrentPeriodDate = DateTime.Today;
         SelectedDate = DateTime.Today;
         await RefreshCalendarAsync();
-    }
-
-    [RelayCommand]
-    public async Task OpenFullCalendarAsync()
-    {
-        await Shell.Current.GoToAsync(nameof(CalendarFullPage));
     }
 
     [RelayCommand]

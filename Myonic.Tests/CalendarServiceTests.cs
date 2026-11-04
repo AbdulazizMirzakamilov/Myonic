@@ -83,7 +83,7 @@ public class CalendarServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PastUncompletedWorkout_ReturnsMissedStatus()
+    public async Task PastUncompletedWorkout_DoesNotReturnMissedCards()
     {
         // Find past Monday (e.g. 2 weeks ago)
         var date = DateTime.Today.AddDays(-1);
@@ -94,11 +94,8 @@ public class CalendarServiceTests : IAsyncLifetime
 
         var workouts = await _calendarService.GetWorkoutsForDateAsync(date);
 
-        Assert.Single(workouts);
-        Assert.Equal(CalendarWorkoutStatus.Missed, workouts[0].Status);
-        Assert.Equal("Грудь и трицепс", workouts[0].Title);
-        Assert.True(workouts[0].CanStart);
-        Assert.False(workouts[0].CanViewDetails);
+        // Past uncompleted workouts are not shown as separate missed cards
+        Assert.Empty(workouts);
     }
 
     [Fact]
@@ -120,7 +117,7 @@ public class CalendarServiceTests : IAsyncLifetime
 
         var workouts = await _calendarService.GetWorkoutsForDateAsync(DateTime.Today);
 
-        // Should return ONLY 1 workout item (Completed), no duplicate Planned/Missed card
+        // Should return ONLY 1 workout item (Completed), no duplicate Planned card
         Assert.Single(workouts);
         Assert.Equal(CalendarWorkoutStatus.Completed, workouts[0].Status);
         Assert.Equal("Грудь и трицепс", workouts[0].Title);
@@ -137,22 +134,28 @@ public class CalendarServiceTests : IAsyncLifetime
             pastMonday = pastMonday.AddDays(-1);
         }
 
-        // Reschedule Monday's workout to Wednesday
+        // Reschedule Monday's workout to Wednesday (future)
+        var futureWednesday = DateTime.Today.AddDays(1);
+        while (futureWednesday.DayOfWeek != DayOfWeek.Wednesday)
+        {
+            futureWednesday = futureWednesday.AddDays(1);
+        }
+
         var conn = await _db.GetConnectionAsync();
         await conn.InsertAsync(new ScheduledWorkout
         {
             ProgramWorkoutId = _programWorkoutId,
             OriginalDate = pastMonday,
-            Date = pastMonday.AddDays(2), // Wednesday
+            Date = futureWednesday,
             Status = ScheduledWorkoutStatus.Planned
         });
 
-        // Check original date (Monday): must NOT show a missed workout
+        // Check original date (past Monday): must NOT show a workout
         var mondayWorkouts = await _calendarService.GetWorkoutsForDateAsync(pastMonday);
         Assert.Empty(mondayWorkouts);
 
-        // Check new date (Wednesday): must show the workout
-        var wednesdayWorkouts = await _calendarService.GetWorkoutsForDateAsync(pastMonday.AddDays(2));
+        // Check new date (future Wednesday): must show the workout
+        var wednesdayWorkouts = await _calendarService.GetWorkoutsForDateAsync(futureWednesday);
         Assert.Single(wednesdayWorkouts);
     }
 
@@ -193,6 +196,7 @@ public class CalendarServiceTests : IAsyncLifetime
         Assert.NotNull(indicators);
         Assert.True(indicators.ContainsKey(DateTime.Today));
         Assert.True(indicators[DateTime.Today].HasCompleted);
+        Assert.False(indicators[DateTime.Today].HasMissed);
     }
 
     [Fact]

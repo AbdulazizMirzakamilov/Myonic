@@ -105,9 +105,11 @@ public sealed class CalendarService : ICalendarService
                 continue;
             }
 
-            // Determine if it is Missed or Planned
-            var isMissed = targetDate < today;
-            var status = isMissed ? CalendarWorkoutStatus.Missed : CalendarWorkoutStatus.Planned;
+            // Do not show separate cards just because a past planned date was uncompleted
+            if (targetDate < today)
+            {
+                continue;
+            }
 
             var summaryText = p.ExerciseCount > 0
                 ? $"{p.ExerciseCount} запланированных упражнений"
@@ -118,7 +120,7 @@ public sealed class CalendarService : ICalendarService
                 ProgramWorkoutId = p.ProgramWorkoutId,
                 Title = pTitle,
                 ProgramName = p.ProgramName,
-                Status = status,
+                Status = CalendarWorkoutStatus.Planned,
                 ExercisesCount = p.ExerciseCount,
                 SummaryText = summaryText,
                 PlannedExercises = p.Exercises
@@ -151,15 +153,13 @@ public sealed class CalendarService : ICalendarService
             var hasCompleted = completedDates.Contains(date);
             var isPlannedDay = scheduledDates.Contains(date) || defaultDays.Contains(date.DayOfWeek);
 
-            // A day has planned workout if isPlannedDay is true and not completed yet
+            // A day has planned workout if isPlannedDay is true, not completed yet, and date >= today
             var hasPlanned = isPlannedDay && !hasCompleted && date >= today;
-            var hasMissed = isPlannedDay && !hasCompleted && date < today;
 
             indicators[date] = new CalendarDayIndicators
             {
                 HasCompleted = hasCompleted,
-                HasPlanned = hasPlanned,
-                HasMissed = hasMissed
+                HasPlanned = hasPlanned
             };
         }
 

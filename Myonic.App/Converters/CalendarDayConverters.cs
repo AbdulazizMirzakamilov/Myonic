@@ -151,7 +151,6 @@ public class StatusColorConverter : IValueConverter
             {
                 CalendarWorkoutStatus.Completed => Color.FromArgb("#10B981"), // KineticEmerald
                 CalendarWorkoutStatus.Planned => Color.FromArgb("#38BDF8"),   // KineticIceBlue
-                CalendarWorkoutStatus.Missed => Color.FromArgb("#FF385C"),    // KineticCrimson
                 _ => Color.FromArgb("#94A3B8")
             };
         }

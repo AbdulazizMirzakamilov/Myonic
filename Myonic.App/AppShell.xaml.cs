@@ -44,7 +44,6 @@ namespace Myonic
             BindingContext = this;
             NavigateDesktopCommand = new Command<string>(async route => await NavigateDesktopAsync(route));
 
-            Routing.RegisterRoute(nameof(Pages.CalendarFullPage), typeof(Pages.CalendarFullPage));
             Routing.RegisterRoute(nameof(Pages.ExerciseDetailPage), typeof(Pages.ExerciseDetailPage));
             Routing.RegisterRoute(nameof(Pages.ExercisesPage), typeof(Pages.ExercisesPage));
             Routing.RegisterRoute(nameof(Pages.PersonalRecordsPage), typeof(Pages.PersonalRecordsPage));
@@ -124,7 +123,7 @@ namespace Myonic
             bool profile = false;
 
             // Exclusive evaluation: specific subpages take precedence over the section they were pushed from
-            if (loc.Contains("workoutsessiondetail") || loc.Contains("calendarfull") || loc.Contains("schedule"))
+            if (loc.Contains("workoutsessiondetail") || loc.Contains("schedule"))
             {
                 schedule = true;
             }

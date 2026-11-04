@@ -29,15 +29,14 @@ public sealed class CalendarWorkoutItem
 
     public bool IsCompleted => Status == CalendarWorkoutStatus.Completed;
     public bool IsPlanned => Status == CalendarWorkoutStatus.Planned;
-    public bool IsMissed => Status == CalendarWorkoutStatus.Missed;
-    public bool CanStart => Status == CalendarWorkoutStatus.Planned || Status == CalendarWorkoutStatus.Missed;
+    public bool IsMissed => false;
+    public bool CanStart => Status == CalendarWorkoutStatus.Planned;
     public bool CanViewDetails => Status == CalendarWorkoutStatus.Completed;
 
     public string StatusDisplayName => Status switch
     {
         CalendarWorkoutStatus.Completed => "Выполнена",
         CalendarWorkoutStatus.Planned => "Запланирована",
-        CalendarWorkoutStatus.Missed => "Пропущена",
         _ => string.Empty
     };
 
@@ -45,7 +44,6 @@ public sealed class CalendarWorkoutItem
     {
         CalendarWorkoutStatus.Completed => "✓",
         CalendarWorkoutStatus.Planned => "📅",
-        CalendarWorkoutStatus.Missed => "⚠",
         _ => string.Empty
     };
 }
@@ -60,9 +58,9 @@ public sealed class CalendarDayIndicators
 {
     public bool HasCompleted { get; init; }
     public bool HasPlanned { get; init; }
-    public bool HasMissed { get; init; }
+    public bool HasMissed => false;
 
-    public bool HasAny => HasCompleted || HasPlanned || HasMissed;
+    public bool HasAny => HasCompleted || HasPlanned;
 }
 
 public interface ICalendarService
