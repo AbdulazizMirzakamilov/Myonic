@@ -151,13 +151,13 @@
                     Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 16"
-                    IsClippedToBounds="True"
                     Padding="10,12">
                 <Border.GestureRecognizers>
                     <PanGestureRecognizer PanUpdated="OnCalendarPanUpdated" />
                 </Border.GestureRecognizers>
 
-                <Grid x:Name="CalendarViewHost">
+                <Grid IsClippedToBounds="True">
+                    <Grid x:Name="CalendarViewHost">
 
                     <!-- 1. WEEK VIEW STRIP (7 Days) -->
                     <Grid x:Name="WeekViewContainer"
@@ -488,7 +488,8 @@
                         </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Grid>
-            </Border>
+            </Grid>
+        </Border>
 
             <!-- Selected Date Headline -->
             <Label Text="{Binding SelectedDateFormatted}"

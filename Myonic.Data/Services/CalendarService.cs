@@ -134,12 +134,8 @@ public sealed class CalendarService : ICalendarService
         DateTime fromDate,
         DateTime toDate)
     {
-        var fromUtc = DateTime.SpecifyKind(fromDate.Date, DateTimeKind.Local).ToUniversalTime();
-        var toUtc = DateTime.SpecifyKind(toDate.Date.AddDays(1), DateTimeKind.Local).ToUniversalTime();
-
-        // 1. Completed dates in range
-        var completedDates = (await _sessionRepo.GetCompletedSessionDatesAsync(fromUtc, toUtc))
-            .Select(d => d.ToLocalTime().Date)
+        // 1. Completed dates in range (passing local dates returns local calendar dates)
+        var completedDates = (await _sessionRepo.GetCompletedSessionDatesAsync(fromDate.Date, toDate.Date.AddDays(1)))
             .ToHashSet();
 
         // 2. Planned day indicators
@@ -166,3 +162,4 @@ public sealed class CalendarService : ICalendarService
         return indicators;
     }
 }
+
