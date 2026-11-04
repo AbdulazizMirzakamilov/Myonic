@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Myonic.Data;
 using Myonic.Services;
 
 namespace Myonic.ViewModels;
@@ -7,12 +8,14 @@ namespace Myonic.ViewModels;
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly IThemeService _themeService;
+    private readonly MyonicDatabase _database;
     private readonly string _dbPath;
 
-    public SettingsViewModel(IThemeService themeService)
+    public SettingsViewModel(IThemeService themeService, MyonicDatabase database)
     {
         _themeService = themeService;
-        _dbPath = Path.Combine(FileSystem.AppDataDirectory, "myonic.db3");
+        _database = database;
+        _dbPath = _database.DatabasePath;
 
         // Load current theme index (0: Dark, 1: Light, 2: System)
         _selectedThemeIndex = (int)_themeService.CurrentThemeMode;
@@ -103,24 +106,18 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            if (!File.Exists(_dbPath))
-            {
-                await Shell.Current.DisplayAlertAsync("Резервная копия", "Файл базы данных пока не создан.", "OK");
-                return;
-            }
-
-            var backupDir = Path.Combine(FileSystem.CacheDirectory, "Backups");
+            var backupDir = Path.Combine(FileSystem.AppDataDirectory, "Backups");
             Directory.CreateDirectory(backupDir);
             var backupPath = Path.Combine(backupDir, $"myonic_backup_{DateTime.Now:yyyyMMdd_HHmmss}.db3");
 
-            File.Copy(_dbPath, backupPath, overwrite: true);
+            await _database.BackupAsync(backupPath);
 
             var fileInfo = new FileInfo(backupPath);
             var sizeKb = Math.Max(1, fileInfo.Length / 1024);
 
             await Shell.Current.DisplayAlertAsync(
                 "Резервная копия создана",
-                $"Локальный бэкап успешно сохранён ({sizeKb} КБ).\nФайл: {Path.GetFileName(backupPath)}",
+                $"Атомарный бэкап базы данных успешно сохранён ({sizeKb} КБ).\nФайл: {Path.GetFileName(backupPath)}\nПапка: AppData/Backups",
                 "Отлично");
         }
         catch (Exception ex)

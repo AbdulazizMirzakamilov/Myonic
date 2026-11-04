@@ -98,10 +98,13 @@ public sealed class DayCompletedExerciseItem
     public List<string> SetsSummary { get; init; } = [];
 }
 
-public partial class ScheduleViewModel : ObservableObject
+public partial class ScheduleViewModel : ObservableObject, IDisposable
 {
     private readonly IWorkoutSessionRepository _sessionRepo;
     private readonly IWorkoutScheduleRepository _scheduleRepo;
+    private readonly Myonic.Services.IThemeService _themeService;
+    private readonly Action<bool> _themeChangedHandler;
+    private bool _isDisposed;
 
     private static readonly CultureInfo RussianCulture = new("ru-RU");
 
@@ -166,12 +169,31 @@ public partial class ScheduleViewModel : ObservableObject
         WeekDays.Add(Day4);
         WeekDays.Add(Day5);
         WeekDays.Add(Day6);
-        themeService.ThemeChanged += _ => {
+        _themeService = themeService;
+        _themeChangedHandler = _ => {
             foreach (var d in WeekDays) d.NotifyThemeChanged();
         };
     }
 
     private bool _isInitialized;
+
+    public void SubscribeThemeEvents()
+    {
+        _themeService.ThemeChanged -= _themeChangedHandler;
+        _themeService.ThemeChanged += _themeChangedHandler;
+    }
+
+    public void UnsubscribeThemeEvents()
+    {
+        _themeService.ThemeChanged -= _themeChangedHandler;
+    }
+
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+        UnsubscribeThemeEvents();
+    }
 
     [RelayCommand]
     public async Task InitializeAsync()

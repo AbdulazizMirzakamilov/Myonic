@@ -12,6 +12,12 @@ public partial class ActiveWorkoutPage : ContentPage
         BindingContext = _vm = vm;
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _vm.StartTimer();
+    }
+
     protected override void OnDisappearing()
     {
         base.OnDisappearing();

@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 using Myonic.Data.Migrations;
 using SQLite;
 
@@ -19,6 +19,8 @@ public sealed class MyonicDatabase : IAsyncDisposable
 
     public MyonicDatabase(string databasePath) => _path = databasePath;
 
+    public string DatabasePath => _path;
+
     /// <summary>Открывает базу при первом обращении и применяет миграции.</summary>
     public async Task<SQLiteAsyncConnection> GetConnectionAsync()
     {
@@ -33,6 +35,7 @@ public sealed class MyonicDatabase : IAsyncDisposable
             var connection = new SQLiteAsyncConnection(_path, storeDateTimeAsTicks: false);
 
             await connection.ExecuteAsync("PRAGMA foreign_keys = ON");
+            await connection.ExecuteScalarAsync<string>("PRAGMA journal_mode = WAL");
 
             await Migrator.MigrateAsync(connection);
 
@@ -46,6 +49,20 @@ public sealed class MyonicDatabase : IAsyncDisposable
         {
             _initLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Создает атомарную резервную копию базы данных без блокировки и риска повреждения данных.
+    /// </summary>
+    public async Task BackupAsync(string destinationPath)
+    {
+        var conn = await GetConnectionAsync();
+        if (File.Exists(destinationPath))
+        {
+            File.Delete(destinationPath);
+        }
+
+        await conn.ExecuteAsync("VACUUM INTO ?", destinationPath);
     }
 
     public async ValueTask DisposeAsync()

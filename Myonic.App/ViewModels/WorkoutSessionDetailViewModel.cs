@@ -93,14 +93,13 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
         if (query.TryGetValue("sessionId", out var val) && int.TryParse(val?.ToString(), out var sId) && sId > 0)
         {
             SessionId = sId;
-            _ = LoadAsync();
         }
     }
 
     [RelayCommand]
     public async Task LoadAsync()
     {
-        if (SessionId <= 0) return;
+        if (SessionId <= 0 || IsLoading) return;
 
         IsLoading = true;
         try

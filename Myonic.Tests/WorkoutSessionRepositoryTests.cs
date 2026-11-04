@@ -228,4 +228,22 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         Assert.Equal("Грудь 2", history.Sessions[0].WorkoutTitle);
         Assert.Equal(2, history.Sessions[0].Sets.Count);
     }
+
+    [Fact]
+    public async Task GetCompletedSessionsCount_ReturnsAccurateCount()
+    {
+        var countBefore = await _sessionRepo.GetCompletedSessionsCountAsync();
+
+        var s1 = await _sessionRepo.StartEmptySessionAsync("S1");
+        await _sessionRepo.FinishSessionAsync(s1);
+
+        var s2 = await _sessionRepo.StartEmptySessionAsync("S2");
+        await _sessionRepo.FinishSessionAsync(s2);
+
+        // Active session should not be counted
+        await _sessionRepo.StartEmptySessionAsync("S3_Active");
+
+        var countAfter = await _sessionRepo.GetCompletedSessionsCountAsync();
+        Assert.Equal(countBefore + 2, countAfter);
+    }
 }

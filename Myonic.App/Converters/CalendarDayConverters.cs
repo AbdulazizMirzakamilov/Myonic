@@ -3,12 +3,29 @@ using Myonic.Services;
 
 namespace Myonic.Converters;
 
+public static class CalendarThemeHelper
+{
+    public static bool IsDark()
+    {
+        var themeService = IPlatformApplication.Current?.Services?.GetService<IThemeService>();
+        if (themeService != null)
+        {
+            return themeService.IsDark;
+        }
+
+        var app = Application.Current;
+        if (app?.UserAppTheme == AppTheme.Dark) return true;
+        if (app?.UserAppTheme == AppTheme.Light) return false;
+        return app?.RequestedTheme != AppTheme.Light;
+    }
+}
+
 public class DayBgColorConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isSelected = value is true;
-        bool isDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        bool isDark = CalendarThemeHelper.IsDark();
 
         if (isSelected)
         {
@@ -28,7 +45,7 @@ public class DayTextColorConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isSelected = value is true;
-        bool isDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        bool isDark = CalendarThemeHelper.IsDark();
 
         if (isSelected)
         {
@@ -48,7 +65,7 @@ public class DayTextMutedColorConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isSelected = value is true;
-        bool isDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        bool isDark = CalendarThemeHelper.IsDark();
 
         if (isSelected)
         {
@@ -68,7 +85,7 @@ public class DayStrokeColorConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isSelected = value is true;
-        bool isDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        bool isDark = CalendarThemeHelper.IsDark();
 
         if (isSelected)
         {
@@ -98,7 +115,7 @@ public class DayCompletedIconColorConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         bool isSelected = value is true;
-        bool isDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        bool isDark = CalendarThemeHelper.IsDark();
 
         if (isSelected)
         {

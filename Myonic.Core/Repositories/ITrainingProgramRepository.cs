@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 
 namespace Myonic.Core.Repositories;
 
@@ -13,6 +13,7 @@ public class ProgramSummary
 public interface ITrainingProgramRepository
 {
     // Программы
+    Task<int> GetCountAsync();
     Task<IReadOnlyList<ProgramSummary>> GetSummariesAsync();
     Task<TrainingProgram?> GetProgramAsync(int id);
     Task<int> AddProgramAsync(TrainingProgram program);

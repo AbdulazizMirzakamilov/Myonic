@@ -15,6 +15,13 @@ public partial class SchedulePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _viewModel.SubscribeThemeEvents();
         await _viewModel.InitializeAsync();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _viewModel.UnsubscribeThemeEvents();
     }
 }

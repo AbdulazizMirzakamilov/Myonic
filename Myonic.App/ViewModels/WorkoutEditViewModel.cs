@@ -44,16 +44,23 @@ public partial class WorkoutEditViewModel : ObservableObject, IQueryAttributable
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (!query.TryGetValue("id", out var value) || !int.TryParse(value?.ToString(), out var id))
-            return;
+        try
+        {
+            if (!query.TryGetValue("id", out var value) || !int.TryParse(value?.ToString(), out var id))
+                return;
 
-        _workout = await _programRepository.GetWorkoutAsync(id);
-        if (_workout is null) return;
+            _workout = await _programRepository.GetWorkoutAsync(id);
+            if (_workout is null) return;
 
-        Name = _workout.Name;
-        DayIndex = WeekdayHelper.ToIndex(_workout.DefaultDayOfWeek);
+            Name = _workout.Name;
+            DayIndex = WeekdayHelper.ToIndex(_workout.DefaultDayOfWeek);
 
-        await LoadExercisesAsync();
+            await LoadExercisesAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[WorkoutEditViewModel] ApplyQueryAttributes error: {ex}");
+        }
     }
 
     public async Task LoadExercisesAsync()

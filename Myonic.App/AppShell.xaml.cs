@@ -105,9 +105,10 @@ namespace Myonic
         {
             base.OnNavigating(args);
 
-            if (args.Source == ShellNavigationSource.ShellItemChanged ||
+            // Subpage reset on tab switch disabled to preserve active workout state
+            if (false && (args.Source == ShellNavigationSource.ShellItemChanged ||
                 args.Source == ShellNavigationSource.ShellSectionChanged ||
-                args.Source == ShellNavigationSource.ShellContentChanged)
+                args.Source == ShellNavigationSource.ShellContentChanged))
             {
                 ResetSubpagesToRoot();
             }

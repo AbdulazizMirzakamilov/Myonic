@@ -44,14 +44,15 @@ public partial class ProfileViewModel : ObservableObject
         IsLoading = true;
         try
         {
-            var pastSessions = await _sessionRepo.GetPastSessionsAsync();
-            CompletedWorkoutsCount = pastSessions.Count;
+            var completedCountTask = _sessionRepo.GetCompletedSessionsCountAsync();
+            var prsCountTask = _prRepo.GetCountAsync();
+            var programsCountTask = _programRepo.GetCountAsync();
 
-            var prs = await _prRepo.GetAllAsync();
-            PersonalRecordsCount = prs.Count;
+            await Task.WhenAll(completedCountTask, prsCountTask, programsCountTask);
 
-            var programs = await _programRepo.GetSummariesAsync();
-            ProgramsCount = programs.Count;
+            CompletedWorkoutsCount = await completedCountTask;
+            PersonalRecordsCount = await prsCountTask;
+            ProgramsCount = await programsCountTask;
         }
         finally
         {

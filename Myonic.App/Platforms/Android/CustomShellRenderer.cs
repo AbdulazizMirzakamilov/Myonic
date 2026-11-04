@@ -27,21 +27,24 @@ public class CustomShellRenderer : ShellRenderer
 public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearanceTracker
 {
     private BottomNavigationView? _bottomView;
+    private readonly IThemeService? _themeService;
+    private readonly Action<bool>? _themeChangedHandler;
 
     public CustomBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
         : base(shellContext, shellItem)
     {
         // Listen to dynamic theme changes
-        var themeService = IPlatformApplication.Current?.Services.GetService<IThemeService>();
-        if (themeService != null)
+        _themeService = IPlatformApplication.Current?.Services.GetService<IThemeService>();
+        if (_themeService != null)
         {
-            themeService.ThemeChanged += isDark =>
+            _themeChangedHandler = isDark =>
             {
                 if (_bottomView != null && _bottomView.IsAttachedToWindow)
                 {
                     _bottomView.Post(() => ApplyThemeColors(_bottomView, isDark));
                 }
             };
+            _themeService.ThemeChanged += _themeChangedHandler;
         }
     }
 
@@ -76,8 +79,28 @@ public class CustomBottomNavViewAppearanceTracker : ShellBottomNavViewAppearance
         bottomView.ItemReselected += OnBottomViewItemReselected;
 
         // 4. Apply colors according to current theme
-        bool isDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        bool isDark = _themeService != null
+            ? _themeService.IsDark
+            : (Application.Current?.RequestedTheme != AppTheme.Light);
         ApplyThemeColors(bottomView, isDark);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            if (_themeService != null && _themeChangedHandler != null)
+            {
+                _themeService.ThemeChanged -= _themeChangedHandler;
+            }
+
+            if (_bottomView != null)
+            {
+                _bottomView.ItemReselected -= OnBottomViewItemReselected;
+                _bottomView = null;
+            }
+        }
+        base.Dispose(disposing);
     }
 
     private static void ApplyThemeColors(BottomNavigationView bottomView, bool isDark)

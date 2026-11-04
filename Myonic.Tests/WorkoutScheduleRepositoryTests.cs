@@ -78,4 +78,34 @@ public class WorkoutScheduleRepositoryTests : IAsyncLifetime
         Assert.NotEmpty(all);
         Assert.Contains(all, w => w.ProgramWorkoutId == _programWorkoutId);
     }
+
+    [Fact]
+    public async Task ArchivedProgram_WorkoutsAreExcludedFromPlannedSchedule()
+    {
+        var conn = await _db.GetConnectionAsync();
+        var archivedProgram = new TrainingProgram { Name = "Old Archived Program", IsArchived = true };
+        await conn.InsertAsync(archivedProgram);
+
+        var workout = new ProgramWorkout
+        {
+            ProgramId = archivedProgram.Id,
+            Name = "Archived Workout",
+            DefaultDayOfWeek = DayOfWeek.Friday,
+            Order = 1
+        };
+        await conn.InsertAsync(workout);
+
+        // Find next Friday
+        var friday = DateTime.Today;
+        while (friday.DayOfWeek != DayOfWeek.Friday)
+        {
+            friday = friday.AddDays(1);
+        }
+
+        var planned = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(friday);
+        Assert.DoesNotContain(planned, p => p.ProgramWorkoutId == workout.Id);
+
+        var (defaultDays, _) = await _scheduleRepo.GetPlannedDayIndicatorsForWeekAsync(friday.AddDays(-6), friday);
+        Assert.DoesNotContain(DayOfWeek.Friday, defaultDays);
+    }
 }

@@ -180,7 +180,7 @@ public partial class ActiveExerciseViewModel : ObservableObject
     }
 }
 
-public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributable
+public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributable, IDisposable
 {
     private readonly IWorkoutSessionRepository _repository;
     private readonly IPersonalRecordRepository _prRepository;
@@ -212,12 +212,19 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (!query.TryGetValue("sessionId", out var sIdObj) || !int.TryParse(sIdObj?.ToString(), out var sId) || sId <= 0)
+        try
+        {
+            if (!query.TryGetValue("sessionId", out var sIdObj) || !int.TryParse(sIdObj?.ToString(), out var sId) || sId <= 0)
             return;
 
         _sessionId = sId;
         await LoadSessionAsync();
         StartTimer();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ActiveWorkoutViewModel] ApplyQueryAttributes error: {ex}");
+        }
     }
 
     public async Task LoadSessionAsync()
@@ -237,9 +244,10 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         UpdateDuration();
     }
 
-    private void StartTimer()
+    public void StartTimer()
     {
         _timer?.Stop();
+        if (_sessionId <= 0) return;
         if (Application.Current != null)
         {
             _timer = Application.Current.Dispatcher.CreateTimer();
@@ -252,7 +260,13 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
     public void StopTimer()
     {
         _timer?.Stop();
+        if (_sessionId <= 0) return;
         _timer = null;
+    }
+
+    public void Dispose()
+    {
+        StopTimer();
     }
 
     private void UpdateDuration()

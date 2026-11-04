@@ -85,4 +85,59 @@ public class PersonalRecordRepositoryTests : IAsyncLifetime
         Assert.NotEmpty(newPrs);
         Assert.Contains(newPrs, p => p.Type == RecordType.MaxWeight && p.Weight == 105);
     }
+
+    [Fact]
+    public async Task DeleteSet_RemovesAssociatedPersonalRecords()
+    {
+        var set = await _sessionRepo.AddSetAsync(_workoutExerciseId, 120, 1, 9.0);
+        var prs = await _repo.CheckAndRecordNewPrsAsync(_workoutExerciseId, set.Id, 120, 1);
+        Assert.NotEmpty(prs);
+
+        // Deleting set must cascade delete personal records linked to this set
+        await _sessionRepo.DeleteSetAsync(set.Id);
+
+        var records = await _repo.GetByExerciseAsync(_exerciseId);
+        Assert.DoesNotContain(records, r => r.SetEntryId == set.Id || r.Weight == 120);
+    }
+
+    [Fact]
+    public async Task DiscardSession_RemovesAllPersonalRecordsFromSession()
+    {
+        var sessionId = await _sessionRepo.StartEmptySessionAsync("Тест сброса PR");
+        var we = await _sessionRepo.AddExerciseToSessionAsync(sessionId, _exerciseId);
+        var set = await _sessionRepo.AddSetAsync(we.WorkoutExerciseId, 140, 1, 10.0);
+        var prs = await _repo.CheckAndRecordNewPrsAsync(we.WorkoutExerciseId, set.Id, 140, 1);
+        Assert.NotEmpty(prs);
+
+        // Discarding session must remove PRs recorded in it
+        await _sessionRepo.DiscardSessionAsync(sessionId);
+
+        var records = await _repo.GetByExerciseAsync(_exerciseId);
+        Assert.DoesNotContain(records, r => r.Weight == 140);
+    }
+
+    [Fact]
+    public async Task DeleteExerciseFromSession_RemovesAssociatedPersonalRecords()
+    {
+        var sessionId = await _sessionRepo.StartEmptySessionAsync("Тест удаления упр");
+        var we = await _sessionRepo.AddExerciseToSessionAsync(sessionId, _exerciseId);
+        var set = await _sessionRepo.AddSetAsync(we.WorkoutExerciseId, 130, 1, 9.5);
+        var prs = await _repo.CheckAndRecordNewPrsAsync(we.WorkoutExerciseId, set.Id, 130, 1);
+        Assert.NotEmpty(prs);
+
+        await _sessionRepo.DeleteExerciseFromSessionAsync(we.WorkoutExerciseId);
+
+        var records = await _repo.GetByExerciseAsync(_exerciseId);
+        Assert.DoesNotContain(records, r => r.Weight == 130);
+    }
+
+    [Fact]
+    public async Task GetCount_ReturnsAccurateCount()
+    {
+        var countBefore = await _repo.GetCountAsync();
+        await _repo.AddManualRecordAsync(_exerciseId, RecordType.MaxWeight, 150.0, 1, DateTime.UtcNow);
+        var countAfter = await _repo.GetCountAsync();
+
+        Assert.Equal(countBefore + 1, countAfter);
+    }
 }
