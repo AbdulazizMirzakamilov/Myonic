@@ -320,7 +320,17 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
                     item.HasCompletedWorkout = false;
                     item.HasPlannedWorkout = false;
                 }
+
+                item.NotifyThemeChanged();
             }
+
+            OnPropertyChanged(nameof(Day0));
+            OnPropertyChanged(nameof(Day1));
+            OnPropertyChanged(nameof(Day2));
+            OnPropertyChanged(nameof(Day3));
+            OnPropertyChanged(nameof(Day4));
+            OnPropertyChanged(nameof(Day5));
+            OnPropertyChanged(nameof(Day6));
 
             // 4. Populate Month Grid (MonthWeeks)
             MonthWeeks.Clear();
@@ -412,7 +422,10 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         UpdateHeaders();
 
         foreach (var d in WeekDays)
+        {
             d.IsSelected = d.Date.Date == SelectedDate.Date;
+            d.NotifyThemeChanged();
+        }
 
         foreach (var week in MonthWeeks)
         {
@@ -423,6 +436,14 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
             week.Day4.IsSelected = week.Day4.Date.Date == SelectedDate.Date;
             week.Day5.IsSelected = week.Day5.Date.Date == SelectedDate.Date;
             week.Day6.IsSelected = week.Day6.Date.Date == SelectedDate.Date;
+
+            week.Day0.NotifyThemeChanged();
+            week.Day1.NotifyThemeChanged();
+            week.Day2.NotifyThemeChanged();
+            week.Day3.NotifyThemeChanged();
+            week.Day4.NotifyThemeChanged();
+            week.Day5.NotifyThemeChanged();
+            week.Day6.NotifyThemeChanged();
         }
 
         await LoadWorkoutsForSelectedDateAsync();

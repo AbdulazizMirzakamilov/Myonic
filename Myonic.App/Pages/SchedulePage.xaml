@@ -21,6 +21,7 @@
             <conv:DayCompletedIconColorConverter x:Key="DayCompletedIconColorConverter" />
             <conv:MonthDayOpacityConverter x:Key="MonthDayOpacityConverter" />
             <conv:StatusColorConverter x:Key="StatusColorConverter" />
+            <conv:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -82,6 +83,7 @@
                 <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                     <Button Text="‹"
                             Command="{Binding PreviousPeriodCommand}"
+                            Clicked="OnPreviousPeriodClicked"
                             Style="{StaticResource SecondaryActionButton}"
                             WidthRequest="38"
                             HeightRequest="38"
@@ -90,6 +92,7 @@
                             FontAttributes="Bold" />
                     <Button Text="Сегодня"
                             Command="{Binding TodayCommand}"
+                            Clicked="OnTodayClicked"
                             Style="{StaticResource SecondaryActionButton}"
                             HeightRequest="38"
                             Padding="12,0"
@@ -97,6 +100,7 @@
                             FontAttributes="Bold" />
                     <Button Text="›"
                             Command="{Binding NextPeriodCommand}"
+                            Clicked="OnNextPeriodClicked"
                             Style="{StaticResource SecondaryActionButton}"
                             WidthRequest="38"
                             HeightRequest="38"
@@ -120,7 +124,7 @@
                                 StrokeShape="RoundRectangle 8"
                                 Padding="16,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SwitchToWeekViewCommand}" />
+                                <TapGestureRecognizer Command="{Binding SwitchToWeekViewCommand}" Tapped="OnSwitchToWeekViewTapped" />
                             </Border.GestureRecognizers>
                             <Label Text="Неделя"
                                    TextColor="{Binding IsWeekView, Converter={StaticResource DayTextColorConverter}}"
@@ -134,7 +138,7 @@
                                 StrokeShape="RoundRectangle 8"
                                 Padding="16,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SwitchToMonthViewCommand}" />
+                                <TapGestureRecognizer Command="{Binding SwitchToMonthViewCommand}" Tapped="OnSwitchToMonthViewTapped" />
                             </Border.GestureRecognizers>
                             <Label Text="Месяц"
                                    TextColor="{Binding IsMonthView, Converter={StaticResource DayTextColorConverter}}"
@@ -145,7 +149,7 @@
                 </Border>
             </Grid>
 
-            <!-- Calendar Card: Interactive Drag-Driven Pan Gesture Container -->
+            <!-- Calendar Card: Interactive Swipe & Direct Tap Navigation -->
             <Border x:Name="CalendarOuterCard"
                     BackgroundColor="{DynamicResource KineticSurface}"
                     Stroke="{DynamicResource KineticBorder}"
@@ -153,7 +157,8 @@
                     StrokeShape="RoundRectangle 16"
                     Padding="10,12">
                 <Border.GestureRecognizers>
-                    <PanGestureRecognizer PanUpdated="OnCalendarPanUpdated" />
+                    <SwipeGestureRecognizer Direction="Left" Swiped="OnCalendarSwipedLeft" />
+                    <SwipeGestureRecognizer Direction="Right" Swiped="OnCalendarSwipedRight" />
                 </Border.GestureRecognizers>
 
                 <Grid IsClippedToBounds="True">
@@ -175,7 +180,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="2,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Tapped="OnDayTapped" />
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="{Binding DayName}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}}" FontSize="11" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -196,7 +201,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="2,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Tapped="OnDayTapped" />
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="{Binding DayName}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}}" FontSize="11" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -217,7 +222,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="2,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Tapped="OnDayTapped" />
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="{Binding DayName}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}}" FontSize="11" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -238,7 +243,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="2,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Tapped="OnDayTapped" />
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="{Binding DayName}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}}" FontSize="11" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -259,7 +264,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="2,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Tapped="OnDayTapped" />
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="{Binding DayName}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}}" FontSize="11" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -280,7 +285,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="2,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Tapped="OnDayTapped" />
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="{Binding DayName}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}}" FontSize="11" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -301,7 +306,7 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="2,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                <TapGestureRecognizer Tapped="OnDayTapped" />
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label Text="{Binding DayName}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextMutedColorConverter}}" FontSize="11" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -346,7 +351,7 @@
                                                 StrokeShape="RoundRectangle 10"
                                                 Padding="2,4">
                                             <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                                <TapGestureRecognizer Tapped="OnDayTapped" />
                                             </Border.GestureRecognizers>
                                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Label Text="{Binding DayNumber}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}}" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -367,7 +372,7 @@
                                                 StrokeShape="RoundRectangle 10"
                                                 Padding="2,4">
                                             <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                                <TapGestureRecognizer Tapped="OnDayTapped" />
                                             </Border.GestureRecognizers>
                                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Label Text="{Binding DayNumber}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}}" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -388,7 +393,7 @@
                                                 StrokeShape="RoundRectangle 10"
                                                 Padding="2,4">
                                             <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                                <TapGestureRecognizer Tapped="OnDayTapped" />
                                             </Border.GestureRecognizers>
                                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Label Text="{Binding DayNumber}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}}" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -409,7 +414,7 @@
                                                 StrokeShape="RoundRectangle 10"
                                                 Padding="2,4">
                                             <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                                <TapGestureRecognizer Tapped="OnDayTapped" />
                                             </Border.GestureRecognizers>
                                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Label Text="{Binding DayNumber}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}}" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -430,7 +435,7 @@
                                                 StrokeShape="RoundRectangle 10"
                                                 Padding="2,4">
                                             <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                                <TapGestureRecognizer Tapped="OnDayTapped" />
                                             </Border.GestureRecognizers>
                                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Label Text="{Binding DayNumber}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}}" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -451,7 +456,7 @@
                                                 StrokeShape="RoundRectangle 10"
                                                 Padding="2,4">
                                             <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                                <TapGestureRecognizer Tapped="OnDayTapped" />
                                             </Border.GestureRecognizers>
                                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Label Text="{Binding DayNumber}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}}" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -472,7 +477,7 @@
                                                 StrokeShape="RoundRectangle 10"
                                                 Padding="2,4">
                                             <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectDayCommand}" CommandParameter="{Binding .}" />
+                                                <TapGestureRecognizer Tapped="OnDayTapped" />
                                             </Border.GestureRecognizers>
                                             <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Label Text="{Binding DayNumber}" TextColor="{Binding IsSelected, Converter={StaticResource DayTextColorConverter}}" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="Center" />
@@ -519,7 +524,7 @@
                                         <Label Text="{Binding ProgramName}"
                                                TextColor="{DynamicResource KineticTextMuted}"
                                                FontSize="12"
-                                               IsVisible="{Binding ProgramName, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                                               IsVisible="{Binding HasProgramName}" />
                                     </VerticalStackLayout>
 
                                     <!-- Status Badge -->
@@ -569,8 +574,8 @@
                                 <!-- Time & Duration Info (for Completed sessions) -->
                                 <HorizontalStackLayout Spacing="8" IsVisible="{Binding IsCompleted}" VerticalOptions="Center">
                                     <Label Text="{Binding TimeText}" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
-                                    <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" IsVisible="{Binding DurationText, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
-                                    <Label Text="{Binding DurationText}" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" IsVisible="{Binding DurationText, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                                    <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" IsVisible="{Binding HasDurationText}" />
+                                    <Label Text="{Binding DurationText}" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" IsVisible="{Binding HasDurationText}" />
                                     <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" />
                                     <Label Text="{Binding SummaryText}" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" />
                                 </HorizontalStackLayout>
@@ -637,6 +642,7 @@
                                 <Button Text="Подробнее о тренировке"
                                         Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenWorkoutDetailCommand}"
                                         CommandParameter="{Binding .}"
+                                        Clicked="OnWorkoutDetailClicked"
                                         IsVisible="{Binding CanViewDetails}"
                                         Style="{StaticResource SecondaryActionButton}"
                                         HeightRequest="42"
@@ -645,6 +651,7 @@
                                 <Button Text="Начать тренировку"
                                         Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.StartPlannedWorkoutCommand}"
                                         CommandParameter="{Binding .}"
+                                        Clicked="OnStartWorkoutClicked"
                                         IsVisible="{Binding CanStart}"
                                         Style="{StaticResource VoltButton}"
                                         HeightRequest="44"

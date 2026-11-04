@@ -26,6 +26,8 @@ public sealed class CalendarWorkoutItem
 
     public bool HasPlannedExercises => PlannedExercises != null && PlannedExercises.Count > 0;
     public bool HasCompletedExercises => CompletedExercises != null && CompletedExercises.Count > 0;
+    public bool HasProgramName => !string.IsNullOrWhiteSpace(ProgramName);
+    public bool HasDurationText => !string.IsNullOrWhiteSpace(DurationText);
 
     public bool IsCompleted => Status == CalendarWorkoutStatus.Completed;
     public bool IsPlanned => Status == CalendarWorkoutStatus.Planned;
