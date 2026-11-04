@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 using Myonic.Data;
 using SQLite;
 
@@ -73,6 +73,29 @@ public class MyonicDatabaseTests : IAsyncLifetime
 
         Assert.Equal(0, await _conn.Table<WorkoutExercise>().CountAsync());
         Assert.Equal(0, await _conn.Table<SetEntry>().CountAsync());
+    }
+
+    [Fact]
+    public async Task BackupAsync_CreatesValidDatabaseCopy()
+    {
+        var backupPath = Path.Combine(Path.GetTempPath(), $"myonic-backup-{Guid.NewGuid():N}.db3");
+        try
+        {
+            await _db.BackupAsync(backupPath);
+            Assert.True(File.Exists(backupPath));
+            var fileInfo = new FileInfo(backupPath);
+            Assert.True(fileInfo.Length > 0);
+
+            var backupConn = new SQLiteAsyncConnection(backupPath);
+            var version = await backupConn.ExecuteScalarAsync<int>("PRAGMA user_version");
+            Assert.Equal(Myonic.Data.Migrations.Migrations.LatestVersion, version);
+            await backupConn.CloseAsync();
+        }
+        finally
+        {
+            if (File.Exists(backupPath))
+                File.Delete(backupPath);
+        }
     }
 
     private async Task<(Exercise, WorkoutSession, WorkoutExercise, SetEntry)> SeedWorkoutAsync()

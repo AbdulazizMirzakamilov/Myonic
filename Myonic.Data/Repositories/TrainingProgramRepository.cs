@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 
 namespace Myonic.Data.Repositories;
@@ -8,6 +8,12 @@ public sealed class TrainingProgramRepository : ITrainingProgramRepository
     private readonly MyonicDatabase _database;
 
     public TrainingProgramRepository(MyonicDatabase database) => _database = database;
+
+    public async Task<int> GetCountAsync()
+    {
+        var db = await _database.GetConnectionAsync();
+        return await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM TrainingProgram WHERE IsArchived = 0");
+    }
 
     public async Task<IReadOnlyList<ProgramSummary>> GetSummariesAsync()
     {
@@ -109,7 +115,9 @@ public sealed class TrainingProgramRepository : ITrainingProgramRepository
 
     private async Task EnsureProgramNameIsUniqueAsync(string name, int exceptId)
     {
-        var existing = await GetSummariesAsync();
+        var db = await _database.GetConnectionAsync();
+        var existing = await db.QueryAsync<TrainingProgram>(
+            "SELECT Id, Name FROM TrainingProgram WHERE IsArchived = 0 AND Id != ?", exceptId);
         if (existing.Any(p => p.Id != exceptId && string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException($"Программа «{name}» уже существует.");
     }

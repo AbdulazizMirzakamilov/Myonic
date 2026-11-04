@@ -32,7 +32,9 @@ public partial class ProgramEditViewModel : ObservableObject, IQueryAttributable
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (!query.TryGetValue("id", out var value) || !int.TryParse(value?.ToString(), out var id))
+        try
+        {
+            if (!query.TryGetValue("id", out var value) || !int.TryParse(value?.ToString(), out var id))
             return;
 
         _program = await _repository.GetProgramAsync(id);
@@ -44,6 +46,11 @@ public partial class ProgramEditViewModel : ObservableObject, IQueryAttributable
         IsExisting = true;
 
         await LoadWorkoutsAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ProgramEditViewModel] ApplyQueryAttributes error: {ex}");
+        }
     }
 
     [RelayCommand]

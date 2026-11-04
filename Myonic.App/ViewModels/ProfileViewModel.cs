@@ -11,14 +11,18 @@ public partial class ProfileViewModel : ObservableObject
     private readonly IPersonalRecordRepository _prRepo;
     private readonly ITrainingProgramRepository _programRepo;
 
+    public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+
     public ProfileViewModel(
         IWorkoutSessionRepository sessionRepo,
         IPersonalRecordRepository prRepo,
-        ITrainingProgramRepository programRepo)
+        ITrainingProgramRepository programRepo,
+        Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _sessionRepo = sessionRepo;
         _prRepo = prRepo;
         _programRepo = programRepo;
+        ActiveWorkoutTracker = activeWorkoutTracker ?? new Myonic.Services.ActiveWorkoutTracker(sessionRepo);
     }
 
     [ObservableProperty]
@@ -36,17 +40,19 @@ public partial class ProfileViewModel : ObservableObject
     [RelayCommand]
     public async Task LoadAsync()
     {
+        await ActiveWorkoutTracker.RefreshAsync();
         IsLoading = true;
         try
         {
-            var pastSessions = await _sessionRepo.GetPastSessionsAsync();
-            CompletedWorkoutsCount = pastSessions.Count;
+            var completedCountTask = _sessionRepo.GetCompletedSessionsCountAsync();
+            var prsCountTask = _prRepo.GetCountAsync();
+            var programsCountTask = _programRepo.GetCountAsync();
 
-            var prs = await _prRepo.GetAllAsync();
-            PersonalRecordsCount = prs.Count;
+            await Task.WhenAll(completedCountTask, prsCountTask, programsCountTask);
 
-            var programs = await _programRepo.GetSummariesAsync();
-            ProgramsCount = programs.Count;
+            CompletedWorkoutsCount = await completedCountTask;
+            PersonalRecordsCount = await prsCountTask;
+            ProgramsCount = await programsCountTask;
         }
         finally
         {
@@ -70,6 +76,12 @@ public partial class ProfileViewModel : ObservableObject
     public async Task OpenWorkoutHistoryAsync()
     {
         await Shell.Current.GoToAsync("//WorkoutHistoryPage");
+    }
+
+    [RelayCommand]
+    public async Task OpenSettingsAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(SettingsPage));
     }
 
     [RelayCommand]

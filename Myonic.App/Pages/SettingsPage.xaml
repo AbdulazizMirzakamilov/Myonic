@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="Настройки"
+             BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,14,16,40" Spacing="20">
+
+            <!-- 1. THEME SELECTION -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="ТЕМА ОФОРМЛЕНИЯ"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="4,0" />
+
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Выберите стиль интерфейса:"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="13" />
+
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                            <!-- Dark Theme Option -->
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorder}"
+                                    StrokeThickness="1.5"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="10,14">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectDarkThemeCommand}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="6">
+                                    <Label Text="🌙" FontSize="22" HorizontalTextAlignment="Center" />
+                                    <Label Text="Тёмная"
+                                           TextColor="{DynamicResource KineticText}"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="Obsidian"
+                                           TextColor="{DynamicResource KineticTextMuted}"
+                                           FontSize="10"
+                                           HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Light Theme Option -->
+                            <Border Grid.Column="1"
+                                    BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorder}"
+                                    StrokeThickness="1.5"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="10,14">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectLightThemeCommand}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="6">
+                                    <Label Text="☀️" FontSize="22" HorizontalTextAlignment="Center" />
+                                    <Label Text="Светлая"
+                                           TextColor="{DynamicResource KineticText}"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="Clean Slate"
+                                           TextColor="{DynamicResource KineticTextMuted}"
+                                           FontSize="10"
+                                           HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- System Theme Option -->
+                            <Border Grid.Column="2"
+                                    BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorder}"
+                                    StrokeThickness="1.5"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="10,14">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectSystemThemeCommand}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="6">
+                                    <Label Text="📱" FontSize="22" HorizontalTextAlignment="Center" />
+                                    <Label Text="Системная"
+                                           TextColor="{DynamicResource KineticText}"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="Авто"
+                                           TextColor="{DynamicResource KineticTextMuted}"
+                                           FontSize="10"
+                                           HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 2. UNITS & MEASUREMENTS -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="ЕДИНИЦЫ ИЗМЕРЕНИЯ"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="4,0" />
+
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16,12">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="Единицы веса"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="15"
+                                   FontAttributes="Bold" />
+                            <Label Text="Использовать килограммы (кг)"
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="12" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsKg}"
+                                OnColor="{DynamicResource KineticVolt}"
+                                ThumbColor="{DynamicResource KineticSurface}"
+                                VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 3. WORKOUT PREFERENCES -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="ТРЕНИРОВОЧНЫЙ ПРОЦЕСС"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="4,0" />
+
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16,6">
+                    <VerticalStackLayout Spacing="0">
+                        <!-- Auto 1RM -->
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,10" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Расчёт 1RM (Epley)"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="15"
+                                       FontAttributes="Bold" />
+                                <Label Text="Автоматический расчет одноповторного максимума"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="12" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding AutoCalculate1Rm}"
+                                    OnColor="{DynamicResource KineticVolt}"
+                                    ThumbColor="{DynamicResource KineticSurface}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
+
+                        <!-- PR Badges -->
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,10" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Рекорды 🏆 PR"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="15"
+                                       FontAttributes="Bold" />
+                                <Label Text="Мгновенное уведомление о новом рекорде"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="12" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding ShowPrBadges}"
+                                    OnColor="{DynamicResource KineticVolt}"
+                                    ThumbColor="{DynamicResource KineticSurface}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
+
+                        <!-- Vibration / Haptics -->
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,10" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Тактильный отклик"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="15"
+                                       FontAttributes="Bold" />
+                                <Label Text="Виброотклик при фиксации подхода"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="12" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding SoundVibrationEnabled}"
+                                    OnColor="{DynamicResource KineticVolt}"
+                                    ThumbColor="{DynamicResource KineticSurface}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 4. DATABASE & STORAGE -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="ДАННЫЕ И РЕЗЕРВНОЕ КОПИРОВАНИЕ"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="4,0" />
+
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="Размер локальной базы SQLite:"
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="13" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding DatabaseSizeText}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="13"
+                                   FontAttributes="Bold" />
+                        </Grid>
+
+                        <Button Text="Создать резервную копию базы"
+                                Command="{Binding BackupDatabaseCommand}"
+                                Style="{StaticResource SecondaryActionButton}"
+                                HeightRequest="44"
+                                FontSize="13"
+                                FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 5. ABOUT APP -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Myonic — Силовой трекер"
+                           TextColor="{DynamicResource KineticText}"
+                           FontSize="15"
+                           FontAttributes="Bold" />
+                    <Label Text="Версия 1.0 (MVP) • .NET 10 MAUI • SQLite-net"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="12" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

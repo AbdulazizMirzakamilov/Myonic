@@ -118,6 +118,12 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var we = await db.FindAsync<WorkoutExercise>(workoutExerciseId);
         if (we == null) return;
 
+        // Удаляем связанные личные рекорды, созданные сетами этого упражнения
+        await db.ExecuteAsync("""
+            DELETE FROM PersonalRecord
+            WHERE SetEntryId IN (SELECT Id FROM SetEntry WHERE WorkoutExerciseId = ?)
+            """, workoutExerciseId);
+
         await db.Table<SetEntry>().DeleteAsync(s => s.WorkoutExerciseId == workoutExerciseId);
         await db.DeleteAsync(we);
     }
@@ -225,6 +231,9 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var set = await db.FindAsync<SetEntry>(setId);
         if (set == null) return;
 
+        // Удаляем личный рекорд, если он был зафиксирован этим подходом
+        await db.ExecuteAsync("DELETE FROM PersonalRecord WHERE SetEntryId = ?", setId);
+
         await db.DeleteAsync(set);
 
         var remaining = await db.Table<SetEntry>()
@@ -262,6 +271,16 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var session = await db.FindAsync<WorkoutSession>(sessionId);
         if (session == null) return;
 
+        // Удаляем все личные рекорды, зафиксированные в этой отменяемой сессии
+        await db.ExecuteAsync("""
+            DELETE FROM PersonalRecord
+            WHERE SetEntryId IN (
+                SELECT se.Id FROM SetEntry se
+                INNER JOIN WorkoutExercise we ON we.Id = se.WorkoutExerciseId
+                WHERE we.WorkoutSessionId = ?
+            )
+            """, sessionId);
+
         var workoutExercises = await db.Table<WorkoutExercise>()
             .Where(we => we.WorkoutSessionId == sessionId)
             .ToListAsync();
@@ -275,54 +294,57 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         await db.DeleteAsync(session);
     }
 
+    public async Task<int> GetCompletedSessionsCountAsync()
+    {
+        var db = await _database.GetConnectionAsync();
+        return await db.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM WorkoutSession WHERE FinishedAt IS NOT NULL");
+    }
+
     public async Task<IReadOnlyList<PastWorkoutSummary>> GetPastSessionsAsync()
     {
         var db = await _database.GetConnectionAsync();
 
-        var sessions = await db.Table<WorkoutSession>()
-            .Where(s => s.FinishedAt != null)
-            .OrderByDescending(s => s.FinishedAt)
-            .ToListAsync();
-
-        var list = new List<PastWorkoutSummary>();
-
-        foreach (var s in sessions)
-        {
-            var exerciseCount = await db.ExecuteScalarAsync<int>(
-                "SELECT COUNT(*) FROM WorkoutExercise WHERE WorkoutSessionId = ?",
-                s.Id);
-
-            var setsCount = await db.ExecuteScalarAsync<int>(
-                """
-                SELECT COUNT(*) FROM SetEntry se
-                INNER JOIN WorkoutExercise we ON we.Id = se.WorkoutExerciseId
-                WHERE we.WorkoutSessionId = ?
-                """,
-                s.Id);
-
-            list.Add(new PastWorkoutSummary
-            {
-                Id = s.Id,
-                Title = s.Title,
-                StartedAt = s.StartedAt,
-                FinishedAt = s.FinishedAt!.Value,
-                ExerciseCount = exerciseCount,
-                CompletedSetsCount = setsCount
-            });
-        }
-
-        return list;
+        return await db.QueryAsync<PastWorkoutSummary>(
+            """
+            SELECT
+                s.Id,
+                s.Title,
+                s.StartedAt,
+                s.FinishedAt,
+                COUNT(DISTINCT we.Id) AS ExerciseCount,
+                COUNT(se.Id) AS CompletedSetsCount
+            FROM WorkoutSession s
+            LEFT JOIN WorkoutExercise we ON we.WorkoutSessionId = s.Id
+            LEFT JOIN SetEntry se ON se.WorkoutExerciseId = we.Id
+            WHERE s.FinishedAt IS NOT NULL
+            GROUP BY s.Id
+            ORDER BY s.FinishedAt DESC
+            """);
     }
 
-    public async Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromUtc, DateTime toUtc)
+    public async Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromDate, DateTime toDate)
     {
         var db = await _database.GetConnectionAsync();
+        bool isUtc = fromDate.Kind == DateTimeKind.Utc;
+
+        var fromUtc = isUtc ? fromDate : DateTime.SpecifyKind(fromDate, DateTimeKind.Local).ToUniversalTime();
+        var toUtc = isUtc ? toDate : DateTime.SpecifyKind(toDate, DateTimeKind.Local).ToUniversalTime();
+
         var sessions = await db.Table<WorkoutSession>()
             .Where(s => s.FinishedAt != null && s.FinishedAt >= fromUtc && s.FinishedAt <= toUtc)
             .ToListAsync();
 
         return sessions
-            .Select(s => s.FinishedAt!.Value.Date)
+            .Select(s =>
+            {
+                if (isUtc)
+                {
+                    return s.FinishedAt!.Value.Date;
+                }
+                var utcTime = DateTime.SpecifyKind(s.FinishedAt!.Value, DateTimeKind.Utc);
+                return utcTime.ToLocalTime().Date;
+            })
             .Distinct()
             .OrderBy(d => d)
             .ToList();
@@ -331,11 +353,26 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
     public async Task<IReadOnlyList<WorkoutSessionDetail>> GetSessionsForDateAsync(DateTime date)
     {
         var db = await _database.GetConnectionAsync();
-        var start = date.Date;
-        var end = start.AddDays(1);
+        bool isUtc = date.Kind == DateTimeKind.Utc;
+
+        DateTime startUtc;
+        DateTime endUtc;
+
+        if (isUtc)
+        {
+            startUtc = date.Date;
+            endUtc = startUtc.AddDays(1);
+        }
+        else
+        {
+            var startLocal = date.Date;
+            var endLocal = startLocal.AddDays(1);
+            startUtc = DateTime.SpecifyKind(startLocal, DateTimeKind.Local).ToUniversalTime();
+            endUtc = DateTime.SpecifyKind(endLocal, DateTimeKind.Local).ToUniversalTime();
+        }
 
         var sessions = await db.Table<WorkoutSession>()
-            .Where(s => s.FinishedAt != null && s.FinishedAt >= start && s.FinishedAt < end)
+            .Where(s => s.FinishedAt != null && s.FinishedAt >= startUtc && s.FinishedAt < endUtc)
             .OrderByDescending(s => s.FinishedAt)
             .ToListAsync();
 

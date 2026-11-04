@@ -51,7 +51,9 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (query.TryGetValue("id", out var idObj) && int.TryParse(idObj.ToString(), out var id) && id > 0)
+        try
+        {
+            if (query.TryGetValue("id", out var idObj) && int.TryParse(idObj.ToString(), out var id) && id > 0)
         {
             _model = await _repository.GetByIdAsync(id);
             if (_model != null)
@@ -79,9 +81,14 @@ public partial class ProgramExerciseEditViewModel : ObservableObject, IQueryAttr
                 _exerciseId = eId;
         }
 
-        if (query.TryGetValue("exerciseName", out var nameObj) && nameObj != null)
+            if (query.TryGetValue("exerciseName", out var nameObj) && nameObj != null)
+            {
+                ExerciseName = nameObj.ToString()!;
+            }
+        }
+        catch (Exception ex)
         {
-            ExerciseName = nameObj.ToString()!;
+            System.Diagnostics.Debug.WriteLine($"[ProgramExerciseEditViewModel] ApplyQueryAttributes error: {ex}");
         }
     }
 

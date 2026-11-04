@@ -94,6 +94,7 @@ public interface IWorkoutSessionRepository
     Task FinishSessionAsync(int sessionId, string? comment = null);
     Task DiscardSessionAsync(int sessionId);
     Task<IReadOnlyList<PastWorkoutSummary>> GetPastSessionsAsync();
+    Task<int> GetCompletedSessionsCountAsync();
     Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromUtc, DateTime toUtc);
     Task<IReadOnlyList<WorkoutSessionDetail>> GetSessionsForDateAsync(DateTime date);
     Task<ExerciseHistorySummary> GetExerciseHistoryAsync(int exerciseId);

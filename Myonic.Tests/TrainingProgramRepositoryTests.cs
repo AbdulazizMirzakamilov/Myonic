@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 using Myonic.Data;
 using Myonic.Data.Repositories;
 
@@ -130,5 +130,18 @@ public class TrainingProgramRepositoryTests : IAsyncLifetime
         var kept = await conn.GetAsync<WorkoutSession>(session.Id);
         Assert.Null(kept.ScheduledWorkoutId);
         Assert.Equal("Upper", kept.Title);
+    }
+
+    [Fact]
+    public async Task GetCount_ReturnsAccurateCount()
+    {
+        var countBefore = await _repo.GetCountAsync();
+        var id = await _repo.AddProgramAsync(new TrainingProgram { Name = "Active Program Unique" });
+        var countAfter = await _repo.GetCountAsync();
+
+        Assert.Equal(countBefore + 1, countAfter);
+
+        await _repo.DeleteProgramAsync(id);
+        Assert.Equal(countBefore, await _repo.GetCountAsync());
     }
 }

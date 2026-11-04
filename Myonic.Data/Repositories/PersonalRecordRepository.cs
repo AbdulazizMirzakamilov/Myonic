@@ -10,6 +10,12 @@ public sealed class PersonalRecordRepository : IPersonalRecordRepository
 
     public PersonalRecordRepository(MyonicDatabase database) => _database = database;
 
+    public async Task<int> GetCountAsync()
+    {
+        var db = await _database.GetConnectionAsync();
+        return await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM PersonalRecord");
+    }
+
     public async Task<IReadOnlyList<PersonalRecordItem>> GetAllAsync()
     {
         var db = await _database.GetConnectionAsync();

@@ -9,4 +9,13 @@ public partial class OneRepMaxPage : ContentPage
         InitializeComponent();
         BindingContext = vm;
     }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (BindingContext is OneRepMaxViewModel vm && vm.ActiveWorkoutTracker != null)
+        {
+            await vm.ActiveWorkoutTracker.RefreshAsync();
+        }
+    }
 }

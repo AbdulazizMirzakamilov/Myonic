@@ -50,13 +50,33 @@ public sealed class CalendarDayItem : ObservableObject
     public bool HasCompletedWorkout
     {
         get => _hasCompletedWorkout;
-        set => SetProperty(ref _hasCompletedWorkout, value);
+        set
+        {
+            if (SetProperty(ref _hasCompletedWorkout, value))
+            {
+                OnPropertyChanged(nameof(ShowPlannedIndicator));
+            }
+        }
     }
 
     public bool HasPlannedWorkout
     {
         get => _hasPlannedWorkout;
-        set => SetProperty(ref _hasPlannedWorkout, value);
+        set
+        {
+            if (SetProperty(ref _hasPlannedWorkout, value))
+            {
+                OnPropertyChanged(nameof(ShowPlannedIndicator));
+            }
+        }
+    }
+
+    public bool ShowPlannedIndicator => HasPlannedWorkout && !HasCompletedWorkout;
+
+    public void NotifyThemeChanged()
+    {
+        OnPropertyChanged(nameof(IsSelected));
+        OnPropertyChanged(nameof(HasCompletedWorkout));
     }
 }
 
@@ -69,6 +89,7 @@ public sealed class DayCompletedSessionItem
     public int ExercisesCount { get; init; }
     public int SetsCount { get; init; }
     public List<DayCompletedExerciseItem> Exercises { get; init; } = [];
+    public bool HasExercises => Exercises != null && Exercises.Count > 0;
 }
 
 public sealed class DayCompletedExerciseItem
@@ -77,10 +98,13 @@ public sealed class DayCompletedExerciseItem
     public List<string> SetsSummary { get; init; } = [];
 }
 
-public partial class ScheduleViewModel : ObservableObject
+public partial class ScheduleViewModel : ObservableObject, IDisposable
 {
     private readonly IWorkoutSessionRepository _sessionRepo;
     private readonly IWorkoutScheduleRepository _scheduleRepo;
+    private readonly Myonic.Services.IThemeService _themeService;
+    private readonly Action<bool> _themeChangedHandler;
+    private bool _isDisposed;
 
     private static readonly CultureInfo RussianCulture = new("ru-RU");
 
@@ -126,12 +150,17 @@ public partial class ScheduleViewModel : ObservableObject
     public CalendarDayItem Day5 { get; } = new();
     public CalendarDayItem Day6 { get; } = new();
 
+    public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
+
     public ScheduleViewModel(
         IWorkoutSessionRepository sessionRepo,
-        IWorkoutScheduleRepository scheduleRepo)
+        IWorkoutScheduleRepository scheduleRepo,
+        Myonic.Services.IThemeService themeService,
+        Myonic.Services.IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _sessionRepo = sessionRepo;
         _scheduleRepo = scheduleRepo;
+        ActiveWorkoutTracker = activeWorkoutTracker ?? new Myonic.Services.ActiveWorkoutTracker(sessionRepo);
 
         WeekDays.Add(Day0);
         WeekDays.Add(Day1);
@@ -140,9 +169,31 @@ public partial class ScheduleViewModel : ObservableObject
         WeekDays.Add(Day4);
         WeekDays.Add(Day5);
         WeekDays.Add(Day6);
+        _themeService = themeService;
+        _themeChangedHandler = _ => {
+            foreach (var d in WeekDays) d.NotifyThemeChanged();
+        };
     }
 
     private bool _isInitialized;
+
+    public void SubscribeThemeEvents()
+    {
+        _themeService.ThemeChanged -= _themeChangedHandler;
+        _themeService.ThemeChanged += _themeChangedHandler;
+    }
+
+    public void UnsubscribeThemeEvents()
+    {
+        _themeService.ThemeChanged -= _themeChangedHandler;
+    }
+
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+        UnsubscribeThemeEvents();
+    }
 
     [RelayCommand]
     public async Task InitializeAsync()
@@ -163,6 +214,7 @@ public partial class ScheduleViewModel : ObservableObject
         try
         {
             // Active session banner
+            await ActiveWorkoutTracker.RefreshAsync();
             ActiveSession = await _sessionRepo.GetActiveSessionSummaryAsync();
             HasActiveSession = ActiveSession != null;
 
@@ -304,12 +356,35 @@ public partial class ScheduleViewModel : ObservableObject
 
         HasCompletedWorkouts = CompletedSessions.Count > 0;
 
-        // 2. Load planned workouts for selected date
+        // 2. Load planned workouts for selected date (excluding any that are already completed)
         PlannedWorkouts.Clear();
         var planned = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(SelectedDate);
+
+        var completedTitles = CompletedSessions
+            .Select(s => s.Title?.Trim() ?? string.Empty)
+            .Where(t => !string.IsNullOrEmpty(t))
+            .ToList();
+
         foreach (var p in planned)
         {
-            PlannedWorkouts.Add(p);
+            var pTitle = p.WorkoutName?.Trim() ?? string.Empty;
+
+            var isCompleted = completedTitles.Any(t =>
+                string.Equals(t, pTitle, StringComparison.OrdinalIgnoreCase) ||
+                (pTitle.Length > 0 && t.Contains(pTitle, StringComparison.OrdinalIgnoreCase)) ||
+                (t.Length > 0 && pTitle.Contains(t, StringComparison.OrdinalIgnoreCase)));
+
+            // If a workout was completed on this date and only 1 workout was planned for the day,
+            // treat that planned workout as completed
+            if (!isCompleted && planned.Count == 1 && CompletedSessions.Count > 0)
+            {
+                isCompleted = true;
+            }
+
+            if (!isCompleted)
+            {
+                PlannedWorkouts.Add(p);
+            }
         }
 
         HasPlannedWorkouts = PlannedWorkouts.Count > 0;
@@ -344,6 +419,7 @@ public partial class ScheduleViewModel : ObservableObject
         }
 
         var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(workout.ProgramWorkoutId);
+        ActiveWorkoutTracker.NotifySessionStarted(sessionId, workout.WorkoutName);
         await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
     }
 
@@ -375,6 +451,7 @@ public partial class ScheduleViewModel : ObservableObject
 
         var title = string.IsNullOrWhiteSpace(name) ? "Свободная тренировка" : name.Trim();
         var sessionId = await _sessionRepo.StartEmptySessionAsync(title);
+        ActiveWorkoutTracker.NotifySessionStarted(sessionId, title);
         await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
     }
 

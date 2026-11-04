@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
@@ -24,7 +24,9 @@ public partial class ExerciseEditViewModel : ObservableObject, IQueryAttributabl
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (!query.TryGetValue("id", out var value) || !int.TryParse(value?.ToString(), out var id))
+        try
+        {
+            if (!query.TryGetValue("id", out var value) || !int.TryParse(value?.ToString(), out var id))
             return;
 
         _exercise = await _repository.GetByIdAsync(id);
@@ -36,6 +38,11 @@ public partial class ExerciseEditViewModel : ObservableObject, IQueryAttributabl
         Notes = _exercise.Notes;
         TypeIndex = (int)_exercise.Type;
         CanDelete = true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ExerciseEditViewModel] ApplyQueryAttributes error: {ex}");
+        }
     }
 
     [RelayCommand]

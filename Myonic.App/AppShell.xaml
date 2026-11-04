@@ -1,48 +1,334 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="Myonic.AppShell"
+    x:Name="ThisShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:Myonic.Pages"
     Title="Myonic"
-    BackgroundColor="{StaticResource KineticCanvas}"
-    Shell.BackgroundColor="{StaticResource KineticCanvas}"
-    Shell.ForegroundColor="{StaticResource KineticText}"
-    Shell.TitleColor="{StaticResource KineticText}"
-    Shell.TabBarBackgroundColor="{StaticResource KineticCanvas}"
-    Shell.TabBarForegroundColor="{StaticResource KineticVolt}"
-    Shell.TabBarTitleColor="{StaticResource KineticVolt}"
-    Shell.TabBarUnselectedColor="{StaticResource KineticTextMuted}">
+    FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}"
+    FlyoutWidth="260"
+    BackgroundColor="{DynamicResource KineticCanvas}"
+    Shell.BackgroundColor="{DynamicResource KineticCanvas}"
+    Shell.ForegroundColor="{DynamicResource KineticText}"
+    Shell.TitleColor="{DynamicResource KineticText}"
+    Shell.TabBarBackgroundColor="{DynamicResource KineticCanvas}"
+    Shell.TabBarForegroundColor="{DynamicResource KineticVolt}"
+    Shell.TabBarTitleColor="{DynamicResource KineticVolt}"
+    Shell.TabBarUnselectedColor="{DynamicResource KineticTextMuted}"
+    Shell.FlyoutBackgroundColor="{DynamicResource KineticSurface}"
+    Shell.FlyoutBehavior="{OnIdiom Phone=Disabled, Desktop=Locked}"
+    Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
 
-    <TabBar>
-        <ShellContent
-            Title="ГРАФИК"
-            Icon="tab_schedule.svg"
-            ContentTemplate="{DataTemplate pages:SchedulePage}"
-            Route="SchedulePage" />
+    <!-- Desktop Sidebar Header -->
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout Padding="24,28,20,16" Spacing="14">
+            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                <Border BackgroundColor="{DynamicResource KineticWell}"
+                        Stroke="{DynamicResource KineticVolt}"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 8"
+                        WidthRequest="36"
+                        HeightRequest="36"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+                    <Label Text="M"
+                           TextColor="{DynamicResource KineticVolt}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+                <Label Text="Myonic"
+                       TextColor="{DynamicResource KineticText}"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
 
-        <ShellContent
-            Title="ТРЕНИНГ"
-            Icon="tab_workout.svg"
-            ContentTemplate="{DataTemplate pages:ProgramsPage}"
-            Route="ProgramsPage" />
+    <!-- Desktop Sidebar Menu Items -->
+    <Shell.FlyoutContent>
+        <VerticalStackLayout Padding="14,10" Spacing="6" BindingContext="{x:Reference ThisShell}">
+            <!-- 1. Расписание -->
+            <Grid HeightRequest="46">
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="14,0"
+                        InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsScheduleActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                        <Label Text="📅" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="Расписание"
+                               FontSize="14"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsScheduleActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Grid>
+                </Border>
+                <Button BackgroundColor="Transparent"
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        Clicked="OnNavButtonClicked"
+                        ClassId="SchedulePage"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill" />
+            </Grid>
 
-        <ShellContent
-            Title="АНАЛИЗ"
-            Icon="tab_analysis.svg"
-            ContentTemplate="{DataTemplate pages:WorkoutHistoryPage}"
-            Route="WorkoutHistoryPage" />
+            <!-- 2. Тренинг -->
+            <Grid HeightRequest="46">
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="14,0"
+                        InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsTrainingActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                        <Label Text="🏋️" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="Тренинг"
+                               FontSize="14"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsTrainingActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Grid>
+                </Border>
+                <Button BackgroundColor="Transparent"
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        Clicked="OnNavButtonClicked"
+                        ClassId="ProgramsPage"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill" />
+            </Grid>
 
-        <ShellContent
-            Title="1RM"
-            Icon="tab_calc.svg"
-            ContentTemplate="{DataTemplate pages:OneRepMaxPage}"
-            Route="OneRepMaxPage" />
+            <!-- 3. Анализ -->
+            <Grid HeightRequest="46">
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="14,0"
+                        InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsAnalysisActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                        <Label Text="📈" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="Анализ"
+                               FontSize="14"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsAnalysisActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Grid>
+                </Border>
+                <Button BackgroundColor="Transparent"
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        Clicked="OnNavButtonClicked"
+                        ClassId="WorkoutHistoryPage"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill" />
+            </Grid>
 
-        <ShellContent
-            Title="ПРОФИЛЬ"
-            Icon="tab_profile.svg"
-            ContentTemplate="{DataTemplate pages:ProfilePage}"
-            Route="ProfilePage" />
+            <!-- 4. 1RM -->
+            <Grid HeightRequest="46">
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="14,0"
+                        InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsOneRepMaxActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                        <Label Text="🧮" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="1RM"
+                               FontSize="14"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsOneRepMaxActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Grid>
+                </Border>
+                <Button BackgroundColor="Transparent"
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        Clicked="OnNavButtonClicked"
+                        ClassId="OneRepMaxPage"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill" />
+            </Grid>
+
+            <!-- 5. Профиль -->
+            <Grid HeightRequest="46">
+                <Border BackgroundColor="Transparent"
+                        Stroke="Transparent"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="14,0"
+                        InputTransparent="True">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsProfileActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource KineticVolt}" />
+                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Grid ColumnDefinitions="26,*" ColumnSpacing="12" VerticalOptions="Center">
+                        <Label Text="👤" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="Профиль"
+                               FontSize="14"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsProfileActive}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource KineticVoltText}" />
+                                    <Setter Property="FontAttributes" Value="Bold" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Grid>
+                </Border>
+                <Button BackgroundColor="Transparent"
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        Clicked="OnNavButtonClicked"
+                        ClassId="ProfilePage"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill" />
+            </Grid>
+        </VerticalStackLayout>
+    </Shell.FlyoutContent>
+
+    <!-- Desktop Sidebar Footer -->
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout Padding="20,14,20,20" Spacing="10" BindingContext="{x:Reference ThisShell}">
+            <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
+            <Grid HeightRequest="56">
+                <Border BackgroundColor="{DynamicResource KineticWell}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="12,10"
+                        InputTransparent="True">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+                        <Label Text="👤" FontSize="18" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                            <Label Text="Атлет"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="13"
+                                   FontAttributes="Bold" />
+                            <Label Text="Локальный профиль"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="11" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+                <Button BackgroundColor="Transparent"
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        Clicked="OnNavButtonClicked"
+                        ClassId="ProfilePage"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill" />
+            </Grid>
+        </VerticalStackLayout>
+    </Shell.FlyoutFooter>
+
+    <!-- Navigation Tabs: Renders the Bottom Bar on Mobile (Android/iOS) and hidden on Desktop (driven by Sidebar) -->
+    <TabBar Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
+        <Tab Title="Расписание" Icon="tab_schedule.svg" Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
+            <ShellContent
+                Title="Расписание"
+                Icon="tab_schedule.svg"
+                ContentTemplate="{DataTemplate pages:SchedulePage}"
+                Route="SchedulePage"
+                Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}" />
+        </Tab>
+
+        <Tab Title="Тренинг" Icon="tab_workout.svg" Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
+            <ShellContent
+                Title="Тренинг"
+                Icon="tab_workout.svg"
+                ContentTemplate="{DataTemplate pages:ProgramsPage}"
+                Route="ProgramsPage"
+                Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}" />
+        </Tab>
+
+        <Tab Title="Анализ" Icon="tab_analysis.svg" Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
+            <ShellContent
+                Title="Анализ"
+                Icon="tab_analysis.svg"
+                ContentTemplate="{DataTemplate pages:WorkoutHistoryPage}"
+                Route="WorkoutHistoryPage"
+                Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}" />
+        </Tab>
+
+        <Tab Title="1RM" Icon="tab_calc.svg" Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
+            <ShellContent
+                Title="1RM"
+                Icon="tab_calc.svg"
+                ContentTemplate="{DataTemplate pages:OneRepMaxPage}"
+                Route="OneRepMaxPage"
+                Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}" />
+        </Tab>
+
+        <Tab Title="Профиль" Icon="tab_profile.svg" Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}">
+            <ShellContent
+                Title="Профиль"
+                Icon="tab_profile.svg"
+                ContentTemplate="{DataTemplate pages:ProfilePage}"
+                Route="ProfilePage"
+                Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=False}" />
+        </Tab>
     </TabBar>
 </Shell>

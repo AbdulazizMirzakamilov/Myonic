@@ -85,14 +85,13 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
         if (query.TryGetValue("id", out var val) && int.TryParse(val?.ToString(), out var id))
         {
             ExerciseId = id;
-            _ = LoadAsync();
         }
     }
 
     [RelayCommand]
     public async Task LoadAsync()
     {
-        if (ExerciseId <= 0) return;
+        if (ExerciseId <= 0 || IsLoading) return;
 
         IsLoading = true;
         try

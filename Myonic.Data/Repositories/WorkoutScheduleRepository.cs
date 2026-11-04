@@ -23,10 +23,13 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
 
         var scheduledWorkoutIds = scheduledEntries.Select(sw => sw.ProgramWorkoutId).ToHashSet();
 
-        // 2. Program workouts matching DefaultDayOfWeek
-        var defaultDayWorkouts = await db.Table<ProgramWorkout>()
-            .Where(pw => pw.DefaultDayOfWeek == dayOfWeek)
-            .ToListAsync();
+        // 2. Program workouts matching DefaultDayOfWeek (only from non-archived programs)
+        var defaultDayWorkouts = await db.QueryAsync<ProgramWorkout>(
+            """
+            SELECT pw.* FROM ProgramWorkout pw
+            INNER JOIN TrainingProgram p ON p.Id = pw.ProgramId
+            WHERE pw.DefaultDayOfWeek = ? AND p.IsArchived = 0
+            """, (int)dayOfWeek);
 
         var matchedWorkoutIds = new HashSet<int>(scheduledWorkoutIds);
         foreach (var dw in defaultDayWorkouts)
@@ -48,10 +51,13 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
     public async Task<IReadOnlyList<PlannedWorkoutSummary>> GetAllAvailableProgramWorkoutsAsync()
     {
         var db = await _database.GetConnectionAsync();
-        var workouts = await db.Table<ProgramWorkout>()
-            .OrderBy(pw => pw.ProgramId)
-            .ThenBy(pw => pw.Order)
-            .ToListAsync();
+        var workouts = await db.QueryAsync<ProgramWorkout>(
+            """
+            SELECT pw.* FROM ProgramWorkout pw
+            INNER JOIN TrainingProgram p ON p.Id = pw.ProgramId
+            WHERE p.IsArchived = 0
+            ORDER BY pw.ProgramId, pw."Order"
+            """);
 
         var result = new List<PlannedWorkoutSummary>();
         foreach (var w in workouts)
@@ -69,7 +75,12 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
         var db = await _database.GetConnectionAsync();
 
         var defaultDaysRaw = await db.ExecuteScalarAsync<string>(
-            "SELECT GROUP_CONCAT(DISTINCT DefaultDayOfWeek) FROM ProgramWorkout WHERE DefaultDayOfWeek IS NOT NULL");
+            """
+            SELECT GROUP_CONCAT(DISTINCT pw.DefaultDayOfWeek)
+            FROM ProgramWorkout pw
+            INNER JOIN TrainingProgram p ON p.Id = pw.ProgramId
+            WHERE pw.DefaultDayOfWeek IS NOT NULL AND p.IsArchived = 0
+            """);
 
         var defaultDays = new HashSet<DayOfWeek>();
         if (!string.IsNullOrEmpty(defaultDaysRaw))

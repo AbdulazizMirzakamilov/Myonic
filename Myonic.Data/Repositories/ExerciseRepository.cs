@@ -1,4 +1,4 @@
-﻿using Myonic.Core.Models;
+using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 
 namespace Myonic.Data.Repositories;
@@ -89,7 +89,9 @@ public sealed class ExerciseRepository : IExerciseRepository
 
     private async Task EnsureNameIsUniqueAsync(string name, int exceptId)
     {
-        var existing = await GetAllAsync();
+        var db = await _database.GetConnectionAsync();
+        var existing = await db.QueryAsync<Exercise>(
+            "SELECT Id, Name FROM Exercise WHERE IsArchived = 0 AND Id != ?", exceptId);
         if (existing.Any(e => e.Id != exceptId && string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException($"Упражнение «{name}» уже существует.");
     }

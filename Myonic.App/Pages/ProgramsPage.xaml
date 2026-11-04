@@ -15,23 +15,39 @@
     <Grid RowDefinitions="Auto,*" Padding="12">
 
         <!-- Active Workout Banner -->
-        <Border IsVisible="{Binding HasActiveSession}"
-                BackgroundColor="#FEF3C7"
-                Stroke="#F59E0B"
-                StrokeThickness="1"
-                Padding="12"
-                Margin="0,0,0,12"
-                StrokeShape="RoundRectangle 8">
-            <Grid ColumnDefinitions="*,Auto">
+        <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
+                Stroke="{DynamicResource KineticVolt}"
+                StrokeThickness="1.5"
+                BackgroundColor="{DynamicResource KineticSurface}"
+                StrokeShape="RoundRectangle 12"
+                Padding="14,10"
+                Margin="0,0,0,14">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
                 <VerticalStackLayout VerticalOptions="Center" Spacing="2">
-                    <Label Text="⚡ Идёт тренировка" FontFamily="OpenSansSemibold" FontSize="14" TextColor="#92400E" />
-                    <Label Text="{Binding ActiveSession.Title}" FontSize="13" TextColor="#B45309" />
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                        <Label Text="ИДЕТ АКТИВНАЯ ТРЕНИРОВКА"
+                               TextColor="{DynamicResource KineticVolt}"
+                               FontSize="11"
+                               FontAttributes="Bold" />
+                        <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
+                        <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
+                               TextColor="{DynamicResource KineticVolt}"
+                               FontSize="11"
+                               FontAttributes="Bold" />
+                    </HorizontalStackLayout>
+                    <Label Text="{Binding ActiveWorkoutTracker.Title}"
+                           TextColor="{DynamicResource KineticText}"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           LineBreakMode="TailTruncation" />
                 </VerticalStackLayout>
                 <Button Grid.Column="1"
                         Text="Продолжить"
-                        Command="{Binding ResumeActiveSessionCommand}"
-                        Padding="12,6"
-                        VerticalOptions="Center" />
+                        Command="{Binding ActiveWorkoutTracker.ResumeCommand}"
+                        Style="{StaticResource VoltButton}"
+                        HeightRequest="42"
+                        Padding="16,0"
+                        FontSize="13" />
             </Grid>
         </Border>
 

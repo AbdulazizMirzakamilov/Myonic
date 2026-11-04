@@ -26,6 +26,7 @@ public class PersonalRecordItem
 
 public interface IPersonalRecordRepository
 {
+    Task<int> GetCountAsync();
     Task<IReadOnlyList<PersonalRecordItem>> GetAllAsync();
     Task<IReadOnlyList<PersonalRecordItem>> GetByExerciseAsync(int exerciseId);
     Task<PersonalRecordItem?> GetBestRecordAsync(int exerciseId, RecordType type);

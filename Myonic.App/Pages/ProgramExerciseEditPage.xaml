@@ -5,32 +5,32 @@
              x:Class="Myonic.Pages.ProgramExerciseEditPage"
              x:DataType="vm:ProgramExerciseEditViewModel"
              Title="Параметры упражнения"
-             BackgroundColor="{StaticResource KineticCanvas}">
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16,16,16,40" Spacing="16">
 
             <!-- Exercise Title Header -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16,14">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="УПРАЖНЕНИЕ"
-                           TextColor="{StaticResource KineticVolt}"
+                           TextColor="{DynamicResource KineticVolt}"
                            FontSize="11"
                            FontAttributes="Bold" />
                     <Label Text="{Binding ExerciseName}"
-                           TextColor="{StaticResource KineticText}"
+                           TextColor="{DynamicResource KineticText}"
                            FontSize="20"
                            FontAttributes="Bold" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- Parameters Card -->
-            <Border BackgroundColor="{StaticResource KineticSurface}"
-                    Stroke="{StaticResource KineticBorder}"
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14"
                     Padding="16">
@@ -39,35 +39,35 @@
                     <!-- Sets -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Количество подходов *"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Entry Text="{Binding SetsText}"
                                Keyboard="Numeric"
                                Placeholder="Например, 4"
-                               PlaceholderColor="{StaticResource KineticTextMuted}"
-                               TextColor="{StaticResource KineticText}"
-                               BackgroundColor="{StaticResource KineticWell}"
+                               PlaceholderColor="{DynamicResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticText}"
+                               BackgroundColor="{DynamicResource KineticWell}"
                                HeightRequest="44" />
                     </VerticalStackLayout>
 
                     <!-- Reps & RepsMax -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Повторения (от — до) *"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="10" VerticalOptions="Center">
                             <Entry Text="{Binding RepsText}"
                                    Keyboard="Numeric"
                                    Placeholder="От (напр. 8)"
-                                   PlaceholderColor="{StaticResource KineticTextMuted}"
-                                   TextColor="{StaticResource KineticText}"
-                                   BackgroundColor="{StaticResource KineticWell}"
+                                   PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   BackgroundColor="{DynamicResource KineticWell}"
                                    HeightRequest="44" />
                             <Label Grid.Column="1"
                                    Text="—"
-                                   TextColor="{StaticResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    VerticalOptions="Center"
@@ -76,48 +76,48 @@
                                    Text="{Binding RepsMaxText}"
                                    Keyboard="Numeric"
                                    Placeholder="До (напр. 12)"
-                                   PlaceholderColor="{StaticResource KineticTextMuted}"
-                                   TextColor="{StaticResource KineticText}"
-                                   BackgroundColor="{StaticResource KineticWell}"
+                                   PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   BackgroundColor="{DynamicResource KineticWell}"
                                    HeightRequest="44" />
                         </Grid>
                         <Label Text="Оставьте «До» пустым, если нужно точное число повторений."
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="11" />
                     </VerticalStackLayout>
 
                     <!-- Weight -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Целевой вес, кг (необязательно)"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Entry Text="{Binding WeightText}"
                                Keyboard="Numeric"
                                Placeholder="Например, 80"
-                               PlaceholderColor="{StaticResource KineticTextMuted}"
-                               TextColor="{StaticResource KineticText}"
-                               BackgroundColor="{StaticResource KineticWell}"
+                               PlaceholderColor="{DynamicResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticText}"
+                               BackgroundColor="{DynamicResource KineticWell}"
                                HeightRequest="44" />
                     </VerticalStackLayout>
 
                     <!-- RPE & RPE Max -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Целевой RPE (необязательно)"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="10" VerticalOptions="Center">
                             <Entry Text="{Binding RpeText}"
                                    Keyboard="Numeric"
                                    Placeholder="От (напр. 7.5)"
-                                   PlaceholderColor="{StaticResource KineticTextMuted}"
-                                   TextColor="{StaticResource KineticText}"
-                                   BackgroundColor="{StaticResource KineticWell}"
+                                   PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   BackgroundColor="{DynamicResource KineticWell}"
                                    HeightRequest="44" />
                             <Label Grid.Column="1"
                                    Text="—"
-                                   TextColor="{StaticResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    VerticalOptions="Center"
@@ -126,42 +126,42 @@
                                    Text="{Binding RpeMaxText}"
                                    Keyboard="Numeric"
                                    Placeholder="До (напр. 8.5)"
-                                   PlaceholderColor="{StaticResource KineticTextMuted}"
-                                   TextColor="{StaticResource KineticText}"
-                                   BackgroundColor="{StaticResource KineticWell}"
+                                   PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   BackgroundColor="{DynamicResource KineticWell}"
                                    HeightRequest="44" />
                         </Grid>
                         <Label Text="Шкала от 5.5 до 10 с шагом 0.5 (например, 8 или 8–9)."
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="11" />
                     </VerticalStackLayout>
 
                     <!-- Rest -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Отдых между подходами, сек (необязательно)"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Entry Text="{Binding RestText}"
                                Keyboard="Numeric"
                                Placeholder="Например, 90 или 120"
-                               PlaceholderColor="{StaticResource KineticTextMuted}"
-                               TextColor="{StaticResource KineticText}"
-                               BackgroundColor="{StaticResource KineticWell}"
+                               PlaceholderColor="{DynamicResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticText}"
+                               BackgroundColor="{DynamicResource KineticWell}"
                                HeightRequest="44" />
                     </VerticalStackLayout>
 
                     <!-- Notes -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Заметка к упражнению (необязательно)"
-                               TextColor="{StaticResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="12"
                                FontAttributes="Bold" />
                         <Editor Text="{Binding Notes}"
                                 Placeholder="Например, пауза в нижней точке 1 сек..."
-                                PlaceholderColor="{StaticResource KineticTextMuted}"
-                                TextColor="{StaticResource KineticText}"
-                                BackgroundColor="{StaticResource KineticWell}"
+                                PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                TextColor="{DynamicResource KineticText}"
+                                BackgroundColor="{DynamicResource KineticWell}"
                                 AutoSize="TextChanges"
                                 HeightRequest="70" />
                     </VerticalStackLayout>
@@ -178,9 +178,9 @@
                     <Button Text="Убрать из тренировки"
                             Command="{Binding DeleteCommand}"
                             IsVisible="{Binding IsExisting}"
-                            BackgroundColor="{StaticResource KineticWell}"
-                            TextColor="{StaticResource KineticCrimson}"
-                            BorderColor="{StaticResource KineticCrimson}"
+                            BackgroundColor="{DynamicResource KineticWell}"
+                            TextColor="{DynamicResource KineticCrimson}"
+                            BorderColor="{DynamicResource KineticCrimson}"
                             BorderWidth="1"
                             CornerRadius="10"
                             HeightRequest="44"
