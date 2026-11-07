@@ -6,7 +6,7 @@ public class WeightTrendDrawable : IDrawable
 {
     public List<WeightDataPoint> DataPoints { get; set; } = [];
     public Color LineColor { get; set; } = Color.FromArgb("#C4F135");
-    public Color FillColor { get; set; } = Color.FromArgb("#1AC4F135");
+    public Color FillColor { get; set; } = Color.FromArgb("#26C4F135");
     public Color GridColor { get; set; } = Color.FromArgb("#2AFFFFFF");
     public Color TextColor { get; set; } = Color.FromArgb("#80FFFFFF");
     public Color DotColor { get; set; } = Color.FromArgb("#C4F135");
@@ -14,33 +14,41 @@ public class WeightTrendDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
-        var w = dirtyRect.Width;
-        var h = dirtyRect.Height;
-
-        if (w <= 0 || h <= 0) return;
-
-        canvas.Antialias = true;
-
-        if (DataPoints.Count == 0)
+        try
         {
-            DrawEmptyState(canvas, w, h);
-            return;
-        }
+            var w = dirtyRect.Width;
+            var h = dirtyRect.Height;
 
-        if (DataPoints.Count == 1)
+            if (w <= 0 || h <= 0) return;
+
+            canvas.Antialias = true;
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+
+            if (DataPoints.Count == 0)
+            {
+                DrawEmptyState(canvas, w, h);
+                return;
+            }
+
+            if (DataPoints.Count == 1)
+            {
+                DrawSinglePoint(canvas, w, h);
+                return;
+            }
+
+            DrawChart(canvas, w, h);
+        }
+        catch (Exception ex)
         {
-            DrawSinglePoint(canvas, w, h);
-            return;
+            System.Diagnostics.Debug.WriteLine($"[WeightTrendDrawable] Draw error: {ex}");
         }
-
-        DrawChart(canvas, w, h);
     }
 
     private void DrawEmptyState(ICanvas canvas, float w, float h)
     {
         canvas.FontColor = TextColor;
         canvas.FontSize = 13;
-        canvas.DrawString("Добавьте первый замер веса", w / 2, h / 2, HorizontalAlignment.Center);
+        canvas.DrawString("Добавьте первый замер веса", 0, 0, w, h, HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
     private void DrawSinglePoint(ICanvas canvas, float w, float h)
@@ -51,14 +59,12 @@ public class WeightTrendDrawable : IDrawable
         float y = h / 2;
         canvas.StrokeColor = GridColor;
         canvas.StrokeSize = 1;
-        canvas.StrokeDashPattern = [4, 4];
         canvas.DrawLine(0, y, w, y);
-        canvas.StrokeDashPattern = null;
 
         // Weight label
         canvas.FontColor = TextColor;
         canvas.FontSize = 11;
-        canvas.DrawString($"{pt.Weight:F1} кг", 4, y - 14, HorizontalAlignment.Left);
+        canvas.DrawString($"{pt.Weight:F1} кг", 8, y - 8, HorizontalAlignment.Left);
 
         // Dot
         float cx = w / 2;
@@ -105,8 +111,8 @@ public class WeightTrendDrawable : IDrawable
         // Build path points
         var points = sorted.Select(p => new PointF(ToX(p.Date), ToY(p.Weight))).ToList();
 
-        // Draw gradient fill under the line
-        DrawGradientFill(canvas, points, padTop + plotH, padLeft, w - padRight);
+        // Draw semi-transparent fill under the line
+        DrawFill(canvas, points, padTop + plotH);
 
         // Draw the main line
         canvas.StrokeColor = LineColor;
@@ -133,16 +139,14 @@ public class WeightTrendDrawable : IDrawable
     {
         canvas.StrokeColor = GridColor;
         canvas.StrokeSize = 1;
-        canvas.StrokeDashPattern = [4, 4];
         canvas.DrawLine(x1, y, x2, y);
-        canvas.StrokeDashPattern = null;
 
         canvas.FontColor = TextColor;
         canvas.FontSize = 10;
-        canvas.DrawString(label, 2, y - 6, HorizontalAlignment.Left);
+        canvas.DrawString(label, 4, y + 4, HorizontalAlignment.Left);
     }
 
-    private void DrawGradientFill(ICanvas canvas, List<PointF> points, float bottomY, float leftX, float rightX)
+    private void DrawFill(ICanvas canvas, List<PointF> points, float bottomY)
     {
         if (points.Count < 2) return;
 
@@ -155,19 +159,7 @@ public class WeightTrendDrawable : IDrawable
         fillPath.LineTo(points.Last().X, bottomY);
         fillPath.Close();
 
-        var minY = points.Min(p => p.Y);
-        var paint = new LinearGradientPaint
-        {
-            StartPoint = new Point(0, 0),
-            EndPoint = new Point(0, 1),
-            GradientStops =
-            [
-                new PaintGradientStop(0.0f, FillColor),
-                new PaintGradientStop(1.0f, Colors.Transparent)
-            ]
-        };
-        canvas.SetFillPaint(paint, new RectF(leftX, minY, rightX - leftX, bottomY - minY));
-
+        canvas.FillColor = FillColor;
         canvas.FillPath(fillPath);
     }
 

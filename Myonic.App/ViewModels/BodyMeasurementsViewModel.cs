@@ -34,6 +34,8 @@ public partial class BodyMeasurementsViewModel : ObservableObject
 
     public WeightTrendDrawable Drawable { get; }
 
+    public event Action? RequestChartRedraw;
+
     [ObservableProperty]
     private bool _isLoading;
 
@@ -175,6 +177,7 @@ public partial class BodyMeasurementsViewModel : ObservableObject
         finally
         {
             IsLoading = false;
+            RequestChartRedraw?.Invoke();
         }
     }
 

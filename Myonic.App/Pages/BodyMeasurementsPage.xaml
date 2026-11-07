@@ -114,7 +114,8 @@
                         <GraphicsView x:Name="ChartView"
                                       Drawable="{Binding Drawable}"
                                       HeightRequest="180"
-                                      HorizontalOptions="Fill" />
+                                      HorizontalOptions="Fill"
+                                      InputTransparent="True" />
 
                         <!-- Period Filter Chips -->
                         <Border BackgroundColor="{DynamicResource KineticWell}"
@@ -222,17 +223,16 @@
                 </Border>
 
                 <!-- Measurements List -->
-                <CollectionView ItemsSource="{Binding Measurements}"
-                                SelectionMode="None"
-                                IsVisible="{Binding HasMeasurements}">
-                    <CollectionView.ItemTemplate>
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Measurements}"
+                                     Spacing="6"
+                                     IsVisible="{Binding HasMeasurements}">
+                    <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:MeasurementListItem">
                             <Border BackgroundColor="{DynamicResource KineticSurface}"
                                     Stroke="{DynamicResource KineticBorder}"
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 14"
-                                    Padding="14,12"
-                                    Margin="0,3">
+                                    Padding="14,12">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer
                                         Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditCommand}"
@@ -289,8 +289,8 @@
                                 </Grid>
                             </Border>
                         </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>

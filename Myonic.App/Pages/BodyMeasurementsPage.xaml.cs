@@ -10,12 +10,16 @@ public partial class BodyMeasurementsPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _vm = viewModel;
+        _vm.RequestChartRedraw += () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() => ChartView?.Invalidate());
+        };
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         await _vm.LoadAsync();
-        ChartView.Invalidate();
+        ChartView?.Invalidate();
     }
 }

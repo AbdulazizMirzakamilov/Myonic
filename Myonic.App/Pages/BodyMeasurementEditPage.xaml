@@ -87,10 +87,9 @@
                                    TextColor="{DynamicResource KineticTextSecondary}"
                                    FontSize="12" />
                             <DatePicker Date="{Binding Date}"
+                                        MaximumDate="{Binding MaxDate}"
                                         TextColor="{DynamicResource KineticText}"
-                                        BackgroundColor="Transparent"
-                                        MaximumDate="{x:Static system:DateTime.Today}"
-                                        xmlns:system="clr-namespace:System;assembly=System.Runtime" />
+                                        BackgroundColor="Transparent" />
                         </VerticalStackLayout>
 
                         <!-- Body Fat -->

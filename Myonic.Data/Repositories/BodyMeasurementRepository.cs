@@ -76,11 +76,11 @@ public sealed class BodyMeasurementRepository : IBodyMeasurementRepository
                 .ToListAsync();
         }
 
-        return await db.Table<BodyMeasurement>()
+        var items = await db.Table<BodyMeasurement>()
             .OrderByDescending(m => m.Date)
             .Take(limit)
-            .ToListAsync()
-            .ContinueWith(t => t.Result.OrderBy(m => m.Date).ToList());
+            .ToListAsync();
+        return items.OrderBy(m => m.Date).ToList();
     }
 
     public async Task<WeightTrendStats> GetWeightTrendStatsAsync(int days = 30)
