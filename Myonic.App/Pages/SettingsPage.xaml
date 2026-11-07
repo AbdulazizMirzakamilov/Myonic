@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              x:Class="Myonic.Pages.SettingsPage"
              x:DataType="vm:SettingsViewModel"
+             x:Name="ThisPage"
              Title="Настройки"
              BackgroundColor="{DynamicResource KineticCanvas}">
 
@@ -159,9 +160,9 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- 3. DATABASE & STORAGE -->
+            <!-- 3. DATABASE & BACKUP -->
             <VerticalStackLayout Spacing="8">
-                <Label Text="ДАННЫЕ И РЕЗЕРВНОЕ КОПИРОВАНИЕ"
+                <Label Text="РЕЗЕРВНОЕ КОПИРОВАНИЕ И ЭКСПОРТ (JSON / SQLITE)"
                        TextColor="{DynamicResource KineticTextMuted}"
                        FontSize="11"
                        FontAttributes="Bold"
@@ -172,21 +173,167 @@
                         StrokeThickness="1"
                         StrokeShape="RoundRectangle 16"
                         Padding="16">
-                    <VerticalStackLayout Spacing="12">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Размер локальной базы SQLite:"
-                                   TextColor="{DynamicResource KineticTextSecondary}"
-                                   FontSize="13" />
+                    <VerticalStackLayout Spacing="14">
+
+                        <!-- Database size info -->
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Локальная база данных SQLite"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="14"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding DatabasePathText}"
+                                       TextColor="{DynamicResource KineticTextMuted}"
+                                       FontSize="10"
+                                       LineBreakMode="MiddleTruncation" />
+                            </VerticalStackLayout>
                             <Label Grid.Column="1"
                                    Text="{Binding DatabaseSizeText}"
-                                   TextColor="{DynamicResource KineticText}"
-                                   FontSize="13"
-                                   FontAttributes="Bold" />
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
                         </Grid>
 
-                        <Button Text="Создать резервную копию базы"
-                                Command="{Binding BackupDatabaseCommand}"
+                        <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
+
+                        <!-- Create SQLite Backup Button -->
+                        <Button Text="💾 Создать резервную копию базы (.db3)"
+                                Command="{Binding CreateSqliteBackupCommand}"
+                                Style="{StaticResource VoltButton}"
+                                HeightRequest="44"
+                                FontSize="13" />
+
+                        <!-- Export / Import JSON Buttons -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Text="📤 Экспорт в JSON"
+                                    Command="{Binding ExportJsonCommand}"
+                                    Style="{StaticResource SecondaryActionButton}"
+                                    HeightRequest="42"
+                                    FontSize="12" />
+
+                            <Button Grid.Column="1"
+                                    Text="📥 Импорт из JSON"
+                                    Command="{Binding ImportJsonCommand}"
+                                    Style="{StaticResource SecondaryActionButton}"
+                                    HeightRequest="42"
+                                    FontSize="12" />
+                        </Grid>
+
+                        <!-- Backups List Section -->
+                        <VerticalStackLayout Spacing="8" Margin="0,6,0,0">
+                            <Label Text="СОХРАНЁННЫЕ КОПИИ В ПАПКЕ BACKUPS"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="10"
+                                   FontAttributes="Bold" />
+
+                            <!-- Empty backups placeholder -->
+                            <Label Text="Резервных копий пока нет. Нажмите «Создать копию» выше."
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="12"
+                                   IsVisible="{Binding HasBackups, Converter={x:Null}}" />
+
+                            <!-- List of backup files -->
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Backups}"
+                                                 Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:BackupFileInfo">
+                                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                                StrokeThickness="1"
+                                                StrokeShape="RoundRectangle 12"
+                                                Padding="12,10">
+                                            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6" VerticalOptions="Center">
+                                                <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                                                    <Label Text="{Binding FileName}"
+                                                           TextColor="{DynamicResource KineticText}"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"
+                                                           LineBreakMode="MiddleTruncation" />
+                                                    <HorizontalStackLayout Spacing="6">
+                                                        <Label Text="{Binding DateFormatted}"
+                                                               TextColor="{DynamicResource KineticTextMuted}"
+                                                               FontSize="10" />
+                                                        <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" />
+                                                        <Label Text="{Binding SizeFormatted}"
+                                                               TextColor="{DynamicResource KineticVolt}"
+                                                               FontSize="10"
+                                                               FontAttributes="Bold" />
+                                                    </HorizontalStackLayout>
+                                                </VerticalStackLayout>
+
+                                                <!-- Share Button -->
+                                                <Button Grid.Column="1"
+                                                        Text="📤"
+                                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ShareBackupCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        Style="{StaticResource SecondaryActionButton}"
+                                                        WidthRequest="36"
+                                                        HeightRequest="36"
+                                                        Padding="0"
+                                                        FontSize="14"
+                                                        VerticalOptions="Center" />
+
+                                                <!-- Restore Button -->
+                                                <Button Grid.Column="2"
+                                                        Text="Восстановить"
+                                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.RestoreBackupCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        Style="{StaticResource SecondaryActionButton}"
+                                                        HeightRequest="36"
+                                                        Padding="10,0"
+                                                        FontSize="11"
+                                                        VerticalOptions="Center" />
+
+                                                <!-- Delete Button -->
+                                                <Button Grid.Column="3"
+                                                        Text="✕"
+                                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.DeleteBackupCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        Style="{StaticResource SecondaryActionButton}"
+                                                        TextColor="Red"
+                                                        WidthRequest="36"
+                                                        HeightRequest="36"
+                                                        Padding="0"
+                                                        FontSize="12"
+                                                        VerticalOptions="Center" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 4. DANGER ZONE -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="ОПАСНАЯ ЗОНА (DANGER ZONE)"
+                       TextColor="#EF4444"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="4,0" />
+
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="#7F1D1D"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Очистка пользовательских данных"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="14"
+                               FontAttributes="Bold" />
+                        <Label Text="Удаляет все завершённые тренировки, зафиксированные подходы, программы, замеры тела и цели. Базовый справочник упражнений сохраняется."
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+
+                        <Button Text="⚠️ Очистить все данные тренировок"
+                                Command="{Binding ClearAllDataCommand}"
                                 Style="{StaticResource SecondaryActionButton}"
+                                TextColor="#EF4444"
                                 HeightRequest="44"
                                 FontSize="13"
                                 FontAttributes="Bold" />
@@ -194,7 +341,7 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- 4. ABOUT APP -->
+            <!-- 5. ABOUT APP -->
             <Border BackgroundColor="{DynamicResource KineticSurface}"
                     Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"

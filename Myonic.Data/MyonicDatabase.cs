@@ -68,6 +68,23 @@ public sealed class MyonicDatabase : IAsyncDisposable
         await conn.ExecuteAsync("VACUUM INTO ?", destinationPath);
     }
 
+    public async Task CloseConnectionAsync()
+    {
+        await _initLock.WaitAsync();
+        try
+        {
+            if (_connection is not null)
+            {
+                await _connection.CloseAsync();
+                _connection = null;
+            }
+        }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_connection is not null)

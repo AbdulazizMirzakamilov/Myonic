@@ -104,6 +104,7 @@ namespace Myonic
             builder.Services.AddSingleton<Myonic.Services.IThemeService, Myonic.Services.ThemeService>();
             builder.Services.AddSingleton<Myonic.Services.IHapticService, Myonic.Services.HapticService>();
             builder.Services.AddSingleton<Myonic.Services.IActiveWorkoutTracker, Myonic.Services.ActiveWorkoutTracker>();
+            builder.Services.AddSingleton<Myonic.Core.Services.IDataBackupService, Myonic.Data.Services.DataBackupService>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsPage>();
 
