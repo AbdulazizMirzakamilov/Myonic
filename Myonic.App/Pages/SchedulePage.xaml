@@ -83,7 +83,6 @@
                 <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                     <Button Text="‹"
                             Command="{Binding PreviousPeriodCommand}"
-                            Clicked="OnPreviousPeriodClicked"
                             Style="{StaticResource SecondaryActionButton}"
                             WidthRequest="38"
                             HeightRequest="38"
@@ -92,7 +91,6 @@
                             FontAttributes="Bold" />
                     <Button Text="Сегодня"
                             Command="{Binding TodayCommand}"
-                            Clicked="OnTodayClicked"
                             Style="{StaticResource SecondaryActionButton}"
                             HeightRequest="38"
                             Padding="12,0"
@@ -100,7 +98,6 @@
                             FontAttributes="Bold" />
                     <Button Text="›"
                             Command="{Binding NextPeriodCommand}"
-                            Clicked="OnNextPeriodClicked"
                             Style="{StaticResource SecondaryActionButton}"
                             WidthRequest="38"
                             HeightRequest="38"
@@ -124,7 +121,7 @@
                                 StrokeShape="RoundRectangle 8"
                                 Padding="16,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SwitchToWeekViewCommand}" Tapped="OnSwitchToWeekViewTapped" />
+                                <TapGestureRecognizer Command="{Binding SwitchToWeekViewCommand}" />
                             </Border.GestureRecognizers>
                             <Label Text="Неделя"
                                    TextColor="{Binding IsWeekView, Converter={StaticResource DayTextColorConverter}}"
@@ -138,7 +135,7 @@
                                 StrokeShape="RoundRectangle 8"
                                 Padding="16,6">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SwitchToMonthViewCommand}" Tapped="OnSwitchToMonthViewTapped" />
+                                <TapGestureRecognizer Command="{Binding SwitchToMonthViewCommand}" />
                             </Border.GestureRecognizers>
                             <Label Text="Месяц"
                                    TextColor="{Binding IsMonthView, Converter={StaticResource DayTextColorConverter}}"
@@ -149,18 +146,13 @@
                 </Border>
             </Grid>
 
-            <!-- Calendar Card: Interactive Swipe & Direct Tap Navigation -->
+            <!-- Calendar Card: Direct Tap Navigation -->
             <Border x:Name="CalendarOuterCard"
                     BackgroundColor="{DynamicResource KineticSurface}"
                     Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 16"
                     Padding="10,12">
-                <Border.GestureRecognizers>
-                    <SwipeGestureRecognizer Direction="Left" Swiped="OnCalendarSwipedLeft" />
-                    <SwipeGestureRecognizer Direction="Right" Swiped="OnCalendarSwipedRight" />
-                </Border.GestureRecognizers>
-
                 <Grid IsClippedToBounds="True">
                     <Grid x:Name="CalendarViewHost">
 
