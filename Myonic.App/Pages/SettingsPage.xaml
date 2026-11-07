@@ -160,7 +160,128 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- 3. DATABASE & BACKUP -->
+            <!-- 3. AI ANALYTICS (GOOGLE GEMINI) -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="ИИ-АНАЛИТИКА (GOOGLE GEMINI)"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       Margin="4,0" />
+
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="14">
+
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Персональный ИИ-тренер"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="15"
+                                   FontAttributes="Bold" />
+                            <Label Text="Глубокий разбор завершённых тренировок и динамики прогресса в упражнениях. Работа трекера полностью автономна и не зависит от сети."
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="12" />
+                        </VerticalStackLayout>
+
+                        <!-- API Key Input -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Google Gemini API ключ:"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="12"
+                                   FontAttributes="Bold" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Border BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorder}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 10"
+                                        Padding="12,0">
+                                    <Entry Text="{Binding GeminiApiKey}"
+                                           IsPassword="{Binding IsApiKeyObfuscated}"
+                                           Placeholder="Вставьте API-ключ (AIzaSy...)"
+                                           PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                           TextColor="{DynamicResource KineticText}"
+                                           FontSize="13"
+                                           HeightRequest="42"
+                                           VerticalOptions="Center" />
+                                </Border>
+                                <Button Grid.Column="1"
+                                        Text="{Binding ApiKeyVisibilityIcon}"
+                                        Command="{Binding ToggleApiKeyVisibilityCommand}"
+                                        Style="{StaticResource SecondaryActionButton}"
+                                        WidthRequest="46"
+                                        HeightRequest="42"
+                                        Padding="0"
+                                        FontSize="16" />
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Model Selection -->
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" VerticalOptions="Center">
+                            <Label Text="Модель ИИ:"
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="13"
+                                   VerticalOptions="Center" />
+                            <Border Grid.Column="1"
+                                    BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="10,0">
+                                <Picker ItemsSource="{Binding AvailableModels}"
+                                        SelectedItem="{Binding SelectedModel}"
+                                        TextColor="{DynamicResource KineticVolt}"
+                                        TitleColor="{DynamicResource KineticTextMuted}"
+                                        FontSize="13"
+                                        HeightRequest="40" />
+                            </Border>
+                        </Grid>
+
+                        <!-- Buttons: Save & Test -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Text="💾 Сохранить ключ"
+                                    Command="{Binding SaveAiSettingsCommand}"
+                                    Style="{StaticResource VoltButton}"
+                                    HeightRequest="42"
+                                    FontSize="12" />
+
+                            <Button Grid.Column="1"
+                                    Text="⚡ Проверить связь"
+                                    Command="{Binding TestAiConnectionCommand}"
+                                    Style="{StaticResource SecondaryActionButton}"
+                                    HeightRequest="42"
+                                    FontSize="12" />
+                        </Grid>
+
+                        <!-- Testing Activity Indicator -->
+                        <ActivityIndicator IsRunning="{Binding IsTestingConnection}"
+                                           IsVisible="{Binding IsTestingConnection}"
+                                           Color="{DynamicResource KineticVolt}"
+                                           HeightRequest="24" />
+
+                        <!-- Connection Test Feedback -->
+                        <Border IsVisible="{Binding HasConnectionTestResult}"
+                                BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,10">
+                            <Label Text="{Binding ConnectionTestMessage}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="12"
+                                   LineBreakMode="WordWrap" />
+                        </Border>
+
+                        <Label Text="🔒 Ключ сохраняется локально на вашем устройстве и используется только для прямых запросов к Google Gemini."
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="11" />
+
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 4. DATABASE & BACKUP -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="РЕЗЕРВНОЕ КОПИРОВАНИЕ И ЭКСПОРТ (JSON / SQLITE)"
                        TextColor="{DynamicResource KineticTextMuted}"
@@ -302,7 +423,7 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- 4. DANGER ZONE -->
+            <!-- 5. DANGER ZONE -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="ОПАСНАЯ ЗОНА (DANGER ZONE)"
                        TextColor="#EF4444"
@@ -335,7 +456,7 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- 5. ABOUT APP -->
+            <!-- 6. ABOUT APP -->
             <Border BackgroundColor="{DynamicResource KineticSurface}"
                     Stroke="{DynamicResource KineticBorder}"
                     StrokeThickness="1"

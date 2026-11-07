@@ -14,16 +14,22 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IThemeService _themeService;
     private readonly MyonicDatabase _database;
     private readonly IDataBackupService _backupService;
+    private readonly IAiSettingsService _aiSettingsService;
+    private readonly IAiAnalysisService _aiAnalysisService;
     private readonly string _dbPath;
 
     public SettingsViewModel(
         IThemeService themeService,
         MyonicDatabase database,
-        IDataBackupService backupService)
+        IDataBackupService backupService,
+        IAiSettingsService aiSettingsService,
+        IAiAnalysisService aiAnalysisService)
     {
         _themeService = themeService;
         _database = database;
         _backupService = backupService;
+        _aiSettingsService = aiSettingsService;
+        _aiAnalysisService = aiAnalysisService;
         _dbPath = _database.DatabasePath;
 
         // Load current theme index (0: Dark, 1: Light, 2: System)
@@ -33,11 +39,44 @@ public partial class SettingsViewModel : ObservableObject
         _showPrBadges = Preferences.Get("show_pr_badges", true);
         _soundVibrationEnabled = Preferences.Get("sound_vibration_enabled", true);
 
+        // Load AI settings
+        _geminiApiKey = _aiSettingsService.GetApiKey() ?? string.Empty;
+        _selectedModel = _aiSettingsService.GetSelectedModel();
+        foreach (var m in _aiSettingsService.AvailableModels)
+        {
+            AvailableModels.Add(m);
+        }
+
         LoadDatabaseInfo();
         _ = LoadBackupsListAsync();
     }
 
     public ObservableCollection<BackupFileInfo> Backups { get; } = [];
+    public ObservableCollection<string> AvailableModels { get; } = [];
+
+    [ObservableProperty]
+    private string _geminiApiKey = string.Empty;
+
+    [ObservableProperty]
+    private string _selectedModel = "gemini-2.5-flash";
+
+    [ObservableProperty]
+    private bool _isApiKeyVisible;
+
+    public bool IsApiKeyObfuscated => !IsApiKeyVisible;
+    public string ApiKeyVisibilityIcon => IsApiKeyVisible ? "🔒" : "👁️";
+
+    [ObservableProperty]
+    private bool _isTestingConnection;
+
+    [ObservableProperty]
+    private string? _connectionTestMessage;
+
+    [ObservableProperty]
+    private bool _isConnectionTestSuccess;
+
+    [ObservableProperty]
+    private bool _hasConnectionTestResult;
 
     [ObservableProperty]
     private int _selectedThemeIndex;
@@ -82,6 +121,64 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnSoundVibrationEnabledChanged(bool value)
     {
         Preferences.Set("sound_vibration_enabled", value);
+    }
+
+    partial void OnIsApiKeyVisibleChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsApiKeyObfuscated));
+        OnPropertyChanged(nameof(ApiKeyVisibilityIcon));
+    }
+
+    [RelayCommand]
+    public void ToggleApiKeyVisibility()
+    {
+        IsApiKeyVisible = !IsApiKeyVisible;
+    }
+
+    [RelayCommand]
+    public async Task SaveAiSettingsAsync()
+    {
+        _aiSettingsService.SaveApiKey(GeminiApiKey);
+        _aiSettingsService.SaveSelectedModel(SelectedModel);
+
+        await Shell.Current.DisplayAlertAsync(
+            "Настройки ИИ сохранены",
+            string.IsNullOrWhiteSpace(GeminiApiKey)
+                ? "API-ключ удалён. ИИ-функции будут отключены."
+                : $"API-ключ и модель ({SelectedModel}) успешно сохранены на устройстве.",
+            "OK");
+    }
+
+    [RelayCommand]
+    public async Task TestAiConnectionAsync()
+    {
+        if (IsTestingConnection) return;
+
+        IsTestingConnection = true;
+        HasConnectionTestResult = false;
+        ConnectionTestMessage = "Проверка соединения с Gemini API...";
+
+        try
+        {
+            // Auto-save the key and model before testing
+            _aiSettingsService.SaveApiKey(GeminiApiKey);
+            _aiSettingsService.SaveSelectedModel(SelectedModel);
+
+            var result = await _aiAnalysisService.TestConnectionAsync(GeminiApiKey, SelectedModel);
+            IsConnectionTestSuccess = result.IsSuccess;
+            ConnectionTestMessage = result.Message;
+            HasConnectionTestResult = true;
+        }
+        catch (Exception ex)
+        {
+            IsConnectionTestSuccess = false;
+            ConnectionTestMessage = $"Ошибка проверки: {ex.Message}";
+            HasConnectionTestResult = true;
+        }
+        finally
+        {
+            IsTestingConnection = false;
+        }
     }
 
     [RelayCommand]

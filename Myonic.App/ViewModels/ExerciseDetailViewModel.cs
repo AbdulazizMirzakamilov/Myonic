@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
+using Myonic.Core.Services;
 using Myonic.Pages;
 
 namespace Myonic.ViewModels;
@@ -28,14 +29,20 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
 {
     private readonly IWorkoutSessionRepository _sessionRepo;
     private readonly IPersonalRecordRepository _prRepo;
+    private readonly IAiAnalysisService _aiAnalysisService;
+    private readonly IAiSettingsService _aiSettingsService;
     private static readonly CultureInfo RussianCulture = new("ru-RU");
 
     public ExerciseDetailViewModel(
         IWorkoutSessionRepository sessionRepo,
-        IPersonalRecordRepository prRepo)
+        IPersonalRecordRepository prRepo,
+        IAiAnalysisService aiAnalysisService,
+        IAiSettingsService aiSettingsService)
     {
         _sessionRepo = sessionRepo;
         _prRepo = prRepo;
+        _aiAnalysisService = aiAnalysisService;
+        _aiSettingsService = aiSettingsService;
     }
 
     [ObservableProperty]
@@ -76,6 +83,21 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
 
     [ObservableProperty]
     private bool _isLoading;
+
+    [ObservableProperty]
+    private bool _isAiAnalyzing;
+
+    [ObservableProperty]
+    private bool _hasAiAnalysis;
+
+    [ObservableProperty]
+    private string _aiAnalysisContent = string.Empty;
+
+    [ObservableProperty]
+    private string _aiModelUsed = string.Empty;
+
+    [ObservableProperty]
+    private string? _aiErrorMessage;
 
     public ObservableCollection<ExerciseHistorySessionDisplayItem> Sessions { get; } = [];
     public ObservableCollection<PersonalRecordItem> Records { get; } = [];
@@ -224,6 +246,70 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
     {
         if (ExerciseId <= 0) return;
         await Shell.Current.GoToAsync($"{nameof(ExerciseEditPage)}?id={ExerciseId}");
+    }
+
+    [RelayCommand]
+    public async Task AnalyzeProgressWithAiAsync()
+    {
+        if (IsAiAnalyzing || ExerciseId <= 0) return;
+
+        if (!_aiSettingsService.IsConfigured)
+        {
+            bool openSettings = await Shell.Current.DisplayAlertAsync(
+                "ИИ-Аналитика не настроена",
+                "Для анализа прогресса персональным ИИ-тренером укажите собственный Google Gemini API ключ в Настройках приложения.",
+                "В Настройки",
+                "Отмена");
+
+            if (openSettings)
+            {
+                await Shell.Current.GoToAsync("//settings");
+            }
+            return;
+        }
+
+        if (Sessions.Count == 0)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Нет истории тренировок",
+                "Для анализа динамики необходимо выполнить хотя бы одну тренировку с этим упражнением.",
+                "OK");
+            return;
+        }
+
+        IsAiAnalyzing = true;
+        AiErrorMessage = null;
+
+        try
+        {
+            var result = await _aiAnalysisService.AnalyzeExerciseProgressAsync(ExerciseId, 90);
+            if (result.IsSuccess)
+            {
+                AiAnalysisContent = result.Content ?? string.Empty;
+                AiModelUsed = result.ModelUsed;
+                HasAiAnalysis = true;
+            }
+            else
+            {
+                AiErrorMessage = result.ErrorMessage;
+                await Shell.Current.DisplayAlertAsync(
+                    "Ошибка анализа прогресса",
+                    result.ErrorMessage ?? "Не удалось получить ответ от ИИ-модели.",
+                    "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            AiErrorMessage = ex.Message;
+            await Shell.Current.DisplayAlertAsync(
+                "Ошибка",
+                $"Не удалось выполнить анализ прогресса: {ex.Message}",
+                "OK");
+        }
+        finally
+        {
+            IsAiAnalyzing = false;
+        }
     }
 }
 

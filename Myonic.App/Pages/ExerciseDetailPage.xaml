@@ -195,6 +195,63 @@
             </Border>
 
             <!-- History Section Header -->
+            <!-- AI Progress Insights Section -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="14">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="🤖 ИИ-анализ динамики силы"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="14"
+                                   FontAttributes="Bold" />
+                            <Label Text="Прогрессия 1ПМ, плато и рекомендации тренера"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="11" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1"
+                                Text="Анализ прогресса"
+                                Command="{Binding AnalyzeProgressWithAiCommand}"
+                                Style="{StaticResource VoltButton}"
+                                HeightRequest="38"
+                                Padding="12,0"
+                                FontSize="12" />
+                    </Grid>
+
+                    <!-- Loader -->
+                    <VerticalStackLayout IsVisible="{Binding IsAiAnalyzing}" Spacing="6" Padding="0,6">
+                        <ActivityIndicator IsRunning="{Binding IsAiAnalyzing}"
+                                           Color="{DynamicResource KineticVolt}"
+                                           HeightRequest="26" />
+                        <Label Text="ИИ-тренер рассчитывает тренд силы и объёма..."
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="11"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- Analysis Card -->
+                    <Border IsVisible="{Binding HasAiAnalysis}"
+                            BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="{DynamicResource KineticBorderSubtle}"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="14,12">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding AiAnalysisContent}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="13"
+                                   LineBreakMode="WordWrap" />
+                            <Label Text="{Binding AiModelUsed, StringFormat='Модель: {0}'}"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="10"
+                                   HorizontalOptions="End" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
             <Label Text="ИСТОРИЯ ВЫПОЛНЕНИЯ"
                    TextColor="{DynamicResource KineticTextMuted}"
                    FontSize="12"

@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Analysis;
 using Myonic.Core.Repositories;
+using Myonic.Core.Services;
 
 namespace Myonic.ViewModels;
 
@@ -34,11 +35,18 @@ public sealed class ExercisePlanFactDisplayItem
 public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IWorkoutSessionRepository _sessionRepo;
+    private readonly IAiAnalysisService _aiAnalysisService;
+    private readonly IAiSettingsService _aiSettingsService;
     private static readonly CultureInfo RussianCulture = new("ru-RU");
 
-    public WorkoutSessionDetailViewModel(IWorkoutSessionRepository sessionRepo)
+    public WorkoutSessionDetailViewModel(
+        IWorkoutSessionRepository sessionRepo,
+        IAiAnalysisService aiAnalysisService,
+        IAiSettingsService aiSettingsService)
     {
         _sessionRepo = sessionRepo;
+        _aiAnalysisService = aiAnalysisService;
+        _aiSettingsService = aiSettingsService;
     }
 
     [ObservableProperty]
@@ -85,6 +93,21 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
 
     [ObservableProperty]
     private bool _isLoading;
+
+    [ObservableProperty]
+    private bool _isAiAnalyzing;
+
+    [ObservableProperty]
+    private bool _hasAiAnalysis;
+
+    [ObservableProperty]
+    private string _aiAnalysisContent = string.Empty;
+
+    [ObservableProperty]
+    private string _aiModelUsed = string.Empty;
+
+    [ObservableProperty]
+    private string? _aiErrorMessage;
 
     public ObservableCollection<ExercisePlanFactDisplayItem> Exercises { get; } = [];
 
@@ -213,5 +236,59 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
             IsLoading = false;
         }
     }
-}
 
+    [RelayCommand]
+    public async Task AnalyzeWorkoutWithAiAsync()
+    {
+        if (IsAiAnalyzing || SessionId <= 0) return;
+
+        if (!_aiSettingsService.IsConfigured)
+        {
+            bool openSettings = await Shell.Current.DisplayAlertAsync(
+                "ИИ-Аналитика не настроена",
+                "Для разбора тренировки персональным ИИ-тренером укажите ваш собственный Google Gemini API ключ в Настройках приложения.",
+                "В Настройки",
+                "Отмена");
+
+            if (openSettings)
+            {
+                await Shell.Current.GoToAsync("//settings");
+            }
+            return;
+        }
+
+        IsAiAnalyzing = true;
+        AiErrorMessage = null;
+
+        try
+        {
+            var result = await _aiAnalysisService.AnalyzeWorkoutSessionAsync(SessionId);
+            if (result.IsSuccess)
+            {
+                AiAnalysisContent = result.Content ?? string.Empty;
+                AiModelUsed = result.ModelUsed;
+                HasAiAnalysis = true;
+            }
+            else
+            {
+                AiErrorMessage = result.ErrorMessage;
+                await Shell.Current.DisplayAlertAsync(
+                    "Ошибка разбора тренировки",
+                    result.ErrorMessage ?? "Не удалось получить ответ от ИИ-модели.",
+                    "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            AiErrorMessage = ex.Message;
+            await Shell.Current.DisplayAlertAsync(
+                "Ошибка",
+                $"Не удалось выполнить анализ тренировки: {ex.Message}",
+                "OK");
+        }
+        finally
+        {
+            IsAiAnalyzing = false;
+        }
+    }
+}
