@@ -1,35 +1,107 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="Myonic.Pages.ExerciseEditPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:Myonic.ViewModels"
-    Title="{Binding Title}"
-    x:DataType="vm:ExerciseEditViewModel">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.ExerciseEditPage"
+             Title="{Binding Title}"
+             x:DataType="vm:ExerciseEditViewModel"
+             BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="8">
-            <Label Text="Название" />
-            <Entry Placeholder="Например, Жим лёжа" Text="{Binding Name}" />
+        <VerticalStackLayout Padding="{OnIdiom Phone='16,12,16,40', Desktop='28,20,28,40'}"
+                             Spacing="16"
+                             HorizontalOptions="Fill">
 
-            <Label Margin="0,8,0,0" Text="Тип" />
-            <Picker ItemsSource="{Binding TypeOptions}" SelectedIndex="{Binding TypeIndex}" />
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="ПАРАМЕТРЫ УПРАЖНЕНИЯ"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
 
-            <Label Margin="0,8,0,0" Text="Описание" />
-            <Editor HeightRequest="100" Text="{Binding Description}" />
+                    <!-- Name -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Название упражнения"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Entry Text="{Binding Name}"
+                               Placeholder="Например, Жим штанги лёжа"
+                               PlaceholderColor="{DynamicResource KineticTextMuted}"
+                               TextColor="{DynamicResource KineticText}"
+                               BackgroundColor="{DynamicResource KineticWell}"
+                               HeightRequest="46" />
+                    </VerticalStackLayout>
 
-            <Label Margin="0,8,0,0" Text="Заметки" />
-            <Editor HeightRequest="100" Text="{Binding Notes}" />
+                    <!-- Type Picker -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Тип упражнения"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="8,2">
+                            <Picker ItemsSource="{Binding TypeOptions}"
+                                    SelectedIndex="{Binding TypeIndex}"
+                                    TextColor="{DynamicResource KineticText}"
+                                    TitleColor="{DynamicResource KineticTextMuted}" />
+                        </Border>
+                    </VerticalStackLayout>
 
-            <Button
-                Margin="0,16,0,0"
-                Command="{Binding SaveCommand}"
-                Text="Сохранить" />
-            <Button
-                BackgroundColor="Firebrick"
-                Command="{Binding DeleteCommand}"
-                IsVisible="{Binding CanDelete}"
-                Text="Удалить" />
+                    <!-- Description -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Описание техники (необязательно)"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Editor Text="{Binding Description}"
+                                Placeholder="Инструкция по выполнению, нюансы..."
+                                PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                TextColor="{DynamicResource KineticText}"
+                                BackgroundColor="{DynamicResource KineticWell}"
+                                AutoSize="TextChanges"
+                                HeightRequest="80" />
+                    </VerticalStackLayout>
+
+                    <!-- Notes -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Личные заметки (необязательно)"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Editor Text="{Binding Notes}"
+                                Placeholder="Любые личные пометки, настройки тренажёра..."
+                                PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                TextColor="{DynamicResource KineticText}"
+                                BackgroundColor="{DynamicResource KineticWell}"
+                                AutoSize="TextChanges"
+                                HeightRequest="80" />
+                    </VerticalStackLayout>
+
+                    <!-- Action Buttons -->
+                    <VerticalStackLayout Spacing="10" Margin="0,6,0,0">
+                        <Button Text="Сохранить упражнение"
+                                Command="{Binding SaveCommand}"
+                                Style="{StaticResource VoltButton}"
+                                HeightRequest="46"
+                                FontSize="14" />
+
+                        <Button Text="Удалить упражнение"
+                                Command="{Binding DeleteCommand}"
+                                IsVisible="{Binding CanDelete}"
+                                Style="{StaticResource DangerActionButton}"
+                                HeightRequest="44" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

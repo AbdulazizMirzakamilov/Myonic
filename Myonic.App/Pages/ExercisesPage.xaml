@@ -1,58 +1,216 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="Myonic.Pages.ExercisesPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:Myonic.ViewModels"
-    x:Name="ThisPage"
-    Title="Упражнения"
-    x:DataType="vm:ExercisesViewModel"
-    BackgroundColor="{DynamicResource KineticCanvas}">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             xmlns:conv="clr-namespace:Myonic.Converters"
+             x:Class="Myonic.Pages.ExercisesPage"
+             x:DataType="vm:ExercisesViewModel"
+             x:Name="ThisPage"
+             Title="Упражнения"
+             BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:SwitcherBgColorConverter x:Key="SwitcherBgColorConverter" />
+            <conv:SwitcherTextColorConverter x:Key="SwitcherTextColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding AddCommand}" Text="+ Добавить" />
+        <ToolbarItem Command="{Binding OpenRecordsCommand}" Text="🏆 Рекорды" />
     </ContentPage.ToolbarItems>
 
-    <Grid
-        Padding="12"
-        RowDefinitions="Auto,*"
-        RowSpacing="8">
-        <SearchBar Placeholder="Поиск упражнения" Text="{Binding SearchText}" />
+    <Grid RowDefinitions="Auto,Auto,Auto,*"
+          Padding="{OnIdiom Phone='16,12,16,20', Desktop='28,20,28,30'}"
+          RowSpacing="12">
 
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Exercises}">
+        <!-- 1. Header with Title and Action Buttons -->
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" VerticalOptions="Center">
+            <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                <Label Text="БАЗА УПРАЖНЕНИЙ"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold" />
+                <Label Text="Библиотека движений"
+                       TextColor="{DynamicResource KineticText}"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+            </VerticalStackLayout>
+
+            <Button Grid.Column="1"
+                    Text="🏆 Рекорды"
+                    Command="{Binding OpenRecordsCommand}"
+                    Style="{StaticResource SecondaryActionButton}"
+                    HeightRequest="38"
+                    Padding="12,0"
+                    FontSize="12"
+                    FontAttributes="Bold" />
+
+            <Button Grid.Column="2"
+                    Text="+ Добавить"
+                    Command="{Binding AddCommand}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="38"
+                    Padding="14,0"
+                    FontSize="12" />
+        </Grid>
+
+        <!-- 2. Search Bar -->
+        <Border Grid.Row="1"
+                BackgroundColor="{DynamicResource KineticWell}"
+                Stroke="{DynamicResource KineticBorderSubtle}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 12"
+                Padding="6,2">
+            <SearchBar Placeholder="Поиск по названию..."
+                       PlaceholderColor="{DynamicResource KineticTextMuted}"
+                       TextColor="{DynamicResource KineticText}"
+                       BackgroundColor="Transparent"
+                       Text="{Binding SearchText}" />
+        </Border>
+
+        <!-- 3. Category Filter Chips + Count Badge -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+            <Border BackgroundColor="{DynamicResource KineticWell}"
+                    Stroke="{DynamicResource KineticBorderSubtle}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="3">
+                <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="4">
+                    <!-- Filter All -->
+                    <Border BackgroundColor="{Binding IsAllFilter, Converter={StaticResource SwitcherBgColorConverter}}"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="12,6">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="0" />
+                        </Border.GestureRecognizers>
+                        <Label Text="Все"
+                               TextColor="{Binding IsAllFilter, Converter={StaticResource SwitcherTextColorConverter}}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                    </Border>
+
+                    <!-- Filter Compound -->
+                    <Border Grid.Column="1"
+                            BackgroundColor="{Binding IsCompoundFilter, Converter={StaticResource SwitcherBgColorConverter}}"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="12,6">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="1" />
+                        </Border.GestureRecognizers>
+                        <Label Text="Базовые"
+                               TextColor="{Binding IsCompoundFilter, Converter={StaticResource SwitcherTextColorConverter}}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                    </Border>
+
+                    <!-- Filter Isolation -->
+                    <Border Grid.Column="2"
+                            BackgroundColor="{Binding IsIsolationFilter, Converter={StaticResource SwitcherBgColorConverter}}"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="12,6">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="2" />
+                        </Border.GestureRecognizers>
+                        <Label Text="Изолирующие"
+                               TextColor="{Binding IsIsolationFilter, Converter={StaticResource SwitcherTextColorConverter}}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Total count label -->
+            <Label Grid.Column="1"
+                   Text="{Binding CountText}"
+                   TextColor="{DynamicResource KineticTextMuted}"
+                   FontSize="12"
+                   HorizontalOptions="End"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <!-- 4. Exercises List -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Exercises}"
+                        SelectionMode="None">
             <CollectionView.EmptyView>
-                <Label
-                    Margin="0,32"
-                    HorizontalOptions="Center"
-                    Text="Ничего не найдено" />
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="24,36"
+                        Margin="0,16,0,0">
+                    <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="🔍" FontSize="36" HorizontalTextAlignment="Center" />
+                        <Label Text="Упражнения не найдены"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="17"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Попробуйте изменить поисковый запрос или добавьте новое упражнение в базу."
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="13"
+                               HorizontalTextAlignment="Center" />
+                        <Button Text="+ Добавить упражнение"
+                                Command="{Binding AddCommand}"
+                                Style="{StaticResource VoltButton}"
+                                HeightRequest="44"
+                                Padding="18,0"
+                                Margin="0,8,0,0"
+                                FontSize="13" />
+                    </VerticalStackLayout>
+                </Border>
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ExerciseListItem">
-                    <Border
-                        Margin="0,4"
-                        Padding="12"
-                        Stroke="{DynamicResource KineticBorderSubtle}"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        BackgroundColor="{DynamicResource KineticWell}">
+                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                            Stroke="{DynamicResource KineticBorder}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 14"
+                            Padding="14,12"
+                            Margin="0,3">
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenCommand}" CommandParameter="{Binding .}" />
+                            <TapGestureRecognizer
+                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenCommand}"
+                                CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
-                        <VerticalStackLayout Spacing="2">
-                            <Label
-                                FontAttributes="Bold"
-                                FontSize="16"
-                                TextColor="{DynamicResource KineticText}"
-                                Text="{Binding Name}" />
-                            <Label
-                                FontSize="12"
-                                TextColor="{DynamicResource KineticTextSecondary}"
-                                Text="{Binding TypeText}" />
-                        </VerticalStackLayout>
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                            <!-- Name -->
+                            <Label Text="{Binding Name}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center" />
+
+                            <!-- Type badge -->
+                            <Border Grid.Column="1"
+                                    BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    Padding="8,3"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding TypeText}"
+                                       TextColor="{DynamicResource KineticVolt}"
+                                       FontSize="11"
+                                       FontAttributes="Bold" />
+                            </Border>
+
+                            <!-- Chevron -->
+                            <Label Grid.Column="2"
+                                   Text="›"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+
     </Grid>
 </ContentPage>

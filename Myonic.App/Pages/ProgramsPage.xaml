@@ -3,79 +3,182 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              xmlns:repo="clr-namespace:Myonic.Core.Repositories;assembly=Myonic.Core"
+             xmlns:conv="clr-namespace:Myonic.Converters"
              x:Class="Myonic.Pages.ProgramsPage"
              x:DataType="vm:ProgramsViewModel"
              x:Name="ThisPage"
-             Title="Программы">
+             Title="Тренинг"
+             BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Добавить" Command="{Binding AddCommand}" />
+        <ToolbarItem Text="+ Создать" Command="{Binding AddCommand}" />
     </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="Auto,*" Padding="12">
+    <ScrollView>
+        <VerticalStackLayout Padding="{OnIdiom Phone='16,12,16,40', Desktop='28,20,28,40'}"
+                             Spacing="16"
+                             HorizontalOptions="Fill">
 
-        <!-- Active Workout Banner -->
-        <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
-                Stroke="{DynamicResource KineticVolt}"
-                StrokeThickness="1.5"
-                BackgroundColor="{DynamicResource KineticSurface}"
-                StrokeShape="RoundRectangle 12"
-                Padding="14,10"
-                Margin="0,0,0,14">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+            <!-- Active Workout Banner (Sticky Top) -->
+            <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
+                    Stroke="{DynamicResource KineticVolt}"
+                    StrokeThickness="1.5"
+                    BackgroundColor="{DynamicResource KineticSurface}"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="14,10">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                            <Label Text="ИДЕТ АКТИВНАЯ ТРЕНИРОВКА"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="11"
+                                   FontAttributes="Bold" />
+                            <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
+                            <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="11"
+                                   FontAttributes="Bold" />
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding ActiveWorkoutTracker.Title}"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               LineBreakMode="TailTruncation" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1"
+                            Text="Продолжить"
+                            Command="{Binding ActiveWorkoutTracker.ResumeCommand}"
+                            Style="{StaticResource VoltButton}"
+                            HeightRequest="42"
+                            Padding="16,0"
+                            FontSize="13" />
+                </Grid>
+            </Border>
+
+            <!-- Section Header -->
+            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                 <VerticalStackLayout VerticalOptions="Center" Spacing="2">
-                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                        <Label Text="ИДЕТ АКТИВНАЯ ТРЕНИРОВКА"
-                               TextColor="{DynamicResource KineticVolt}"
-                               FontSize="11"
-                               FontAttributes="Bold" />
-                        <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
-                        <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
-                               TextColor="{DynamicResource KineticVolt}"
-                               FontSize="11"
-                               FontAttributes="Bold" />
-                    </HorizontalStackLayout>
-                    <Label Text="{Binding ActiveWorkoutTracker.Title}"
+                    <Label Text="ТРЕНИРОВОЧНЫЕ ПРОГРАММЫ"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+                    <Label Text="Ваши программы"
                            TextColor="{DynamicResource KineticText}"
-                           FontSize="16"
-                           FontAttributes="Bold"
-                           LineBreakMode="TailTruncation" />
+                           FontSize="22"
+                           FontAttributes="Bold" />
                 </VerticalStackLayout>
                 <Button Grid.Column="1"
-                        Text="Продолжить"
-                        Command="{Binding ActiveWorkoutTracker.ResumeCommand}"
+                        Text="+ Создать"
+                        Command="{Binding AddCommand}"
                         Style="{StaticResource VoltButton}"
-                        HeightRequest="42"
+                        HeightRequest="38"
                         Padding="16,0"
                         FontSize="13" />
             </Grid>
-        </Border>
 
-        <!-- Programs List -->
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Programs}">
-            <CollectionView.EmptyView>
-                <Label Text="Программ пока нет. Нажмите «Добавить»."
-                       HorizontalOptions="Center" Margin="0,32" />
-            </CollectionView.EmptyView>
+            <!-- Programs List -->
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Programs}"
+                                 Spacing="10"
+                                 IsVisible="{Binding HasPrograms}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="repo:ProgramSummary">
+                        <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="16,14">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="6" ColumnSpacing="10">
+                                <!-- Top Row: Icon + Title + Days Badge -->
+                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                    <Label Text="📋" FontSize="18" VerticalOptions="Center" />
+                                    <Label Text="{Binding Name}"
+                                           TextColor="{DynamicResource KineticText}"
+                                           FontSize="17"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
 
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="repo:ProgramSummary">
-                    <Border Padding="12" Margin="0,4" StrokeThickness="1"
-                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
-                            StrokeShape="RoundRectangle 8">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer
-                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenCommand}"
-                                CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-                        <VerticalStackLayout Spacing="2">
-                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
-                            <Label Text="{Binding WorkoutCount, StringFormat='Тренировок: {0}'}"
-                                   FontSize="12" Opacity="0.7" />
-                        </VerticalStackLayout>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </Grid>
+                                <Border Grid.Column="1"
+                                        BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="10,4"
+                                        VerticalOptions="Center">
+                                    <Label Text="{Binding WorkoutCount, StringFormat='{0} дн.'}"
+                                           TextColor="{DynamicResource KineticVolt}"
+                                           FontSize="12"
+                                           FontAttributes="Bold" />
+                                </Border>
+
+                                <!-- Middle Row: Description (if available) -->
+                                <Label Grid.Row="1"
+                                       Grid.ColumnSpan="2"
+                                       Text="{Binding Description}"
+                                       IsVisible="{Binding Description, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="13"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="2" />
+
+                                <!-- Bottom Row: Action Hint + Chevron -->
+                                <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                                    <Label Text="Нажмите, чтобы настроить дни и упражнения"
+                                           TextColor="{DynamicResource KineticTextMuted}"
+                                           FontSize="12"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="›"
+                                           TextColor="{DynamicResource KineticVolt}"
+                                           FontSize="22"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <!-- Empty State -->
+            <Border IsVisible="{Binding HasNoPrograms}"
+                    BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="24,36">
+                <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Label Text="📋" FontSize="40" HorizontalTextAlignment="Center" />
+                    <Label Text="Программ пока нет"
+                           TextColor="{DynamicResource KineticText}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Создайте тренировочную программу (сплит), добавьте дни и упражнения."
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="13"
+                           HorizontalTextAlignment="Center" />
+                    <Button Text="+ Создать первую программу"
+                            Command="{Binding AddCommand}"
+                            Style="{StaticResource VoltButton}"
+                            HeightRequest="46"
+                            Padding="20,0"
+                            Margin="0,10,0,0"
+                            FontSize="14" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

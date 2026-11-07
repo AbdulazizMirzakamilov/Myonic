@@ -440,6 +440,17 @@
         <Setter Property="HeightRequest" Value="44" />
     </Style>
 
+    <Style x:Key="DangerActionButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{DynamicResource KineticCrimson}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BorderColor" Value="{DynamicResource KineticCrimson}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="HeightRequest" Value="44" />
+    </Style>
+
     <Style TargetType="NavigationPage">
         <Setter Property="BarBackgroundColor" Value="{DynamicResource KineticCanvas}" />
         <Setter Property="BarTextColor" Value="{DynamicResource KineticText}" />

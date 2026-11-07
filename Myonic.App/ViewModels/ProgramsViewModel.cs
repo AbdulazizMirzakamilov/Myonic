@@ -17,6 +17,12 @@ public partial class ProgramsViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasActiveSession;
 
+    [ObservableProperty]
+    private bool _hasPrograms;
+
+    [ObservableProperty]
+    private bool _hasNoPrograms = true;
+
     public Myonic.Services.IActiveWorkoutTracker ActiveWorkoutTracker { get; }
 
     public ProgramsViewModel(
@@ -43,6 +49,9 @@ public partial class ProgramsViewModel : ObservableObject
         Programs.Clear();
         foreach (var item in items)
             Programs.Add(item);
+
+        HasPrograms = Programs.Count > 0;
+        HasNoPrograms = !HasPrograms;
     }
 
     [RelayCommand]

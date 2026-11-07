@@ -7,7 +7,7 @@ using Myonic.Pages;
 
 namespace Myonic.ViewModels;
 
-public record ExerciseListItem(int Id, string Name, string TypeText);
+public record ExerciseListItem(int Id, string Name, string TypeText, bool IsCompound = false);
 
 internal static class ExerciseTypeExtensions
 {
@@ -30,16 +30,60 @@ public partial class ExercisesViewModel : ObservableObject
     [ObservableProperty]
     private string _searchText = string.Empty;
 
-    partial void OnSearchTextChanged(string value) => LoadCommand.Execute(null);
+    [ObservableProperty]
+    private int _filterIndex; // 0: Все, 1: Базовые, 2: Изолирующие
+
+    [ObservableProperty]
+    private bool _hasExercises;
+
+    [ObservableProperty]
+    private bool _hasNoExercises;
+
+    [ObservableProperty]
+    private string _countText = string.Empty;
+
+    public bool IsAllFilter => FilterIndex == 0;
+    public bool IsCompoundFilter => FilterIndex == 1;
+    public bool IsIsolationFilter => FilterIndex == 2;
+
+    partial void OnSearchTextChanged(string value) => _ = LoadAsync();
 
     [RelayCommand]
-    private async Task LoadAsync()
+    public void SelectFilter(string indexStr)
+    {
+        if (int.TryParse(indexStr, out var idx) && idx >= 0 && idx <= 2)
+        {
+            FilterIndex = idx;
+            OnPropertyChanged(nameof(IsAllFilter));
+            OnPropertyChanged(nameof(IsCompoundFilter));
+            OnPropertyChanged(nameof(IsIsolationFilter));
+            _ = LoadAsync();
+        }
+    }
+
+    [RelayCommand]
+    public async Task LoadAsync()
     {
         var items = await _repository.GetAllAsync(SearchText);
 
+        if (FilterIndex == 1)
+        {
+            items = items.Where(x => x.Type == ExerciseType.Compound).ToList();
+        }
+        else if (FilterIndex == 2)
+        {
+            items = items.Where(x => x.Type == ExerciseType.Isolation).ToList();
+        }
+
         Exercises.Clear();
         foreach (var e in items)
-            Exercises.Add(new ExerciseListItem(e.Id, e.Name, e.Type.ToDisplayText()));
+        {
+            Exercises.Add(new ExerciseListItem(e.Id, e.Name, e.Type.ToDisplayText(), e.Type == ExerciseType.Compound));
+        }
+
+        HasExercises = Exercises.Count > 0;
+        HasNoExercises = !HasExercises;
+        CountText = $"Всего: {Exercises.Count}";
     }
 
     [RelayCommand]
