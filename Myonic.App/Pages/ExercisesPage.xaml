@@ -16,17 +16,13 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding AddCommand}" Text="+ Добавить" />
-        <ToolbarItem Command="{Binding OpenRecordsCommand}" Text="🏆 Рекорды" />
-    </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto,Auto,Auto,*"
           Padding="{OnIdiom Phone='16,12,16,20', Desktop='28,20,28,30'}"
           RowSpacing="12">
 
-        <!-- 1. Header with Title and Action Buttons -->
-        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" VerticalOptions="Center">
+        <!-- 1. Header with Title and Add Button -->
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
             <VerticalStackLayout VerticalOptions="Center" Spacing="2">
                 <Label Text="БАЗА УПРАЖНЕНИЙ"
                        TextColor="{DynamicResource KineticTextMuted}"
@@ -39,15 +35,6 @@
             </VerticalStackLayout>
 
             <Button Grid.Column="1"
-                    Text="🏆 Рекорды"
-                    Command="{Binding OpenRecordsCommand}"
-                    Style="{StaticResource SecondaryActionButton}"
-                    HeightRequest="38"
-                    Padding="12,0"
-                    FontSize="12"
-                    FontAttributes="Bold" />
-
-            <Button Grid.Column="2"
                     Text="+ Добавить"
                     Command="{Binding AddCommand}"
                     Style="{StaticResource VoltButton}"
