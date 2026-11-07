@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Myonic.Core.Models;
 using Myonic.Core.Services;
 
@@ -63,7 +64,8 @@ public sealed class DataBackupService : IDataBackupService
         var options = new JsonSerializerOptions
         {
             WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         var json = JsonSerializer.Serialize(root, options);
@@ -124,55 +126,53 @@ public sealed class DataBackupService : IDataBackupService
 
         var db = await _database.GetConnectionAsync();
 
-        await db.ExecuteAsync("PRAGMA foreign_keys = OFF");
         try
         {
-            // Clear current tables
-            await db.ExecuteAsync("DELETE FROM SetEntry");
-            await db.ExecuteAsync("DELETE FROM WorkoutExercise");
-            await db.ExecuteAsync("DELETE FROM WorkoutSession");
-            await db.ExecuteAsync("DELETE FROM ProgramExercise");
-            await db.ExecuteAsync("DELETE FROM ProgramWorkout");
-            await db.ExecuteAsync("DELETE FROM TrainingProgram");
-            await db.ExecuteAsync("DELETE FROM ScheduledWorkout");
-            await db.ExecuteAsync("DELETE FROM PersonalRecord");
-            await db.ExecuteAsync("DELETE FROM BodyMeasurement");
-            await db.ExecuteAsync("DELETE FROM Goal");
-            await db.ExecuteAsync("DELETE FROM Exercise");
+            // Execute PRAGMA outside of transaction (SQLite ignores foreign_keys pragma inside a transaction)
+            await db.ExecuteAsync("PRAGMA foreign_keys = OFF");
 
-            // Bulk insert in topological order
-            if (root.Exercises?.Count > 0)
-                await db.InsertAllAsync(root.Exercises);
+            // Execute all deletions and insertions inside an atomic SQLite transaction
+            await db.RunInTransactionAsync(conn =>
+            {
+                // 1. Clear current tables in reverse topological order (children first)
+                conn.Execute("DELETE FROM SetEntry");
+                conn.Execute("DELETE FROM PersonalRecord");
+                conn.Execute("DELETE FROM WorkoutExercise");
+                conn.Execute("DELETE FROM WorkoutSession");
+                conn.Execute("DELETE FROM ProgramExercise");
+                conn.Execute("DELETE FROM ScheduledWorkout");
+                conn.Execute("DELETE FROM ProgramWorkout");
+                conn.Execute("DELETE FROM TrainingProgram");
+                conn.Execute("DELETE FROM BodyMeasurement");
+                conn.Execute("DELETE FROM Goal");
+                conn.Execute("DELETE FROM Exercise");
 
-            if (root.Programs?.Count > 0)
-                await db.InsertAllAsync(root.Programs);
+                // 2. Bulk insert with explicit ID preservation (using InsertOrReplace)
+                InsertOrReplaceList(conn, root.Exercises);
+                InsertOrReplaceList(conn, root.Programs);
+                InsertOrReplaceList(conn, root.Workouts);
+                InsertOrReplaceList(conn, root.ProgramExercises);
+                InsertOrReplaceList(conn, root.Schedules);
+                InsertOrReplaceList(conn, root.Sessions);
+                InsertOrReplaceList(conn, root.WorkoutExercises);
+                InsertOrReplaceList(conn, root.SetEntries);
+                InsertOrReplaceList(conn, root.PersonalRecords);
+                InsertOrReplaceList(conn, root.BodyMeasurements);
+                InsertOrReplaceList(conn, root.Goals);
+            });
 
-            if (root.Workouts?.Count > 0)
-                await db.InsertAllAsync(root.Workouts);
+            await db.ExecuteAsync("PRAGMA foreign_keys = ON");
 
-            if (root.ProgramExercises?.Count > 0)
-                await db.InsertAllAsync(root.ProgramExercises);
-
-            if (root.Schedules?.Count > 0)
-                await db.InsertAllAsync(root.Schedules);
-
-            if (root.Sessions?.Count > 0)
-                await db.InsertAllAsync(root.Sessions);
-
-            if (root.WorkoutExercises?.Count > 0)
-                await db.InsertAllAsync(root.WorkoutExercises);
-
-            if (root.SetEntries?.Count > 0)
-                await db.InsertAllAsync(root.SetEntries);
-
-            if (root.PersonalRecords?.Count > 0)
-                await db.InsertAllAsync(root.PersonalRecords);
-
-            if (root.BodyMeasurements?.Count > 0)
-                await db.InsertAllAsync(root.BodyMeasurements);
-
-            if (root.Goals?.Count > 0)
-                await db.InsertAllAsync(root.Goals);
+            // Integrity check after import
+            var integrity = await db.ExecuteScalarAsync<string>("PRAGMA integrity_check");
+            if (!string.Equals(integrity, "ok", StringComparison.OrdinalIgnoreCase))
+            {
+                return new BackupSummary
+                {
+                    Success = false,
+                    ErrorMessage = $"Ошибка целостности базы после импорта: {integrity}"
+                };
+            }
 
             return new BackupSummary
             {
@@ -186,9 +186,14 @@ public sealed class DataBackupService : IDataBackupService
                 GoalsCount = root.Goals?.Count ?? 0
             };
         }
-        finally
+        catch (Exception ex)
         {
             await db.ExecuteAsync("PRAGMA foreign_keys = ON");
+            return new BackupSummary
+            {
+                Success = false,
+                ErrorMessage = $"Критическая ошибка при записи в базу: {ex.Message}"
+            };
         }
     }
 
@@ -253,8 +258,13 @@ public sealed class DataBackupService : IDataBackupService
         // Copy backup to database path
         File.Copy(backupFilePath, dbPath, overwrite: true);
 
-        // Reconnect and run migrations/checks
-        await _database.GetConnectionAsync();
+        // Reconnect and verify integrity
+        var conn = await _database.GetConnectionAsync();
+        var integrity = await conn.ExecuteScalarAsync<string>("PRAGMA integrity_check");
+        if (!string.Equals(integrity, "ok", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException($"Восстановленная база данных повреждена: {integrity}");
+        }
 
         return true;
     }
@@ -297,34 +307,46 @@ public sealed class DataBackupService : IDataBackupService
     {
         var db = await _database.GetConnectionAsync();
 
-        await db.ExecuteAsync("PRAGMA foreign_keys = OFF");
-        try
+        await db.RunInTransactionAsync(conn =>
         {
-            await db.ExecuteAsync("DELETE FROM SetEntry");
-            await db.ExecuteAsync("DELETE FROM WorkoutExercise");
-            await db.ExecuteAsync("DELETE FROM WorkoutSession");
-            await db.ExecuteAsync("DELETE FROM ProgramExercise");
-            await db.ExecuteAsync("DELETE FROM ProgramWorkout");
-            await db.ExecuteAsync("DELETE FROM TrainingProgram");
-            await db.ExecuteAsync("DELETE FROM ScheduledWorkout");
-            await db.ExecuteAsync("DELETE FROM PersonalRecord");
-            await db.ExecuteAsync("DELETE FROM BodyMeasurement");
-            await db.ExecuteAsync("DELETE FROM Goal");
-
-            if (keepDefaultExercises)
+            conn.Execute("PRAGMA foreign_keys = OFF");
+            try
             {
-                await db.ExecuteAsync("DELETE FROM Exercise WHERE IsCustom = 1");
-            }
-            else
-            {
-                await db.ExecuteAsync("DELETE FROM Exercise");
-            }
+                conn.Execute("DELETE FROM SetEntry");
+                conn.Execute("DELETE FROM WorkoutExercise");
+                conn.Execute("DELETE FROM WorkoutSession");
+                conn.Execute("DELETE FROM ProgramExercise");
+                conn.Execute("DELETE FROM ProgramWorkout");
+                conn.Execute("DELETE FROM TrainingProgram");
+                conn.Execute("DELETE FROM ScheduledWorkout");
+                conn.Execute("DELETE FROM PersonalRecord");
+                conn.Execute("DELETE FROM BodyMeasurement");
+                conn.Execute("DELETE FROM Goal");
 
-            await db.ExecuteAsync("VACUUM");
-        }
-        finally
+                if (keepDefaultExercises)
+                {
+                    conn.Execute("DELETE FROM Exercise WHERE IsCustom = 1");
+                }
+                else
+                {
+                    conn.Execute("DELETE FROM Exercise");
+                }
+            }
+            finally
+            {
+                conn.Execute("PRAGMA foreign_keys = ON");
+            }
+        });
+
+        await db.ExecuteAsync("VACUUM");
+    }
+
+    private static void InsertOrReplaceList<T>(SQLite.SQLiteConnection conn, IEnumerable<T>? items)
+    {
+        if (items == null) return;
+        foreach (var item in items)
         {
-            await db.ExecuteAsync("PRAGMA foreign_keys = ON");
+            conn.InsertOrReplace(item);
         }
     }
 

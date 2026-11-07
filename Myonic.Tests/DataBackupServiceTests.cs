@@ -6,6 +6,13 @@ using Xunit;
 
 namespace Myonic.Tests;
 
+public class FkViolation
+{
+    public string TableName { get; set; } = string.Empty;
+    public long RowId { get; set; }
+    public string ParentName { get; set; } = string.Empty;
+}
+
 public class DataBackupServiceTests : IAsyncLifetime
 {
     private readonly string _dbPath;
@@ -174,6 +181,10 @@ public class DataBackupServiceTests : IAsyncLifetime
 
         var restoredGoals = await db.Table<Goal>().ToListAsync();
         Assert.Contains(restoredGoals, g => g.Title == "Присед 160 кг");
+
+        // Verify SQLite PRAGMA integrity
+        var integrity = await db.ExecuteScalarAsync<string>("PRAGMA integrity_check");
+        Assert.Equal("ok", integrity, ignoreCase: true);
     }
 
     [Fact]
@@ -217,6 +228,18 @@ public class DataBackupServiceTests : IAsyncLifetime
         var conn = await _database.GetConnectionAsync();
         var restoredGoals = await conn.Table<Goal>().ToListAsync();
         Assert.Contains(restoredGoals, g => g.Title == "Становая 200 кг");
+
+        var integrity = await conn.ExecuteScalarAsync<string>("PRAGMA integrity_check");
+        Assert.Equal("ok", integrity, ignoreCase: true);
+    }
+
+    [Fact]
+    public async Task RestoreSqliteBackupAsync_NonSqliteFile_ThrowsInvalidDataException()
+    {
+        var fakePath = Path.Combine(_backupsDir, "fake_backup.db3");
+        await File.WriteAllTextAsync(fakePath, "This is not an SQLite database file at all!");
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.RestoreSqliteBackupAsync(fakePath));
     }
 
     [Fact]
@@ -267,5 +290,85 @@ public class DataBackupServiceTests : IAsyncLifetime
 
         var listAfterDelete = await _service.GetAvailableBackupsAsync(_backupsDir);
         Assert.DoesNotContain(listAfterDelete, x => x.FileName == b1.FileName);
+    }
+
+    [Fact]
+    public async Task LargeVolumeRoundtrip_PreservesAllRelationsAndIntegrity()
+    {
+        var db = await _database.GetConnectionAsync();
+
+        // Insert full training program with workouts and exercises
+        var program = new TrainingProgram { Name = "Push Pull Legs 2026", Description = "Годовой цикл", IsArchived = false };
+        await db.InsertAsync(program);
+
+        var workout = new ProgramWorkout { ProgramId = program.Id, Name = "День А: Жимовой", Order = 1 };
+        await db.InsertAsync(workout);
+
+        var exercise = await db.Table<Exercise>().FirstAsync();
+        var progExercise = new ProgramExercise
+        {
+            ProgramWorkoutId = workout.Id,
+            ExerciseId = exercise.Id,
+            Order = 1,
+            Sets = 4,
+            Reps = 8,
+            RepsMax = 10
+        };
+        await db.InsertAsync(progExercise);
+
+        // Insert 5 workout sessions with 15 sets each
+        for (int s = 1; s <= 5; s++)
+        {
+            var session = new WorkoutSession
+            {
+                Title = $"Сессия {s}",
+                StartedAt = DateTime.UtcNow.AddDays(-s),
+                FinishedAt = DateTime.UtcNow.AddDays(-s).AddHours(1)
+            };
+            await db.InsertAsync(session);
+
+            var wExercise = new WorkoutExercise
+            {
+                WorkoutSessionId = session.Id,
+                ExerciseId = exercise.Id,
+                Order = 1
+            };
+            await db.InsertAsync(wExercise);
+
+            for (int r = 1; r <= 15; r++)
+            {
+                await db.InsertAsync(new SetEntry
+                {
+                    WorkoutExerciseId = wExercise.Id,
+                    SetNumber = r,
+                    Weight = 80 + r,
+                    Reps = 10,
+                    Rpe = 8.0
+                });
+            }
+        }
+
+        // Export to JSON
+        var exportPath = Path.Combine(_backupsDir, "large_export.json");
+        await _service.ExportToJsonAsync(exportPath);
+        var json = await File.ReadAllTextAsync(exportPath);
+
+        // Clear all
+        await _service.ClearAllUserDataAsync(keepDefaultExercises: false);
+
+        // Import back
+        var summary = await _service.ImportFromJsonAsync(json);
+        Assert.True(summary.Success, summary.ErrorMessage);
+        Assert.Equal(5, summary.SessionsCount);
+        Assert.Equal(75, summary.SetsCount); // 5 sessions * 15 sets
+        Assert.Equal(1, summary.ProgramsCount);
+
+        // Check PRAGMA integrity
+        var integrity = await db.ExecuteScalarAsync<string>("PRAGMA integrity_check");
+        Assert.Equal("ok", integrity, ignoreCase: true);
+
+        // Check foreign key consistency (0 violations)
+        var fkCheck = await db.QueryAsync<FkViolation>("SELECT [table] as TableName, rowid as RowId, parent as ParentName FROM pragma_foreign_key_check;");
+        Assert.True(fkCheck.Count == 0, $"FK violations: {string.Join(", ", fkCheck.Select(v => $"{v.TableName} row {v.RowId} -> {v.ParentName}"))}");
     }
 }
