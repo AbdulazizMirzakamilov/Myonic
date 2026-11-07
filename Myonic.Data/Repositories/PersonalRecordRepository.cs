@@ -1,3 +1,4 @@
+using Myonic.Core.Calculators;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 
@@ -108,7 +109,7 @@ public sealed class PersonalRecordRepository : IPersonalRecordRepository
         var newPrs = new List<PersonalRecordItem>();
         var now = DateTime.UtcNow;
 
-        // Check MaxWeight - actual weight lifted during workout (no automatic formula estimations)
+        // 1. Проверяем MaxWeight - максимальный поднятый рабочий вес в подходе
         var currentMaxWeight = await db.ExecuteScalarAsync<double?>(
             "SELECT MAX(Weight) FROM PersonalRecord WHERE ExerciseId = ? AND Type = ?",
             we.ExerciseId,
@@ -137,6 +138,45 @@ public sealed class PersonalRecordRepository : IPersonalRecordRepository
                 AchievedAt = pr.AchievedAt,
                 SetEntryId = pr.SetEntryId
             });
+        }
+
+        // 2. Для «Большой тройки» (жим лёжа, приседания, становая тяга) автоматически
+        // рассчитываем 1ПМ по всем 7 формулам и фиксируем среднее значение в Зале славы
+        if (OneRepMaxCalculator.IsBigThree(exercise.Name))
+        {
+            var avg1Rm = OneRepMaxCalculator.CalculateBigThreeAverage1Rm(weight, reps);
+            if (avg1Rm > 0)
+            {
+                var currentBest1Rm = await db.ExecuteScalarAsync<double?>(
+                    "SELECT MAX(Weight) FROM PersonalRecord WHERE ExerciseId = ? AND Type = ?",
+                    we.ExerciseId,
+                    (int)RecordType.OneRepMax);
+
+                if (currentBest1Rm == null || avg1Rm > currentBest1Rm.Value)
+                {
+                    var pr1Rm = new PersonalRecord
+                    {
+                        ExerciseId = we.ExerciseId,
+                        Type = RecordType.OneRepMax,
+                        Weight = avg1Rm,
+                        Reps = reps,
+                        AchievedAt = now,
+                        SetEntryId = setEntryId
+                    };
+                    await db.InsertAsync(pr1Rm);
+                    newPrs.Add(new PersonalRecordItem
+                    {
+                        Id = pr1Rm.Id,
+                        ExerciseId = pr1Rm.ExerciseId,
+                        ExerciseName = exercise.Name,
+                        Type = pr1Rm.Type,
+                        Weight = pr1Rm.Weight,
+                        Reps = pr1Rm.Reps,
+                        AchievedAt = pr1Rm.AchievedAt,
+                        SetEntryId = pr1Rm.SetEntryId
+                    });
+                }
+            }
         }
 
         return newPrs;

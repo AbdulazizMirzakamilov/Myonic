@@ -54,9 +54,27 @@ public class PersonalRecordRepositoryTests : IAsyncLifetime
         var set = await _sessionRepo.AddSetAsync(_workoutExerciseId, 100, 5, 8.0);
         var newPrs = await _repo.CheckAndRecordNewPrsAsync(_workoutExerciseId, set.Id, 100, 5);
 
-        // 100x5 should set MaxWeight (100) without automatic Epley 1RM calculation
-        Assert.Single(newPrs);
+        // Жим лёжа относится к Большой тройке: фиксируется и MaxWeight (100 кг), и OneRepMax (~115.5 кг)
+        Assert.Equal(2, newPrs.Count);
         Assert.Contains(newPrs, p => p.Type == RecordType.MaxWeight && p.Weight == 100);
+        Assert.Contains(newPrs, p => p.Type == RecordType.OneRepMax && p.Weight == 115.5);
+    }
+
+    [Fact]
+    public async Task CheckAndRecordNewPrs_NonBigThree_RecordsMaxWeightOnly()
+    {
+        var conn = await _db.GetConnectionAsync();
+        var biceps = await conn.Table<Exercise>().Where(e => e.Name == "Подъём штанги на бицепс").FirstAsync();
+
+        var sessionId = await _sessionRepo.StartEmptySessionAsync("Тест изоляции");
+        var we = await _sessionRepo.AddExerciseToSessionAsync(sessionId, biceps.Id);
+        var set = await _sessionRepo.AddSetAsync(we.WorkoutExerciseId, 40, 8, 8.0);
+
+        var newPrs = await _repo.CheckAndRecordNewPrsAsync(we.WorkoutExerciseId, set.Id, 40, 8);
+
+        // Для упражнения вне тройки (бицепс) фиксируется только MaxWeight (40), без автоматического 1ПМ
+        Assert.Single(newPrs);
+        Assert.Contains(newPrs, p => p.Type == RecordType.MaxWeight && p.Weight == 40);
     }
 
     [Fact]

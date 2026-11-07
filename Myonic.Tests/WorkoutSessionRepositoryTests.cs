@@ -222,8 +222,8 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         Assert.Equal(2, history.TotalSessionsCount);
         Assert.Equal(4, history.TotalSetsCount);
         Assert.Equal(100.0, history.AllTimeMaxWeight);
-        // Only actual 1-rep sets count as 1RM (100kg x 1)
-        Assert.Equal(100.0, history.AllTimeBest1Rm);
+        // Для жима лёжа AllTimeBest1Rm рассчитывается как среднее по формулам (90 кг x 5 дает 103.9 кг > 100 кг x 1)
+        Assert.Equal(103.9, history.AllTimeBest1Rm);
         Assert.Equal(2, history.Sessions.Count);
         Assert.Equal("Грудь 2", history.Sessions[0].WorkoutTitle);
         Assert.Equal(2, history.Sessions[0].Sets.Count);

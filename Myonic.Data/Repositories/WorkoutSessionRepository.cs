@@ -427,8 +427,10 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
 
             foreach (var s in sets)
             {
-                // Only actual 1-rep sets count as 1RM (no automatic formula estimation)
-                double est1Rm = s.Reps == 1 ? s.Weight : 0;
+                // Для «Большой тройки» (жим, присед, тяга) считаем средний 1ПМ по всем формулам; для остальных – только фактические 1-повторные подходы
+                double est1Rm = OneRepMaxCalculator.IsBigThree(exercise.Name)
+                    ? OneRepMaxCalculator.CalculateBigThreeAverage1Rm(s.Weight, s.Reps)
+                    : (s.Reps == 1 ? s.Weight : 0);
 
                 if (s.Weight > maxWeightInSession) maxWeightInSession = s.Weight;
                 if (est1Rm > best1RmInSession) best1RmInSession = est1Rm;
