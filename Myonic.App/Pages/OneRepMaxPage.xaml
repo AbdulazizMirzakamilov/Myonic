@@ -120,21 +120,27 @@
 
                 <!-- Average Section at the end of the formulas list -->
                 <Border BackgroundColor="{DynamicResource KineticWell}"
-                        Stroke="{DynamicResource KineticBorder}"
-                        StrokeShape="RoundRectangle 12"
-                        Padding="14,12"
-                        Margin="0,4,0,0">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Среднее значение"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="17"
-                               TextColor="{DynamicResource KineticText}"
-                               VerticalOptions="Center" />
+                        Stroke="{DynamicResource KineticVolt}"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 14"
+                        Padding="16,14"
+                        Margin="0,6,0,0">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="СРЕДНИЙ 1RM (ШАГ 2.5 КГ)"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="11"
+                                   FontAttributes="Bold" />
+                            <Label Text="Итоговый расчетный максимум"
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="13" />
+                        </VerticalStackLayout>
                         <Label Grid.Column="1"
                                Text="{Binding AverageText}"
                                FontFamily="OpenSansSemibold"
-                               FontSize="18"
-                               TextColor="{DynamicResource KineticText}"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="{DynamicResource KineticVolt}"
                                VerticalOptions="Center" />
                     </Grid>
                 </Border>
@@ -177,20 +183,27 @@
 
             <!-- Percentage Result -->
             <VerticalStackLayout Spacing="6" IsVisible="{Binding HasPercentResult}" Margin="0,4,0,0">
-                <Border BackgroundColor="{DynamicResource KineticSurface}"
-                        Stroke="{DynamicResource KineticBorder}"
-                        StrokeShape="RoundRectangle 12"
-                        Padding="14">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="{Binding PercentDetailText}"
-                               TextColor="{DynamicResource KineticTextSecondary}"
-                               VerticalOptions="Center"
-                               FontSize="15" />
+                <Border BackgroundColor="{DynamicResource KineticWell}"
+                        Stroke="{DynamicResource KineticVolt}"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 14"
+                        Padding="16,14">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                            <Label Text="РАСЧЁТНЫЙ ВЕС"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="11"
+                                   FontAttributes="Bold" />
+                            <Label Text="{Binding PercentDetailText}"
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="13" />
+                        </VerticalStackLayout>
                         <Label Grid.Column="1"
                                Text="{Binding PercentResultText}"
                                FontFamily="OpenSansSemibold"
-                               TextColor="{DynamicResource KineticText}"
-                               FontSize="20"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="{DynamicResource KineticVolt}"
                                VerticalOptions="Center" />
                     </Grid>
                 </Border>

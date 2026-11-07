@@ -19,6 +19,15 @@ public static class CalendarThemeHelper
         if (app?.UserAppTheme == AppTheme.Light) return false;
         return app?.RequestedTheme != AppTheme.Light;
     }
+
+    public static Color GetThemeColor(string key, Color fallback)
+    {
+        if (Application.Current?.Resources.TryGetValue(key, out var val) == true && val is Color c)
+        {
+            return c;
+        }
+        return fallback;
+    }
 }
 
 public class DayBgColorConverter : IValueConverter
@@ -30,11 +39,11 @@ public class DayBgColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return isDark ? Color.FromArgb("#CCFF00") : Color.FromArgb("#84CC16");
+            return CalendarThemeHelper.GetThemeColor("KineticVolt", isDark ? Color.FromArgb("#CCFF00") : Color.FromArgb("#65A30D"));
         }
         else
         {
-            return isDark ? Color.FromArgb("#1F242D") : Color.FromArgb("#FFFFFF");
+            return CalendarThemeHelper.GetThemeColor("KineticWell", isDark ? Color.FromArgb("#1F242D") : Color.FromArgb("#E2E8F0"));
         }
     }
 
@@ -50,11 +59,11 @@ public class DayTextColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return Color.FromArgb("#0F172A"); // High-contrast dark text on bright lime
+            return CalendarThemeHelper.GetThemeColor("KineticVoltText", isDark ? Color.FromArgb("#0F1115") : Color.FromArgb("#FFFFFF"));
         }
         else
         {
-            return isDark ? Color.FromArgb("#FFFFFF") : Color.FromArgb("#0F172A");
+            return CalendarThemeHelper.GetThemeColor("KineticText", isDark ? Color.FromArgb("#FFFFFF") : Color.FromArgb("#0F172A"));
         }
     }
 
@@ -70,11 +79,11 @@ public class DayTextMutedColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return Color.FromArgb("#1E293B");
+            return isDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#F1F5F9");
         }
         else
         {
-            return isDark ? Color.FromArgb("#94A3B8") : Color.FromArgb("#64748B");
+            return CalendarThemeHelper.GetThemeColor("KineticTextMuted", isDark ? Color.FromArgb("#94A3B8") : Color.FromArgb("#64748B"));
         }
     }
 
@@ -90,11 +99,45 @@ public class DayStrokeColorConverter : IValueConverter
 
         if (isSelected)
         {
-            return isDark ? Color.FromArgb("#CCFF00") : Color.FromArgb("#84CC16");
+            return CalendarThemeHelper.GetThemeColor("KineticVolt", isDark ? Color.FromArgb("#CCFF00") : Color.FromArgb("#65A30D"));
         }
         else
         {
-            return isDark ? Color.FromArgb("#2A313E") : Color.FromArgb("#CBD5E1");
+            return CalendarThemeHelper.GetThemeColor("KineticBorder", isDark ? Color.FromArgb("#2A313E") : Color.FromArgb("#CBD5E1"));
+        }
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
+public class SwitcherBgColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        bool isSelected = value is true;
+        if (!isSelected) return Colors.Transparent;
+
+        bool isDark = CalendarThemeHelper.IsDark();
+        return CalendarThemeHelper.GetThemeColor("KineticVolt", isDark ? Color.FromArgb("#CCFF00") : Color.FromArgb("#65A30D"));
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
+public class SwitcherTextColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        bool isSelected = value is true;
+        bool isDark = CalendarThemeHelper.IsDark();
+
+        if (isSelected)
+        {
+            return CalendarThemeHelper.GetThemeColor("KineticVoltText", isDark ? Color.FromArgb("#0F1115") : Color.FromArgb("#FFFFFF"));
+        }
+        else
+        {
+            return CalendarThemeHelper.GetThemeColor("KineticTextSecondary", isDark ? Color.FromArgb("#94A3B8") : Color.FromArgb("#64748B"));
         }
     }
 

@@ -16,14 +16,15 @@ public partial class SchedulePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        _viewModel.SubscribeThemeEvents();
+        _viewModel.NotifyAllThemeElements();
         await _viewModel.RefreshCalendarAsync();
     }
 
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        _viewModel.UnsubscribeThemeEvents();
+        // Do not unsubscribe singleton ViewModel from theme changes,
+        // so it seamlessly reflects themes when user toggles themes in Settings
     }
 
     private async void OnDayTapped(object? sender, TappedEventArgs e)

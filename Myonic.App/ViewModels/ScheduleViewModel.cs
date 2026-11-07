@@ -191,21 +191,40 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
 
         _themeChangedHandler = _ =>
         {
-            foreach (var d in WeekDays)
-            {
-                d.NotifyThemeChanged();
-            }
-            foreach (var w in MonthWeeks)
-            {
-                w.Day0.NotifyThemeChanged();
-                w.Day1.NotifyThemeChanged();
-                w.Day2.NotifyThemeChanged();
-                w.Day3.NotifyThemeChanged();
-                w.Day4.NotifyThemeChanged();
-                w.Day5.NotifyThemeChanged();
-                w.Day6.NotifyThemeChanged();
-            }
+            MainThread.BeginInvokeOnMainThread(NotifyAllThemeElements);
         };
+        _themeService.ThemeChanged += _themeChangedHandler;
+    }
+
+    public void NotifyAllThemeElements()
+    {
+        OnPropertyChanged(nameof(IsWeekView));
+        OnPropertyChanged(nameof(IsMonthView));
+
+        foreach (var d in WeekDays)
+        {
+            d.NotifyThemeChanged();
+        }
+
+        foreach (var w in MonthWeeks)
+        {
+            w.Day0.NotifyThemeChanged();
+            w.Day1.NotifyThemeChanged();
+            w.Day2.NotifyThemeChanged();
+            w.Day3.NotifyThemeChanged();
+            w.Day4.NotifyThemeChanged();
+            w.Day5.NotifyThemeChanged();
+            w.Day6.NotifyThemeChanged();
+        }
+
+        OnPropertyChanged(nameof(Day0));
+        OnPropertyChanged(nameof(Day1));
+        OnPropertyChanged(nameof(Day2));
+        OnPropertyChanged(nameof(Day3));
+        OnPropertyChanged(nameof(Day4));
+        OnPropertyChanged(nameof(Day5));
+        OnPropertyChanged(nameof(Day6));
+        OnPropertyChanged(nameof(MonthWeeks));
     }
 
     public void SubscribeThemeEvents()

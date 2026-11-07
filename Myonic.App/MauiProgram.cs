@@ -86,8 +86,9 @@ namespace Myonic
             builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<ProfilePage>();
 
-            // Theme Service & Settings
+            // Theme Service, Haptics & Settings
             builder.Services.AddSingleton<Myonic.Services.IThemeService, Myonic.Services.ThemeService>();
+            builder.Services.AddSingleton<Myonic.Services.IHapticService, Myonic.Services.HapticService>();
             builder.Services.AddSingleton<Myonic.Services.IActiveWorkoutTracker, Myonic.Services.ActiveWorkoutTracker>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsPage>();

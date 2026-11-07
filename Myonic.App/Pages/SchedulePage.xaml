@@ -16,6 +16,8 @@
             <conv:DayStrokeConverter x:Key="DayStrokeConverter" />
             <conv:DayStrokeColorConverter x:Key="DayStrokeColorConverter" />
             <conv:DayBgColorConverter x:Key="DayBgColorConverter" />
+            <conv:SwitcherBgColorConverter x:Key="SwitcherBgColorConverter" />
+            <conv:SwitcherTextColorConverter x:Key="SwitcherTextColorConverter" />
             <conv:DayTextColorConverter x:Key="DayTextColorConverter" />
             <conv:DayTextMutedColorConverter x:Key="DayTextMutedColorConverter" />
             <conv:DayCompletedIconColorConverter x:Key="DayCompletedIconColorConverter" />
@@ -117,28 +119,28 @@
                         HorizontalOptions="Start">
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="4">
                         <!-- Week View Button -->
-                        <Border BackgroundColor="{Binding IsWeekView, Converter={StaticResource DayBgColorConverter}}"
+                        <Border BackgroundColor="{Binding IsWeekView, Converter={StaticResource SwitcherBgColorConverter}}"
                                 StrokeShape="RoundRectangle 8"
                                 Padding="16,6">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SwitchToWeekViewCommand}" />
                             </Border.GestureRecognizers>
                             <Label Text="Неделя"
-                                   TextColor="{Binding IsWeekView, Converter={StaticResource DayTextColorConverter}}"
+                                   TextColor="{Binding IsWeekView, Converter={StaticResource SwitcherTextColorConverter}}"
                                    FontSize="13"
                                    FontAttributes="Bold" />
                         </Border>
 
                         <!-- Month View Button -->
                         <Border Grid.Column="1"
-                                BackgroundColor="{Binding IsMonthView, Converter={StaticResource DayBgColorConverter}}"
+                                BackgroundColor="{Binding IsMonthView, Converter={StaticResource SwitcherBgColorConverter}}"
                                 StrokeShape="RoundRectangle 8"
                                 Padding="16,6">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SwitchToMonthViewCommand}" />
                             </Border.GestureRecognizers>
                             <Label Text="Месяц"
-                                   TextColor="{Binding IsMonthView, Converter={StaticResource DayTextColorConverter}}"
+                                   TextColor="{Binding IsMonthView, Converter={StaticResource SwitcherTextColorConverter}}"
                                    FontSize="13"
                                    FontAttributes="Bold" />
                         </Border>

@@ -6,6 +6,7 @@ using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 using Myonic.Core.Validation;
 using Myonic.Pages;
+using Myonic.Services;
 
 namespace Myonic.ViewModels;
 
@@ -35,6 +36,7 @@ public partial class ActiveExerciseViewModel : ObservableObject
 {
     private readonly IWorkoutSessionRepository _repository;
     private readonly IPersonalRecordRepository _prRepository;
+    private readonly IHapticService _hapticService;
 
     public int WorkoutExerciseId { get; init; }
     public int ExerciseId { get; init; }
@@ -56,10 +58,12 @@ public partial class ActiveExerciseViewModel : ObservableObject
     public ActiveExerciseViewModel(
         IWorkoutSessionRepository repository,
         IPersonalRecordRepository prRepository,
-        SessionExerciseDetail detail)
+        SessionExerciseDetail detail,
+        IHapticService? hapticService = null)
     {
         _repository = repository;
         _prRepository = prRepository;
+        _hapticService = hapticService ?? new HapticService();
         WorkoutExerciseId = detail.WorkoutExerciseId;
         ExerciseId = detail.ExerciseId;
         Order = detail.Order;
@@ -125,7 +129,8 @@ public partial class ActiveExerciseViewModel : ObservableObject
 
             var newPrs = await _prRepository.CheckAndRecordNewPrsAsync(WorkoutExerciseId, created.Id, weight, reps);
             var isPr = newPrs.Count > 0;
-            var prBadge = isPr ? "🏆 " + string.Join(", ", newPrs.Select(p => p.TypeDisplayName)) : null;
+            var showPrBadges = Preferences.Get("show_pr_badges", true);
+            var prBadge = (isPr && showPrBadges) ? "🏆 " + string.Join(", ", newPrs.Select(p => p.TypeDisplayName)) : null;
 
             Sets.Add(new SetEntryItem
             {
@@ -134,15 +139,18 @@ public partial class ActiveExerciseViewModel : ObservableObject
                 Weight = created.Weight,
                 Reps = created.Reps,
                 Rpe = created.Rpe,
-                IsPr = isPr,
+                IsPr = isPr && showPrBadges,
                 PrBadgeText = prBadge
             });
 
             // Keep weight and reps for the next set, clear RPE
             NextRpeText = string.Empty;
 
-            if (isPr)
+            _hapticService.TriggerClick();
+
+            if (isPr && showPrBadges)
             {
+                _hapticService.TriggerSuccess();
                 await Shell.Current.DisplayAlertAsync(
                     "🎉 Новый личный рекорд!",
                     $"{ExerciseName}: {weight} кг × {reps}\n({string.Join(", ", newPrs.Select(p => p.TypeDisplayName))})",
@@ -164,6 +172,7 @@ public partial class ActiveExerciseViewModel : ObservableObject
 
         await _repository.DeleteSetAsync(item.Id);
         Sets.Remove(item);
+        _hapticService.TriggerClick();
 
         // Re-index remaining set numbers locally
         for (int i = 0; i < Sets.Count; i++)
@@ -185,6 +194,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
     private readonly IWorkoutSessionRepository _repository;
     private readonly IPersonalRecordRepository _prRepository;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IHapticService _hapticService;
     private IDispatcherTimer? _timer;
     private DateTime _startedAt;
     private int _sessionId;
@@ -203,11 +213,13 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
     public ActiveWorkoutViewModel(
         IWorkoutSessionRepository repository,
         IPersonalRecordRepository prRepository,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IHapticService? hapticService = null)
     {
         _repository = repository;
         _prRepository = prRepository;
         _serviceProvider = serviceProvider;
+        _hapticService = hapticService ?? serviceProvider.GetService<IHapticService>() ?? new HapticService();
     }
 
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -238,7 +250,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         Exercises.Clear();
         foreach (var ex in detail.Exercises)
         {
-            Exercises.Add(new ActiveExerciseViewModel(_repository, _prRepository, ex));
+            Exercises.Add(new ActiveExerciseViewModel(_repository, _prRepository, ex, _hapticService));
         }
 
         UpdateDuration();
@@ -284,7 +296,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         vm.ExerciseSelectedAsync = async exercise =>
         {
             var detail = await _repository.AddExerciseToSessionAsync(_sessionId, exercise.Id);
-            Exercises.Add(new ActiveExerciseViewModel(_repository, _prRepository, detail));
+            Exercises.Add(new ActiveExerciseViewModel(_repository, _prRepository, detail, _hapticService));
         };
 
         await Shell.Current.Navigation.PushModalAsync(picker);
@@ -319,6 +331,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         StopTimer();
         var finishedSessionId = _sessionId;
         ActiveWorkoutTracker?.NotifySessionFinished();
+        _hapticService.TriggerSuccess();
         await _repository.FinishSessionAsync(finishedSessionId);
         await Shell.Current.DisplayAlertAsync("Отличная работа!", "Тренировка завершена! Открываем итоги тренировки.", "OK");
         await Shell.Current.GoToAsync("//SchedulePage");
