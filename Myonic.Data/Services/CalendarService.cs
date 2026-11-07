@@ -70,6 +70,7 @@ public sealed class CalendarService : ICalendarService
             {
                 SessionId = session.Id,
                 Title = title,
+                ScheduledDate = session.StartedAt.ToLocalTime().Date,
                 TimeText = timeText,
                 DurationText = durationText,
                 Status = CalendarWorkoutStatus.Completed,
@@ -120,6 +121,7 @@ public sealed class CalendarService : ICalendarService
                 ProgramWorkoutId = p.ProgramWorkoutId,
                 Title = pTitle,
                 ProgramName = p.ProgramName,
+                ScheduledDate = targetDate.Date,
                 Status = CalendarWorkoutStatus.Planned,
                 ExercisesCount = p.ExerciseCount,
                 SummaryText = summaryText,

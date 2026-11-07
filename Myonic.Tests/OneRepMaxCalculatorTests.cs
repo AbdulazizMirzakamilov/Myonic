@@ -114,7 +114,7 @@ public class OneRepMaxCalculatorTests
     public void CalculateBigThreeAverage1Rm_FiveReps_ReturnsRoundedMean()
     {
         var avg = OneRepMaxCalculator.CalculateBigThreeAverage1Rm(100, 5);
-        Assert.Equal(115.5, avg);
+        Assert.Equal(115.0, avg);
     }
 
     [Fact]

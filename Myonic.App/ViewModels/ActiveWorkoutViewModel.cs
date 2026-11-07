@@ -194,6 +194,7 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
     private readonly IWorkoutSessionRepository _repository;
     private readonly IPersonalRecordRepository _prRepository;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IActiveWorkoutTracker _activeWorkoutTracker;
     private readonly IHapticService _hapticService;
     private IDispatcherTimer? _timer;
     private DateTime _startedAt;
@@ -207,18 +208,17 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
     public ObservableCollection<ActiveExerciseViewModel> Exercises { get; } = [];
 
-    private Myonic.Services.IActiveWorkoutTracker? ActiveWorkoutTracker =>
-        _serviceProvider.GetService<Myonic.Services.IActiveWorkoutTracker>();
-
     public ActiveWorkoutViewModel(
         IWorkoutSessionRepository repository,
         IPersonalRecordRepository prRepository,
         IServiceProvider serviceProvider,
+        IActiveWorkoutTracker? activeWorkoutTracker = null,
         IHapticService? hapticService = null)
     {
         _repository = repository;
         _prRepository = prRepository;
         _serviceProvider = serviceProvider;
+        _activeWorkoutTracker = activeWorkoutTracker ?? serviceProvider.GetService<IActiveWorkoutTracker>() ?? new ActiveWorkoutTracker(repository);
         _hapticService = hapticService ?? serviceProvider.GetService<IHapticService>() ?? new HapticService();
     }
 
@@ -330,9 +330,9 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
 
         StopTimer();
         var finishedSessionId = _sessionId;
-        ActiveWorkoutTracker?.NotifySessionFinished();
-        _hapticService.TriggerSuccess();
         await _repository.FinishSessionAsync(finishedSessionId);
+        _activeWorkoutTracker.NotifySessionFinished();
+        _hapticService.TriggerSuccess();
         await Shell.Current.DisplayAlertAsync("Отличная работа!", "Тренировка завершена! Открываем итоги тренировки.", "OK");
         await Shell.Current.GoToAsync("//SchedulePage");
         await Shell.Current.GoToAsync($"{nameof(WorkoutSessionDetailPage)}?sessionId={finishedSessionId}");
@@ -349,8 +349,8 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         if (!confirm) return;
 
         StopTimer();
-        ActiveWorkoutTracker?.NotifySessionFinished();
         await _repository.DiscardSessionAsync(_sessionId);
+        _activeWorkoutTracker.NotifySessionFinished();
         await Shell.Current.GoToAsync("//SchedulePage");
     }
 }

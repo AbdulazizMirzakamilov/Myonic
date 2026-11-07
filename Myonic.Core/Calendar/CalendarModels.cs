@@ -18,6 +18,7 @@ public sealed class CalendarWorkoutItem
     public string TimeText { get; init; } = string.Empty;
     public string DurationText { get; init; } = string.Empty;
     public CalendarWorkoutStatus Status { get; init; }
+    public DateTime? ScheduledDate { get; init; }
     public int ExercisesCount { get; init; }
     public int SetsCount { get; init; }
     public string SummaryText { get; init; } = string.Empty;
@@ -32,7 +33,8 @@ public sealed class CalendarWorkoutItem
     public bool IsCompleted => Status == CalendarWorkoutStatus.Completed;
     public bool IsPlanned => Status == CalendarWorkoutStatus.Planned;
     public bool IsMissed => false;
-    public bool CanStart => Status == CalendarWorkoutStatus.Planned;
+    public bool IsFuture => ScheduledDate.HasValue && ScheduledDate.Value.Date > DateTime.Today;
+    public bool CanStart => Status == CalendarWorkoutStatus.Planned && !IsFuture;
     public bool CanViewDetails => Status == CalendarWorkoutStatus.Completed;
 
     public string StatusDisplayName => Status switch

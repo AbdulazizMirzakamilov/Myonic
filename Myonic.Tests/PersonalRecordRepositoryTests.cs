@@ -57,7 +57,7 @@ public class PersonalRecordRepositoryTests : IAsyncLifetime
         // Жим лёжа относится к Большой тройке: фиксируется и MaxWeight (100 кг), и OneRepMax (~115.5 кг)
         Assert.Equal(2, newPrs.Count);
         Assert.Contains(newPrs, p => p.Type == RecordType.MaxWeight && p.Weight == 100);
-        Assert.Contains(newPrs, p => p.Type == RecordType.OneRepMax && p.Weight == 115.5);
+        Assert.Contains(newPrs, p => p.Type == RecordType.OneRepMax && p.Weight == 115.0);
     }
 
     [Fact]

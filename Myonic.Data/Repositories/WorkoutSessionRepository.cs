@@ -37,6 +37,16 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var programWorkout = await db.FindAsync<ProgramWorkout>(programWorkoutId)
             ?? throw new ArgumentException($"Тренировка с ID {programWorkoutId} не найдена.");
 
+        // Закрываем любые предыдущие незавершённые сессии
+        var oldActive = await db.Table<WorkoutSession>()
+            .Where(s => s.FinishedAt == null)
+            .ToListAsync();
+        foreach (var o in oldActive)
+        {
+            o.FinishedAt = DateTime.UtcNow;
+            await db.UpdateAsync(o);
+        }
+
         var session = new WorkoutSession
         {
             Title = programWorkout.Name,
@@ -74,6 +84,16 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
     public async Task<int> StartEmptySessionAsync(string title)
     {
         var db = await _database.GetConnectionAsync();
+
+        var oldActive = await db.Table<WorkoutSession>()
+            .Where(s => s.FinishedAt == null)
+            .ToListAsync();
+        foreach (var o in oldActive)
+        {
+            o.FinishedAt = DateTime.UtcNow;
+            await db.UpdateAsync(o);
+        }
+
         var session = new WorkoutSession
         {
             Title = string.IsNullOrWhiteSpace(title) ? "Свободная тренировка" : title.Trim(),
@@ -258,11 +278,22 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var session = await db.FindAsync<WorkoutSession>(sessionId)
             ?? throw new ArgumentException($"Сессия с ID {sessionId} не найдена.");
 
-        session.FinishedAt = DateTime.UtcNow;
+        var finishTime = DateTime.UtcNow;
+        session.FinishedAt = finishTime;
         if (!string.IsNullOrWhiteSpace(comment))
             session.Comment = comment.Trim();
 
         await db.UpdateAsync(session);
+
+        // Гарантируем, что в базе не останется других незакрытых «зависших» сессий
+        var dangling = await db.Table<WorkoutSession>()
+            .Where(s => s.FinishedAt == null)
+            .ToListAsync();
+        foreach (var d in dangling)
+        {
+            d.FinishedAt = finishTime;
+            await db.UpdateAsync(d);
+        }
     }
 
     public async Task DiscardSessionAsync(int sessionId)

@@ -91,11 +91,11 @@ public static class OneRepMaxCalculator
     public static double CalculateBigThreeAverage1Rm(double weight, int reps)
     {
         if (weight <= 0 || reps <= 0) return 0;
-        if (reps == 1) return weight;
+        if (reps == 1) return RoundToPlateStep(weight, 2.5);
         if (reps > MaxReps) return 0;
 
         var result = Calculate(weight, reps);
-        return Math.Round(result.Average, 1);
+        return RoundToPlateStep(result.Average, 2.5);
     }
 
     /// <summary>

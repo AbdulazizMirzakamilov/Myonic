@@ -72,24 +72,27 @@ public class ActiveWorkoutTracker : ObservableObject, IActiveWorkoutTracker
         try
         {
             var active = await _sessionRepo.GetActiveSessionSummaryAsync();
-            if (active != null)
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                _startedAt = active.StartedAt;
-                ActiveSessionId = active.Id;
-                Title = active.Title;
-                HasActiveSession = true;
-                UpdateDuration();
-                StartTimer();
-            }
-            else
-            {
-                StopTimer();
-                HasActiveSession = false;
-                ActiveSessionId = null;
-                Title = string.Empty;
-                DurationText = "00:00";
-                _startedAt = null;
-            }
+                if (active != null)
+                {
+                    _startedAt = active.StartedAt;
+                    ActiveSessionId = active.Id;
+                    Title = active.Title;
+                    HasActiveSession = true;
+                    UpdateDuration();
+                    StartTimer();
+                }
+                else
+                {
+                    StopTimer();
+                    HasActiveSession = false;
+                    ActiveSessionId = null;
+                    Title = string.Empty;
+                    DurationText = "00:00";
+                    _startedAt = null;
+                }
+            });
         }
         catch
         {
@@ -109,11 +112,14 @@ public class ActiveWorkoutTracker : ObservableObject, IActiveWorkoutTracker
     public void NotifySessionFinished()
     {
         StopTimer();
-        HasActiveSession = false;
-        ActiveSessionId = null;
-        Title = string.Empty;
-        DurationText = "00:00";
-        _startedAt = null;
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            HasActiveSession = false;
+            ActiveSessionId = null;
+            Title = string.Empty;
+            DurationText = "00:00";
+            _startedAt = null;
+        });
     }
 
     private void StartTimer()

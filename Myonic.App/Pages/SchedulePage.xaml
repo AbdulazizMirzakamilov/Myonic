@@ -32,39 +32,45 @@
                              Spacing="16"
                              HorizontalOptions="Fill">
 
-            <!-- Active Workout Banner (Sticky Top) -->
+                        <!-- Active Workout Banner (Sticky Top) -->
             <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
                     Stroke="{DynamicResource KineticVolt}"
                     StrokeThickness="1.5"
                     BackgroundColor="{DynamicResource KineticSurface}"
                     StrokeShape="RoundRectangle 12"
                     Padding="14,10">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
-                    <VerticalStackLayout VerticalOptions="Center" Spacing="2">
-                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                            <Label Text="ИДЕТ АКТИВНАЯ ТРЕНИРОВКА"
-                                   TextColor="{DynamicResource KineticVolt}"
-                                   FontSize="11"
-                                   FontAttributes="Bold" />
-                            <Label Text="•" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
-                            <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
-                                   TextColor="{DynamicResource KineticVolt}"
-                                   FontSize="11"
-                                   FontAttributes="Bold" />
-                        </HorizontalStackLayout>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="3">
                         <Label Text="{Binding ActiveWorkoutTracker.Title}"
                                TextColor="{DynamicResource KineticText}"
-                               FontSize="16"
+                               FontSize="15"
                                FontAttributes="Bold"
                                LineBreakMode="TailTruncation" />
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 6"
+                                    Padding="6,2">
+                                <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
+                                       TextColor="{DynamicResource KineticVolt}"
+                                       FontSize="12"
+                                       FontAttributes="Bold" />
+                            </Border>
+                            <Label Text="Идёт тренировка"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="12"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
                     </VerticalStackLayout>
                     <Button Grid.Column="1"
                             Text="Продолжить"
                             Command="{Binding ActiveWorkoutTracker.ResumeCommand}"
                             Style="{StaticResource VoltButton}"
-                            HeightRequest="42"
-                            Padding="16,0"
-                            FontSize="13" />
+                            HeightRequest="38"
+                            Padding="14,0"
+                            FontSize="13"
+                            VerticalOptions="Center" />
                 </Grid>
             </Border>
 
@@ -650,6 +656,18 @@
                                         Style="{StaticResource VoltButton}"
                                         HeightRequest="44"
                                         FontSize="14" />
+
+                                <Border BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12,8"
+                                        IsVisible="{Binding IsFuture}">
+                                    <Label Text="📅 Тренировка будет доступна в назначенный день"
+                                           TextColor="{DynamicResource KineticTextMuted}"
+                                           FontSize="12"
+                                           HorizontalTextAlignment="Center" />
+                                </Border>
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>

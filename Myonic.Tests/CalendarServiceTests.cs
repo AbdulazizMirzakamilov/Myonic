@@ -78,8 +78,30 @@ public class CalendarServiceTests : IAsyncLifetime
         Assert.Single(workouts);
         Assert.Equal(CalendarWorkoutStatus.Planned, workouts[0].Status);
         Assert.Equal("Грудь и трицепс", workouts[0].Title);
-        Assert.True(workouts[0].CanStart);
+        Assert.False(workouts[0].CanStart);
+        Assert.True(workouts[0].IsFuture);
         Assert.False(workouts[0].CanViewDetails);
+    }
+
+    [Fact]
+    public async Task TodayPlannedWorkout_CanStartIsTrue()
+    {
+        var conn = await _db.GetConnectionAsync();
+        var workoutToday = new ProgramWorkout
+        {
+            ProgramId = _programId,
+            Name = "Тренировка на сегодня",
+            DefaultDayOfWeek = DateTime.Today.DayOfWeek,
+            Order = 2
+        };
+        await conn.InsertAsync(workoutToday);
+
+        var workouts = await _calendarService.GetWorkoutsForDateAsync(DateTime.Today);
+
+        var todayItem = workouts.FirstOrDefault(w => w.ProgramWorkoutId == workoutToday.Id);
+        Assert.NotNull(todayItem);
+        Assert.True(todayItem.CanStart);
+        Assert.False(todayItem.IsFuture);
     }
 
     [Fact]
