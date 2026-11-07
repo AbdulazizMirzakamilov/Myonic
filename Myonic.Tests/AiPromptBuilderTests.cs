@@ -43,7 +43,7 @@ public class AiPromptBuilderTests
         Assert.Contains("105 кг × 6 повт., RPE 9.5 [заметка: Тяжело пошло на 6-м]", prompt);
         Assert.Contains("Отличная тренировка", prompt);
         Assert.Contains("75 минут", prompt);
-        Assert.Contains("Требования к анализу тренера", prompt);
+        Assert.Contains("Требования к аналитической сводке", prompt);
     }
 
     [Fact]

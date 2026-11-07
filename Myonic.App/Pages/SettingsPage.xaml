@@ -160,9 +160,9 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- 3. AI ANALYTICS (GOOGLE GEMINI) -->
+            <!-- 3. AI ANALYTICS MODULE -->
             <VerticalStackLayout Spacing="8">
-                <Label Text="ИИ-АНАЛИТИКА (GOOGLE GEMINI)"
+                <Label Text="МОДУЛЬ ИИ-АНАЛИТИКИ (AI LAYER)"
                        TextColor="{DynamicResource KineticTextMuted}"
                        FontSize="11"
                        FontAttributes="Bold"
@@ -176,18 +176,38 @@
                     <VerticalStackLayout Spacing="14">
 
                         <VerticalStackLayout Spacing="4">
-                            <Label Text="Персональный ИИ-тренер"
+                            <Label Text="Аналитическая ИИ-сводка"
                                    TextColor="{DynamicResource KineticText}"
                                    FontSize="15"
                                    FontAttributes="Bold" />
-                            <Label Text="Глубокий разбор завершённых тренировок и динамики прогресса в упражнениях. Работа трекера полностью автономна и не зависит от сети."
+                            <Label Text="Разбор тренировок и динамики силового прогресса. Поддерживаются Google Gemini, OpenAI, DeepSeek, Groq, Qwen, Mistral, NVIDIA, Kimi, Zhipu и любые совместимые модели."
                                    TextColor="{DynamicResource KineticTextSecondary}"
                                    FontSize="12" />
                         </VerticalStackLayout>
 
+                        <!-- Provider Selection -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Провайдер ИИ:"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="12"
+                                   FontAttributes="Bold" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="10,0">
+                                <Picker ItemsSource="{Binding Providers}"
+                                        SelectedIndex="{Binding SelectedProviderIndex}"
+                                        TextColor="{DynamicResource KineticVolt}"
+                                        TitleColor="{DynamicResource KineticTextMuted}"
+                                        FontSize="13"
+                                        HeightRequest="42" />
+                            </Border>
+                        </VerticalStackLayout>
+
                         <!-- API Key Input -->
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Google Gemini API ключ:"
+                            <Label Text="API-ключ:"
                                    TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="12"
                                    FontAttributes="Bold" />
@@ -199,7 +219,7 @@
                                         Padding="12,0">
                                     <Entry Text="{Binding GeminiApiKey}"
                                            IsPassword="{Binding IsApiKeyObfuscated}"
-                                           Placeholder="Вставьте API-ключ (AIzaSy...)"
+                                           Placeholder="Вставьте API-ключ..."
                                            PlaceholderColor="{DynamicResource KineticTextMuted}"
                                            TextColor="{DynamicResource KineticText}"
                                            FontSize="13"
@@ -217,30 +237,71 @@
                             </Grid>
                         </VerticalStackLayout>
 
-                        <!-- Model Selection -->
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" VerticalOptions="Center">
-                            <Label Text="Модель ИИ:"
-                                   TextColor="{DynamicResource KineticTextSecondary}"
-                                   FontSize="13"
-                                   VerticalOptions="Center" />
-                            <Border Grid.Column="1"
-                                    BackgroundColor="{DynamicResource KineticWell}"
+                        <!-- Model Selection & Custom Name Entry -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Модель ИИ (выберите или введите любую):"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="12"
+                                   FontAttributes="Bold" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
                                     Stroke="{DynamicResource KineticBorder}"
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 10"
-                                    Padding="10,0">
-                                <Picker ItemsSource="{Binding AvailableModels}"
-                                        SelectedItem="{Binding SelectedModel}"
-                                        TextColor="{DynamicResource KineticVolt}"
-                                        TitleColor="{DynamicResource KineticTextMuted}"
-                                        FontSize="13"
-                                        HeightRequest="40" />
+                                    Padding="12,0">
+                                <Entry Text="{Binding SelectedModel}"
+                                       Placeholder="Например, gemini-2.5-flash, gemini-4-argon, gpt-4o, deepseek-chat"
+                                       PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                       TextColor="{DynamicResource KineticVolt}"
+                                       FontSize="13"
+                                       HeightRequest="42"
+                                       VerticalOptions="Center" />
                             </Border>
-                        </Grid>
+
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
+                                <Label Text="Быстрый выбор:"
+                                       TextColor="{DynamicResource KineticTextMuted}"
+                                       FontSize="11"
+                                       VerticalOptions="Center" />
+                                <Border Grid.Column="1"
+                                        BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="8,0">
+                                    <Picker ItemsSource="{Binding AvailableModels}"
+                                            SelectedItem="{Binding SelectedModel}"
+                                            TextColor="{DynamicResource KineticTextSecondary}"
+                                            Title="Рекомендуемые модели"
+                                            TitleColor="{DynamicResource KineticTextMuted}"
+                                            FontSize="12"
+                                            HeightRequest="36" />
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Base URL (for Custom or specific endpoints) -->
+                        <VerticalStackLayout Spacing="6" IsVisible="{Binding IsCustomBaseUrl}">
+                            <Label Text="Базовый адрес API (Base URL):"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="12"
+                                   FontAttributes="Bold" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="12,0">
+                                <Entry Text="{Binding BaseUrl}"
+                                       Placeholder="http://localhost:11434/v1"
+                                       PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="13"
+                                       HeightRequest="42"
+                                       VerticalOptions="Center" />
+                            </Border>
+                        </VerticalStackLayout>
 
                         <!-- Buttons: Save & Test -->
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <Button Text="💾 Сохранить ключ"
+                            <Button Text="💾 Сохранить настройки"
                                     Command="{Binding SaveAiSettingsCommand}"
                                     Style="{StaticResource VoltButton}"
                                     HeightRequest="42"
@@ -273,7 +334,7 @@
                                    LineBreakMode="WordWrap" />
                         </Border>
 
-                        <Label Text="🔒 Ключ сохраняется локально на вашем устройстве и используется только для прямых запросов к Google Gemini."
+                        <Label Text="🔒 Ключ и параметры сохраняются локально на вашем устройстве и направляются напрямую выбранному сервису без посредников."
                                TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="11" />
 

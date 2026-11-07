@@ -40,25 +40,41 @@ public partial class SettingsViewModel : ObservableObject
         _soundVibrationEnabled = Preferences.Get("sound_vibration_enabled", true);
 
         // Load AI settings
+        _selectedProviderIndex = (int)_aiSettingsService.Provider;
         _geminiApiKey = _aiSettingsService.GetApiKey() ?? string.Empty;
         _selectedModel = _aiSettingsService.GetSelectedModel();
-        foreach (var m in _aiSettingsService.AvailableModels)
+        _baseUrl = _aiSettingsService.GetBaseUrl();
+        _isCustomBaseUrl = _aiSettingsService.Provider == AiProviderType.Custom;
+
+        foreach (var p in Enum.GetValues<AiProviderType>())
         {
-            AvailableModels.Add(m);
+            Providers.Add(AiProviderDefaults.GetDisplayName(p));
         }
+
+        UpdateModelsForProvider(_aiSettingsService.Provider);
 
         LoadDatabaseInfo();
         _ = LoadBackupsListAsync();
     }
 
     public ObservableCollection<BackupFileInfo> Backups { get; } = [];
+    public ObservableCollection<string> Providers { get; } = [];
     public ObservableCollection<string> AvailableModels { get; } = [];
+
+    [ObservableProperty]
+    private int _selectedProviderIndex;
 
     [ObservableProperty]
     private string _geminiApiKey = string.Empty;
 
     [ObservableProperty]
     private string _selectedModel = "gemini-2.5-flash";
+
+    [ObservableProperty]
+    private string _baseUrl = string.Empty;
+
+    [ObservableProperty]
+    private bool _isCustomBaseUrl;
 
     [ObservableProperty]
     private bool _isApiKeyVisible;
@@ -77,6 +93,33 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _hasConnectionTestResult;
+
+    partial void OnSelectedProviderIndexChanged(int value)
+    {
+        if (value >= 0 && value < Enum.GetValues<AiProviderType>().Length)
+        {
+            var provider = (AiProviderType)value;
+            _aiSettingsService.Provider = provider;
+            IsCustomBaseUrl = provider == AiProviderType.Custom;
+            BaseUrl = AiProviderDefaults.GetDefaultBaseUrl(provider);
+
+            UpdateModelsForProvider(provider);
+            var defaultModels = AiProviderDefaults.GetDefaultModels(provider);
+            if (defaultModels.Count > 0 && !defaultModels.Contains(SelectedModel))
+            {
+                SelectedModel = defaultModels[0];
+            }
+        }
+    }
+
+    private void UpdateModelsForProvider(AiProviderType provider)
+    {
+        AvailableModels.Clear();
+        foreach (var m in AiProviderDefaults.GetDefaultModels(provider))
+        {
+            AvailableModels.Add(m);
+        }
+    }
 
     [ObservableProperty]
     private int _selectedThemeIndex;
@@ -138,14 +181,17 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     public async Task SaveAiSettingsAsync()
     {
+        var provider = (AiProviderType)SelectedProviderIndex;
+        _aiSettingsService.Provider = provider;
         _aiSettingsService.SaveApiKey(GeminiApiKey);
         _aiSettingsService.SaveSelectedModel(SelectedModel);
+        _aiSettingsService.SaveBaseUrl(BaseUrl);
 
         await Shell.Current.DisplayAlertAsync(
             "Настройки ИИ сохранены",
             string.IsNullOrWhiteSpace(GeminiApiKey)
-                ? "API-ключ удалён. ИИ-функции будут отключены."
-                : $"API-ключ и модель ({SelectedModel}) успешно сохранены на устройстве.",
+                ? "API-ключ удалён. Модуль ИИ-аналитики отключён."
+                : $"Провайдер {AiProviderDefaults.GetDisplayName(provider)}, модель ({SelectedModel}) и ключ сохранены.",
             "OK");
     }
 
@@ -156,15 +202,17 @@ public partial class SettingsViewModel : ObservableObject
 
         IsTestingConnection = true;
         HasConnectionTestResult = false;
-        ConnectionTestMessage = "Проверка соединения с Gemini API...";
+        var provider = (AiProviderType)SelectedProviderIndex;
+        ConnectionTestMessage = $"Проверка соединения с {AiProviderDefaults.GetDisplayName(provider)}...";
 
         try
         {
-            // Auto-save the key and model before testing
+            _aiSettingsService.Provider = provider;
             _aiSettingsService.SaveApiKey(GeminiApiKey);
             _aiSettingsService.SaveSelectedModel(SelectedModel);
+            _aiSettingsService.SaveBaseUrl(BaseUrl);
 
-            var result = await _aiAnalysisService.TestConnectionAsync(GeminiApiKey, SelectedModel);
+            var result = await _aiAnalysisService.TestConnectionAsync(provider, GeminiApiKey, SelectedModel, BaseUrl);
             IsConnectionTestSuccess = result.IsSuccess;
             ConnectionTestMessage = result.Message;
             HasConnectionTestResult = true;

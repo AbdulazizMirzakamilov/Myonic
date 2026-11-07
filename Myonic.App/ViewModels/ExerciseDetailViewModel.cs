@@ -91,6 +91,12 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
     private bool _hasAiAnalysis;
 
     [ObservableProperty]
+    private bool _hasAiError;
+
+    [ObservableProperty]
+    private bool _isAiConfigured = true;
+
+    [ObservableProperty]
     private string _aiAnalysisContent = string.Empty;
 
     [ObservableProperty]
@@ -249,36 +255,52 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
     }
 
     [RelayCommand]
+    public async Task OpenAiSettingsAsync()
+    {
+        try
+        {
+            await Shell.Current.GoToAsync(nameof(SettingsPage));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
     public async Task AnalyzeProgressWithAiAsync()
     {
-        if (IsAiAnalyzing || ExerciseId <= 0) return;
+        if (IsAiAnalyzing) return;
+
+        HasAiError = false;
+        AiErrorMessage = null;
 
         if (!_aiSettingsService.IsConfigured)
         {
-            bool openSettings = await Shell.Current.DisplayAlertAsync(
-                "ИИ-Аналитика не настроена",
-                "Для анализа прогресса персональным ИИ-тренером укажите собственный Google Gemini API ключ в Настройках приложения.",
-                "В Настройки",
-                "Отмена");
+            IsAiConfigured = false;
+            HasAiError = true;
+            AiErrorMessage = "API-ключ не настроен. Нажмите кнопку ниже, чтобы перейти в Настройки и ввести ключ.";
+            return;
+        }
 
-            if (openSettings)
-            {
-                await Shell.Current.GoToAsync("//settings");
-            }
+        IsAiConfigured = true;
+
+        if (ExerciseId <= 0)
+        {
+            HasAiError = true;
+            AiErrorMessage = "Упражнение ещё не загружено.";
             return;
         }
 
         if (Sessions.Count == 0)
         {
-            await Shell.Current.DisplayAlertAsync(
-                "Нет истории тренировок",
-                "Для анализа динамики необходимо выполнить хотя бы одну тренировку с этим упражнением.",
-                "OK");
+            HasAiError = true;
+            AiErrorMessage = "Для расчёта динамики выполните хотя бы одну тренировку с этим упражнением.";
             return;
         }
 
         IsAiAnalyzing = true;
-        AiErrorMessage = null;
+        HasAiAnalysis = false;
 
         try
         {
@@ -288,23 +310,18 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
                 AiAnalysisContent = result.Content ?? string.Empty;
                 AiModelUsed = result.ModelUsed;
                 HasAiAnalysis = true;
+                HasAiError = false;
             }
             else
             {
-                AiErrorMessage = result.ErrorMessage;
-                await Shell.Current.DisplayAlertAsync(
-                    "Ошибка анализа прогресса",
-                    result.ErrorMessage ?? "Не удалось получить ответ от ИИ-модели.",
-                    "OK");
+                HasAiError = true;
+                AiErrorMessage = result.ErrorMessage ?? "Не удалось сформировать аналитическую сводку.";
             }
         }
         catch (Exception ex)
         {
-            AiErrorMessage = ex.Message;
-            await Shell.Current.DisplayAlertAsync(
-                "Ошибка",
-                $"Не удалось выполнить анализ прогресса: {ex.Message}",
-                "OK");
+            HasAiError = true;
+            AiErrorMessage = $"Ошибка формирования сводки: {ex.Message}";
         }
         finally
         {
@@ -312,4 +329,3 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
         }
     }
 }
-

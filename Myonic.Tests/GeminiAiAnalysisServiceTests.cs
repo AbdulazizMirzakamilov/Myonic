@@ -19,15 +19,19 @@ public class GeminiAiAnalysisServiceTests
 
     private class TestAiSettingsService : IAiSettingsService
     {
+        public AiProviderType Provider { get; set; } = AiProviderType.Gemini;
         public string? ApiKey { get; set; } = "test-fake-key-12345";
         public string SelectedModel { get; set; } = "gemini-2.5-flash";
+        public string BaseUrl { get; set; } = "https://generativelanguage.googleapis.com";
 
         public string? GetApiKey() => ApiKey;
         public void SaveApiKey(string? apiKey) => ApiKey = apiKey;
         public string GetSelectedModel() => SelectedModel;
         public void SaveSelectedModel(string modelName) => SelectedModel = modelName;
+        public string GetBaseUrl() => BaseUrl;
+        public void SaveBaseUrl(string baseUrl) => BaseUrl = baseUrl;
         public bool IsConfigured => !string.IsNullOrWhiteSpace(ApiKey);
-        public IReadOnlyList<string> AvailableModels => ["gemini-2.5-flash", "gemini-1.5-flash"];
+        public IReadOnlyList<string> GetModelsForProvider(AiProviderType provider) => AiProviderDefaults.GetDefaultModels(provider);
     }
 
     private class TestWorkoutSessionRepository : IWorkoutSessionRepository
@@ -216,7 +220,7 @@ public class GeminiAiAnalysisServiceTests
         var result = await service.AnalyzeWorkoutSessionAsync(1);
 
         Assert.False(result.IsSuccess);
-        Assert.Contains("Недействительный Google Gemini API-ключ", result.ErrorMessage);
+        Assert.Contains("Недействительный API-ключ", result.ErrorMessage);
     }
 
     [Fact]
@@ -300,5 +304,103 @@ public class GeminiAiAnalysisServiceTests
         Assert.True(result.IsSuccess);
         Assert.Contains("Анализ прогресса", result.Content);
         Assert.Contains("Рост 1ПМ", result.Content);
+    }
+
+    [Fact]
+    public async Task TestConnectionAsync_OpenAiCompatible_Success()
+    {
+        var mockResponse = """
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "Готов"
+                    }
+                }
+            ]
+        }
+        """;
+
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            Assert.Equal("Bearer", req.Headers.Authorization?.Scheme);
+            Assert.Equal("deepseek-key-123", req.Headers.Authorization?.Parameter);
+            Assert.Contains("/chat/completions", req.RequestUri!.PathAndQuery);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(mockResponse, Encoding.UTF8, "application/json")
+            });
+        });
+
+        var settings = new TestAiSettingsService
+        {
+            Provider = AiProviderType.DeepSeek,
+            ApiKey = "deepseek-key-123",
+            SelectedModel = "deepseek-chat",
+            BaseUrl = "https://api.deepseek.com/v1"
+        };
+        var repo = new TestWorkoutSessionRepository();
+        using var client = new HttpClient(handler);
+        var service = new GeminiAiAnalysisService(settings, repo, client);
+
+        var result = await service.TestConnectionAsync(AiProviderType.DeepSeek, "deepseek-key-123", "deepseek-chat", "https://api.deepseek.com/v1");
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains("успешно проверена", result.Message);
+        Assert.Contains("DeepSeek", result.Message);
+    }
+
+    [Fact]
+    public async Task AnalyzeWorkoutSessionAsync_OpenAiProvider_ReturnsAnalysis()
+    {
+        var mockResponse = """
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "## Сводка тренировки\nОтличный прогресс в жиме!"
+                    }
+                }
+            ]
+        }
+        """;
+
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            Assert.Equal("Bearer sk-test-key", req.Headers.Authorization?.ToString());
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(mockResponse, Encoding.UTF8, "application/json")
+            });
+        });
+
+        var settings = new TestAiSettingsService
+        {
+            Provider = AiProviderType.OpenAI,
+            ApiKey = "sk-test-key",
+            SelectedModel = "gpt-4o-mini",
+            BaseUrl = "https://api.openai.com/v1"
+        };
+        var repo = new TestWorkoutSessionRepository
+        {
+            SessionDetail = new WorkoutSessionDetail
+            {
+                Id = 1,
+                Title = "Жим",
+                StartedAt = DateTime.UtcNow,
+                Exercises = []
+            }
+        };
+
+        using var client = new HttpClient(handler);
+        var service = new GeminiAiAnalysisService(settings, repo, client);
+
+        var result = await service.AnalyzeWorkoutSessionAsync(1);
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains("Сводка тренировки", result.Content);
+        Assert.Equal("gpt-4o-mini", result.ModelUsed);
     }
 }

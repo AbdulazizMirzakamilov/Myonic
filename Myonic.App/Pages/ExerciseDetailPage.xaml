@@ -204,16 +204,16 @@
                 <VerticalStackLayout Spacing="10">
                     <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="🤖 ИИ-анализ динамики силы"
+                            <Label Text="🤖 Анализ прогресса и динамика силы"
                                    TextColor="{DynamicResource KineticText}"
                                    FontSize="14"
                                    FontAttributes="Bold" />
-                            <Label Text="Прогрессия 1ПМ, плато и рекомендации тренера"
+                            <Label Text="Динамика 1ПМ, тренд тоннажа и выводы"
                                    TextColor="{DynamicResource KineticTextMuted}"
                                    FontSize="11" />
                         </VerticalStackLayout>
                         <Button Grid.Column="1"
-                                Text="Анализ прогресса"
+                                Text="Сформировать анализ"
                                 Command="{Binding AnalyzeProgressWithAiCommand}"
                                 Style="{StaticResource VoltButton}"
                                 HeightRequest="38"
@@ -226,11 +226,32 @@
                         <ActivityIndicator IsRunning="{Binding IsAiAnalyzing}"
                                            Color="{DynamicResource KineticVolt}"
                                            HeightRequest="26" />
-                        <Label Text="ИИ-тренер рассчитывает тренд силы и объёма..."
+                        <Label Text="Расчёт динамики силы и объёма за последние 90 дней..."
                                TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="11"
                                HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
+
+                    <!-- Inline Error or Unconfigured Notification -->
+                    <Border IsVisible="{Binding HasAiError}"
+                            BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="#EF4444"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="14,10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding AiErrorMessage}"
+                                   TextColor="#EF4444"
+                                   FontSize="12"
+                                   LineBreakMode="WordWrap" />
+                            <Button Text="⚙️ Перейти в Настройки"
+                                    Command="{Binding OpenAiSettingsCommand}"
+                                    Style="{StaticResource SecondaryActionButton}"
+                                    HeightRequest="36"
+                                    FontSize="11"
+                                    HorizontalOptions="Start" />
+                        </VerticalStackLayout>
+                    </Border>
 
                     <!-- Analysis Card -->
                     <Border IsVisible="{Binding HasAiAnalysis}"

@@ -5,6 +5,68 @@ using Myonic.Core.Repositories;
 
 namespace Myonic.Core.Models;
 
+public enum AiProviderType
+{
+    Gemini = 0,
+    OpenAI = 1,
+    DeepSeek = 2,
+    Groq = 3,
+    Qwen = 4,
+    Mistral = 5,
+    Nvidia = 6,
+    Kimi = 7,
+    Zhipu = 8,
+    Custom = 9
+}
+
+public static class AiProviderDefaults
+{
+    public static string GetDisplayName(AiProviderType provider) => provider switch
+    {
+        AiProviderType.Gemini => "Google Gemini",
+        AiProviderType.OpenAI => "OpenAI (ChatGPT)",
+        AiProviderType.DeepSeek => "DeepSeek",
+        AiProviderType.Groq => "Groq (Fast Llama)",
+        AiProviderType.Qwen => "Qwen (Alibaba DashScope)",
+        AiProviderType.Mistral => "Mistral AI",
+        AiProviderType.Nvidia => "NVIDIA NIM",
+        AiProviderType.Kimi => "Moonshot Kimi",
+        AiProviderType.Zhipu => "Zhipu AI (GLM)",
+        AiProviderType.Custom => "Пользовательский (OpenAI-совместимый)",
+        _ => provider.ToString()
+    };
+
+    public static string GetDefaultBaseUrl(AiProviderType provider) => provider switch
+    {
+        AiProviderType.Gemini => "https://generativelanguage.googleapis.com",
+        AiProviderType.OpenAI => "https://api.openai.com/v1",
+        AiProviderType.DeepSeek => "https://api.deepseek.com/v1",
+        AiProviderType.Groq => "https://api.groq.com/openai/v1",
+        AiProviderType.Qwen => "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        AiProviderType.Mistral => "https://api.mistral.ai/v1",
+        AiProviderType.Nvidia => "https://integrate.api.nvidia.com/v1",
+        AiProviderType.Kimi => "https://api.moonshot.cn/v1",
+        AiProviderType.Zhipu => "https://open.bigmodel.cn/api/paas/v4",
+        AiProviderType.Custom => "http://localhost:11434/v1",
+        _ => "https://api.openai.com/v1"
+    };
+
+    public static IReadOnlyList<string> GetDefaultModels(AiProviderType provider) => provider switch
+    {
+        AiProviderType.Gemini => ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-4-argon", "gemini-1.5-flash", "gemini-1.5-pro"],
+        AiProviderType.OpenAI => ["gpt-4o", "gpt-4o-mini", "o3-mini", "o1", "gpt-4-turbo"],
+        AiProviderType.DeepSeek => ["deepseek-chat", "deepseek-reasoner"],
+        AiProviderType.Groq => ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"],
+        AiProviderType.Qwen => ["qwen-plus", "qwen-turbo", "qwen-max", "qwen2.5-72b-instruct"],
+        AiProviderType.Mistral => ["mistral-large-latest", "mistral-small-latest", "codestral-latest"],
+        AiProviderType.Nvidia => ["meta/llama-3.3-70b-instruct", "deepseek-ai/deepseek-r1"],
+        AiProviderType.Kimi => ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
+        AiProviderType.Zhipu => ["glm-4-plus", "glm-4-flash", "glm-4-air"],
+        AiProviderType.Custom => ["custom-model"],
+        _ => ["gpt-4o-mini"]
+    };
+}
+
 public sealed class AiAnalysisResult
 {
     public bool IsSuccess { get; init; }
@@ -52,9 +114,10 @@ public static class AiPromptBuilder
     public static string BuildWorkoutAnalysisPrompt(WorkoutSessionDetail session, WorkoutPlanFactSummary? planFact = null)
     {
         var sb = new StringBuilder();
+        var inv = CultureInfo.InvariantCulture;
 
-        sb.AppendLine("Ты — профессиональный тренер по силовому тренингу и пауэрлифтингу.");
-        sb.AppendLine("Твоя задача — провести детальный, объективный и поддерживающий разбор завершённой тренировки атлета.");
+        sb.AppendLine("Ты — система аналитики и сводки силовых тренировок.");
+        sb.AppendLine("Твоя задача — подготовить структурированную, объективную сводку и разбор завершённой тренировки атлета.");
         sb.AppendLine("Отвечай строго на русском языке, используя структурированный Markdown (заголовки ##, маркеры, жирный шрифт).");
         sb.AppendLine();
         sb.AppendLine("### Данные тренировки:");
@@ -69,8 +132,6 @@ public static class AiPromptBuilder
         {
             sb.AppendLine($"- Комментарий атлета: {session.Comment}");
         }
-
-        var inv = CultureInfo.InvariantCulture;
 
         if (planFact != null && planFact.HasPlan)
         {
@@ -116,12 +177,12 @@ public static class AiPromptBuilder
         }
 
         sb.AppendLine();
-        sb.AppendLine("### Требования к анализу тренера:");
-        sb.AppendLine("1. **Общая оценка:** Краткое резюме тренировки (объём, интенсивность, баланс).");
-        sb.AppendLine("2. **Анализ нагрузки и RPE:** Оцени распределение усилий. Были ли признаки перегруза (RPE >= 9.5) или преждевременного утомления?");
-        sb.AppendLine("3. **Выполнение плана:** Если был план, оцени точность его соблюдения.");
-        sb.AppendLine("4. **Рекомендации:** 2-3 конкретных совета на следующую тренировку (восстановление, коррекция весов или повторений).");
-        sb.AppendLine("Будь лаконичен, профессионален и избегай банальных общих фраз.");
+        sb.AppendLine("### Требования к аналитической сводке:");
+        sb.AppendLine("1. **Общая сводка:** Краткое резюме тренировки (объём, интенсивность, баланс).");
+        sb.AppendLine("2. **Анализ нагрузки и RPE:** Оценка распределения усилий, выявление признаков перегруза (RPE >= 9.5) или недогруза.");
+        sb.AppendLine("3. **Выполнение плана:** Если был план, оценка точности соблюдения.");
+        sb.AppendLine("4. **Аналитические выводы:** 2-3 конкретных вывода на следующую сессию (коррекция объёма, интенсивности или восстановление).");
+        sb.AppendLine("Форматируй лаконично, структурированно, опираясь исключительно на факты.");
 
         return sb.ToString();
     }
@@ -131,8 +192,8 @@ public static class AiPromptBuilder
         var sb = new StringBuilder();
         var inv = CultureInfo.InvariantCulture;
 
-        sb.AppendLine("Ты — профессиональный тренер по силовому тренингу и спортивной науке.");
-        sb.AppendLine("Твоя задача — проанализировать динамику прогресса атлета в конкретном упражнении и дать рекомендации по дальнейшей прогрессии нагрузок.");
+        sb.AppendLine("Ты — система аналитики прогресса в силовых упражнениях.");
+        sb.AppendLine("Твоя задача — проанализировать динамику показателей атлета в конкретном упражнении и подготовить объективную сводку.");
         sb.AppendLine("Отвечай строго на русском языке, используя структурированный Markdown.");
         sb.AppendLine();
         sb.AppendLine($"### Упражнение: {history.ExerciseName}");
@@ -172,12 +233,12 @@ public static class AiPromptBuilder
         }
 
         sb.AppendLine();
-        sb.AppendLine("### Требования к анализу прогресса:");
-        sb.AppendLine("1. **Динамика силы:** Оцени рост рабочего веса и расчетного 1ПМ. Наблюдается ли стабильный прогресс, спад или плато?");
-        sb.AppendLine("2. **Анализ объёма и интенсивности:** Как менялся тоннаж и сложность подходов?");
-        sb.AppendLine("3. **Стратегия прогрессии:** Предложи схему перегрузки на следующие 3-4 недели (например: линейная, волновая, двойная прогрессия).");
-        sb.AppendLine("4. **Подсобные упражнения:** Порекомендуй 1-2 вспомогательных упражнения для устранения слабых звеньев (если применимо).");
-        sb.AppendLine("Будь конкретен, мотивируй атлета и опирайся на фактические цифры.");
+        sb.AppendLine("### Требования к аналитической сводке:");
+        sb.AppendLine("1. **Динамика силы:** Оценка роста рабочего веса и расчетного 1ПМ. Наличие прогресса, спада или плато.");
+        sb.AppendLine("2. **Анализ объёма и интенсивности:** Как менялся тоннаж и сложность подходов.");
+        sb.AppendLine("3. **Стратегия прогрессии:** Оптимальная схема перегрузки (линейная, волновая, двойная прогрессия).");
+        sb.AppendLine("4. **Вспомогательные движения:** Рекомендации по подсобным упражнениям при необходимости.");
+        sb.AppendLine("Будь конкретен, опирайся на фактические цифры.");
 
         return sb.ToString();
     }

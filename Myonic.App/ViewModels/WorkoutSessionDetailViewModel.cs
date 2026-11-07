@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Analysis;
 using Myonic.Core.Repositories;
 using Myonic.Core.Services;
+using Myonic.Pages;
 
 namespace Myonic.ViewModels;
 
@@ -99,6 +100,12 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
 
     [ObservableProperty]
     private bool _hasAiAnalysis;
+
+    [ObservableProperty]
+    private bool _hasAiError;
+
+    [ObservableProperty]
+    private bool _isAiConfigured = true;
 
     [ObservableProperty]
     private string _aiAnalysisContent = string.Empty;
@@ -238,27 +245,44 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
     }
 
     [RelayCommand]
+    public async Task OpenAiSettingsAsync()
+    {
+        try
+        {
+            await Shell.Current.GoToAsync(nameof(SettingsPage));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
     public async Task AnalyzeWorkoutWithAiAsync()
     {
-        if (IsAiAnalyzing || SessionId <= 0) return;
+        if (IsAiAnalyzing) return;
+
+        HasAiError = false;
+        AiErrorMessage = null;
 
         if (!_aiSettingsService.IsConfigured)
         {
-            bool openSettings = await Shell.Current.DisplayAlertAsync(
-                "ИИ-Аналитика не настроена",
-                "Для разбора тренировки персональным ИИ-тренером укажите ваш собственный Google Gemini API ключ в Настройках приложения.",
-                "В Настройки",
-                "Отмена");
+            IsAiConfigured = false;
+            HasAiError = true;
+            AiErrorMessage = "API-ключ не настроен. Нажмите кнопку ниже, чтобы перейти в Настройки и ввести ключ.";
+            return;
+        }
 
-            if (openSettings)
-            {
-                await Shell.Current.GoToAsync("//settings");
-            }
+        IsAiConfigured = true;
+        if (SessionId <= 0)
+        {
+            HasAiError = true;
+            AiErrorMessage = "Данные тренировки ещё не загружены.";
             return;
         }
 
         IsAiAnalyzing = true;
-        AiErrorMessage = null;
+        HasAiAnalysis = false;
 
         try
         {
@@ -268,23 +292,18 @@ public partial class WorkoutSessionDetailViewModel : ObservableObject, IQueryAtt
                 AiAnalysisContent = result.Content ?? string.Empty;
                 AiModelUsed = result.ModelUsed;
                 HasAiAnalysis = true;
+                HasAiError = false;
             }
             else
             {
-                AiErrorMessage = result.ErrorMessage;
-                await Shell.Current.DisplayAlertAsync(
-                    "Ошибка разбора тренировки",
-                    result.ErrorMessage ?? "Не удалось получить ответ от ИИ-модели.",
-                    "OK");
+                HasAiError = true;
+                AiErrorMessage = result.ErrorMessage ?? "Не удалось сформировать сводку.";
             }
         }
         catch (Exception ex)
         {
-            AiErrorMessage = ex.Message;
-            await Shell.Current.DisplayAlertAsync(
-                "Ошибка",
-                $"Не удалось выполнить анализ тренировки: {ex.Message}",
-                "OK");
+            HasAiError = true;
+            AiErrorMessage = $"Ошибка формирования сводки: {ex.Message}";
         }
         finally
         {
