@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.BodyMeasurementEditPage"
+             x:DataType="vm:BodyMeasurementEditViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
+
+            <!-- Weight Section -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="ВЕС ТЕЛА"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+
+                    <!-- Weight input with +/- buttons -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                        <Button Text="–0.5"
+                                Command="{Binding AdjustWeightCommand}"
+                                CommandParameter="-0.5"
+                                Style="{StaticResource SecondaryActionButton}"
+                                HeightRequest="44"
+                                WidthRequest="64"
+                                FontSize="14"
+                                FontAttributes="Bold" />
+
+                        <Border Grid.Column="1"
+                                BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="8,0">
+                            <Entry Text="{Binding WeightText}"
+                                   Placeholder="0.0"
+                                   PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   Keyboard="Numeric"
+                                   HorizontalTextAlignment="Center"
+                                   BackgroundColor="Transparent" />
+                        </Border>
+
+                        <Button Grid.Column="2"
+                                Text="+0.5"
+                                Command="{Binding AdjustWeightCommand}"
+                                CommandParameter="0.5"
+                                Style="{StaticResource SecondaryActionButton}"
+                                HeightRequest="44"
+                                WidthRequest="64"
+                                FontSize="14"
+                                FontAttributes="Bold" />
+                    </Grid>
+
+                    <Label Text="кг"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="12"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Date + Body Fat -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="ДАТА И СОСТАВ ТЕЛА"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <!-- Date -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Дата замера"
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="12" />
+                            <DatePicker Date="{Binding Date}"
+                                        TextColor="{DynamicResource KineticText}"
+                                        BackgroundColor="Transparent"
+                                        MaximumDate="{x:Static system:DateTime.Today}"
+                                        xmlns:system="clr-namespace:System;assembly=System.Runtime" />
+                        </VerticalStackLayout>
+
+                        <!-- Body Fat -->
+                        <VerticalStackLayout Grid.Column="1" Spacing="4">
+                            <Label Text="Процент жира, %"
+                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                   FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="10,0">
+                                <Entry Text="{Binding BodyFatText}"
+                                       Placeholder="–"
+                                       PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="15"
+                                       Keyboard="Numeric"
+                                       BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Body Measurements Section -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="ОБЪЁМЫ ТЕЛА (СМ)"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="10">
+                        <!-- Neck -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Шея" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}" Stroke="{DynamicResource KineticBorderSubtle}" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10,0">
+                                <Entry Text="{Binding NeckText}" Placeholder="–" PlaceholderColor="{DynamicResource KineticTextMuted}" TextColor="{DynamicResource KineticText}" FontSize="15" Keyboard="Numeric" BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Chest -->
+                        <VerticalStackLayout Grid.Column="1" Spacing="4">
+                            <Label Text="Грудь" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}" Stroke="{DynamicResource KineticBorderSubtle}" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10,0">
+                                <Entry Text="{Binding ChestText}" Placeholder="–" PlaceholderColor="{DynamicResource KineticTextMuted}" TextColor="{DynamicResource KineticText}" FontSize="15" Keyboard="Numeric" BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Waist -->
+                        <VerticalStackLayout Grid.Row="1" Spacing="4">
+                            <Label Text="Талия" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}" Stroke="{DynamicResource KineticBorderSubtle}" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10,0">
+                                <Entry Text="{Binding WaistText}" Placeholder="–" PlaceholderColor="{DynamicResource KineticTextMuted}" TextColor="{DynamicResource KineticText}" FontSize="15" Keyboard="Numeric" BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Hips -->
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
+                            <Label Text="Бёдра" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}" Stroke="{DynamicResource KineticBorderSubtle}" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10,0">
+                                <Entry Text="{Binding HipsText}" Placeholder="–" PlaceholderColor="{DynamicResource KineticTextMuted}" TextColor="{DynamicResource KineticText}" FontSize="15" Keyboard="Numeric" BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Bicep -->
+                        <VerticalStackLayout Grid.Row="2" Spacing="4">
+                            <Label Text="Бицепс" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}" Stroke="{DynamicResource KineticBorderSubtle}" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10,0">
+                                <Entry Text="{Binding BicepText}" Placeholder="–" PlaceholderColor="{DynamicResource KineticTextMuted}" TextColor="{DynamicResource KineticText}" FontSize="15" Keyboard="Numeric" BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Thigh -->
+                        <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="4">
+                            <Label Text="Бедро" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}" Stroke="{DynamicResource KineticBorderSubtle}" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10,0">
+                                <Entry Text="{Binding ThighText}" Placeholder="–" PlaceholderColor="{DynamicResource KineticTextMuted}" TextColor="{DynamicResource KineticText}" FontSize="15" Keyboard="Numeric" BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Calf -->
+                        <VerticalStackLayout Grid.Row="3" Spacing="4">
+                            <Label Text="Икры" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}" Stroke="{DynamicResource KineticBorderSubtle}" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10,0">
+                                <Entry Text="{Binding CalfText}" Placeholder="–" PlaceholderColor="{DynamicResource KineticTextMuted}" TextColor="{DynamicResource KineticText}" FontSize="15" Keyboard="Numeric" BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Notes -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="ЗАМЕТКА"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="{DynamicResource KineticBorderSubtle}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="10,4">
+                        <Editor Text="{Binding Notes}"
+                                Placeholder="Утро, натощак..."
+                                PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                TextColor="{DynamicResource KineticText}"
+                                FontSize="14"
+                                HeightRequest="80"
+                                BackgroundColor="Transparent"
+                                AutoSize="TextChanges" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Button Text="Сохранить замер"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="50"
+                    FontSize="16"
+                    FontAttributes="Bold" />
+
+            <Button Text="Удалить замер"
+                    Command="{Binding DeleteCommand}"
+                    IsVisible="{Binding IsEditing}"
+                    Style="{StaticResource SecondaryActionButton}"
+                    TextColor="Red"
+                    HeightRequest="44"
+                    FontSize="14" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

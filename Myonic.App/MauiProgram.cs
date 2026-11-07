@@ -82,6 +82,13 @@ namespace Myonic
             builder.Services.AddSingleton<ScheduleViewModel>();
             builder.Services.AddTransient<SchedulePage>();
 
+            // Body Measurements & Anthropometry
+            builder.Services.AddSingleton<IBodyMeasurementRepository, BodyMeasurementRepository>();
+            builder.Services.AddTransient<BodyMeasurementsViewModel>();
+            builder.Services.AddTransient<BodyMeasurementEditViewModel>();
+            builder.Services.AddTransient<BodyMeasurementsPage>();
+            builder.Services.AddTransient<BodyMeasurementEditPage>();
+
             // Profile
             builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<ProfilePage>();

@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             xmlns:conv="clr-namespace:Myonic.Converters"
+             xmlns:draw="clr-namespace:Myonic.Drawables"
+             x:Class="Myonic.Pages.BodyMeasurementsPage"
+             x:DataType="vm:BodyMeasurementsViewModel"
+             x:Name="ThisPage"
+             Title="Замеры тела"
+             BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:SwitcherBgColorConverter x:Key="SwitcherBgColorConverter" />
+            <conv:SwitcherTextColorConverter x:Key="SwitcherTextColorConverter" />
+            <conv:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="{OnIdiom Phone='16,12,16,20', Desktop='28,20,28,30'}"
+          RowSpacing="12">
+
+        <!-- Header -->
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+            <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                <Label Text="АНТРОПОМЕТРИЯ"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold" />
+                <Label Text="Замеры и динамика веса"
+                       TextColor="{DynamicResource KineticText}"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+            </VerticalStackLayout>
+
+            <Button Grid.Column="1"
+                    Text="+ Новый замер"
+                    Command="{Binding AddCommand}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="38"
+                    Padding="14,0"
+                    FontSize="12" />
+        </Grid>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="14">
+
+                <!-- Weight Trend Stats Card -->
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16,14">
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <!-- Current Weight -->
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                            <Label Text="{Binding CurrentWeightText}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="ТЕКУЩИЙ"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Delta -->
+                        <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="3">
+                            <Label Text="{Binding DeltaText}"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="ИЗМЕНЕНИЕ"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Min / Max -->
+                        <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="3">
+                            <Label Text="{Binding MinMaxText}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="ДИАПАЗОН"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Weight Chart -->
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="12">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="ДИНАМИКА ВЕСА"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="11"
+                               FontAttributes="Bold" />
+
+                        <GraphicsView x:Name="ChartView"
+                                      Drawable="{Binding Drawable}"
+                                      HeightRequest="180"
+                                      HorizontalOptions="Fill" />
+
+                        <!-- Period Filter Chips -->
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="3"
+                                HorizontalOptions="Center">
+                            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="4">
+                                <Border BackgroundColor="{Binding IsPeriod30, Converter={StaticResource SwitcherBgColorConverter}}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12,6">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="0" />
+                                    </Border.GestureRecognizers>
+                                    <Label Text="1 мес"
+                                           TextColor="{Binding IsPeriod30, Converter={StaticResource SwitcherTextColorConverter}}"
+                                           FontSize="12"
+                                           FontAttributes="Bold" />
+                                </Border>
+
+                                <Border Grid.Column="1"
+                                        BackgroundColor="{Binding IsPeriod90, Converter={StaticResource SwitcherBgColorConverter}}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12,6">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="1" />
+                                    </Border.GestureRecognizers>
+                                    <Label Text="3 мес"
+                                           TextColor="{Binding IsPeriod90, Converter={StaticResource SwitcherTextColorConverter}}"
+                                           FontSize="12"
+                                           FontAttributes="Bold" />
+                                </Border>
+
+                                <Border Grid.Column="2"
+                                        BackgroundColor="{Binding IsPeriod180, Converter={StaticResource SwitcherBgColorConverter}}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12,6">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="2" />
+                                    </Border.GestureRecognizers>
+                                    <Label Text="6 мес"
+                                           TextColor="{Binding IsPeriod180, Converter={StaticResource SwitcherTextColorConverter}}"
+                                           FontSize="12"
+                                           FontAttributes="Bold" />
+                                </Border>
+
+                                <Border Grid.Column="3"
+                                        BackgroundColor="{Binding IsPeriodAll, Converter={StaticResource SwitcherBgColorConverter}}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12,6">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="3" />
+                                    </Border.GestureRecognizers>
+                                    <Label Text="Всё"
+                                           TextColor="{Binding IsPeriodAll, Converter={StaticResource SwitcherTextColorConverter}}"
+                                           FontSize="12"
+                                           FontAttributes="Bold" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Measurements History Header -->
+                <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center" Margin="4,4,4,0">
+                    <Label Text="ИСТОРИЯ ЗАМЕРОВ"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center" />
+                    <Label Grid.Column="1"
+                           Text="{Binding MeasurementsCountText}"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="12"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Empty State -->
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="24,36"
+                        IsVisible="{Binding HasNoMeasurements}">
+                    <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="📏" FontSize="36" HorizontalTextAlignment="Center" />
+                        <Label Text="Замеров пока нет"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="17"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Добавьте первый замер, чтобы отслеживать динамику веса и объёмов тела."
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="13"
+                               HorizontalTextAlignment="Center" />
+                        <Button Text="+ Добавить замер"
+                                Command="{Binding AddCommand}"
+                                Style="{StaticResource VoltButton}"
+                                HeightRequest="44"
+                                Padding="18,0"
+                                Margin="0,8,0,0"
+                                FontSize="13" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Measurements List -->
+                <CollectionView ItemsSource="{Binding Measurements}"
+                                SelectionMode="None"
+                                IsVisible="{Binding HasMeasurements}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MeasurementListItem">
+                            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                    Stroke="{DynamicResource KineticBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14"
+                                    Padding="14,12"
+                                    Margin="0,3">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                    <!-- Date + Weight + Delta -->
+                                    <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                                        <Label Text="{Binding DateText}"
+                                               TextColor="{DynamicResource KineticTextMuted}"
+                                               FontSize="11" />
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Label Text="{Binding WeightText}"
+                                                   TextColor="{DynamicResource KineticText}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center" />
+                                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                                    StrokeThickness="1"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="6,2"
+                                                    IsVisible="{Binding DeltaText, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                                <Label Text="{Binding DeltaText}"
+                                                       TextColor="{DynamicResource KineticVolt}"
+                                                       FontSize="11"
+                                                       FontAttributes="Bold" />
+                                            </Border>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                    <!-- Body fat badge -->
+                                    <Border Grid.Column="1"
+                                            BackgroundColor="{DynamicResource KineticWell}"
+                                            Stroke="{DynamicResource KineticBorderSubtle}"
+                                            StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 8"
+                                            Padding="8,3"
+                                            VerticalOptions="Center"
+                                            IsVisible="{Binding HasBodyFat}">
+                                        <Label Text="{Binding BodyFatText}"
+                                               TextColor="{DynamicResource KineticVolt}"
+                                               FontSize="11"
+                                               FontAttributes="Bold" />
+                                    </Border>
+
+                                    <!-- Chevron -->
+                                    <Label Grid.Column="2"
+                                           Text="›"
+                                           TextColor="{DynamicResource KineticVolt}"
+                                           FontSize="22"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

@@ -2,10 +2,17 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
+             xmlns:conv="clr-namespace:Myonic.Converters"
              x:Class="Myonic.Pages.ProfilePage"
              x:DataType="vm:ProfileViewModel"
              Title="Профиль"
              BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
@@ -139,6 +146,53 @@
                 </Grid>
             </Border>
 
+            <!-- Weight Quick Card -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16,14">
+                <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="3">
+                        <Label Text="ТЕКУЩИЙ ВЕС"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="10"
+                               FontAttributes="Bold" />
+                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                            <Label Text="{Binding LatestWeightText}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="22"
+                                   FontAttributes="Bold" />
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 6"
+                                    Padding="6,2"
+                                    VerticalOptions="Center"
+                                    IsVisible="{Binding WeightDeltaText, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                <Label Text="{Binding WeightDeltaText}"
+                                       TextColor="{DynamicResource KineticVolt}"
+                                       FontSize="11"
+                                       FontAttributes="Bold" />
+                            </Border>
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding WeightDateText}"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="11"
+                               IsVisible="{Binding HasWeightData}" />
+                    </VerticalStackLayout>
+
+                    <Button Grid.Column="1"
+                            Text="+ Внести вес"
+                            Command="{Binding QuickAddWeightCommand}"
+                            Style="{StaticResource VoltButton}"
+                            HeightRequest="38"
+                            Padding="14,0"
+                            FontSize="12"
+                            VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
             <!-- Quick Access Sections Header -->
             <Label Text="РАЗДЕЛЫ И БАЗА"
                    TextColor="{DynamicResource KineticTextMuted}"
@@ -187,6 +241,30 @@
                                FontSize="15"
                                FontAttributes="Bold" />
                         <Label Text="1RM, 5RM, максимальный рабочий вес"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Body Measurements Menu Item -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenBodyMeasurementsCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="📏" FontSize="20" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Антропометрия и замеры"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="Динамика веса, объёмы тела и процент жира"
                                TextColor="{DynamicResource KineticTextSecondary}"
                                FontSize="12" />
                     </VerticalStackLayout>
