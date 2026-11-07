@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             xmlns:conv="clr-namespace:Myonic.Converters"
+             x:Class="Myonic.Pages.GoalsPage"
+             x:DataType="vm:GoalsViewModel"
+             x:Name="ThisPage"
+             Title="Цели и нормативы"
+             BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="{OnIdiom Phone='16,12,16,20', Desktop='28,20,28,30'}"
+          RowSpacing="12">
+
+        <!-- Header -->
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+            <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                <Label Text="ЦЕЛИ И НОРМАТИВЫ"
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="11"
+                       FontAttributes="Bold" />
+                <Label Text="Мои цели"
+                       TextColor="{DynamicResource KineticText}"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+            </VerticalStackLayout>
+
+            <Button Grid.Column="1"
+                    Text="+ Новая цель"
+                    Command="{Binding AddGoalCommand}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="38"
+                    Padding="14,0"
+                    FontSize="12" />
+        </Grid>
+
+        <!-- Main Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="14">
+
+                <!-- Summary Stats Card -->
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16,14">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <!-- Active goals count -->
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                            <Label Text="{Binding ActiveGoals.Count}"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="АКТИВНЫХ ЦЕЛЕЙ"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Completed count -->
+                        <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="3">
+                            <Label Text="{Binding CompletedGoals.Count}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="ДОСТИГНУТО"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Empty State -->
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="24,36"
+                        IsVisible="{Binding HasNoActiveGoals}">
+                    <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="🎯" FontSize="36" HorizontalTextAlignment="Center" />
+                        <Label Text="Нет активных целей"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="17"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Установите цель по весу снаряда, массе тела, замерам или регулярности тренировок. Myonic автоматически отслеживает ваш прогресс!"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="13"
+                               HorizontalTextAlignment="Center" />
+                        <Button Text="+ Добавить цель"
+                                Command="{Binding AddGoalCommand}"
+                                Style="{StaticResource VoltButton}"
+                                HeightRequest="44"
+                                Padding="18,0"
+                                Margin="0,8,0,0"
+                                FontSize="13" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Active Goals List -->
+                <VerticalStackLayout Spacing="8" IsVisible="{Binding HasActiveGoals}">
+                    <Label Text="АКТИВНЫЕ ЦЕЛИ"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           Margin="4,4,0,0" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding ActiveGoals}"
+                                         Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GoalItemViewModel">
+                                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                        Stroke="{DynamicResource KineticBorder}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 14"
+                                        Padding="14,12">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditGoalCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout Spacing="8">
+                                        <!-- Header row: Type badge + Title + Target date -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                            <!-- Badge -->
+                                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                                    StrokeThickness="1"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="6,2"
+                                                    VerticalOptions="Center">
+                                                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                                    <Label Text="{Binding TypeIcon}" FontSize="11" VerticalOptions="Center" />
+                                                    <Label Text="{Binding TypeBadge}"
+                                                           TextColor="{DynamicResource KineticVolt}"
+                                                           FontSize="9"
+                                                           FontAttributes="Bold"
+                                                           VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+                                            </Border>
+
+                                            <!-- Title -->
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Title}"
+                                                   TextColor="{DynamicResource KineticText}"
+                                                   FontSize="15"
+                                                   FontAttributes="Bold"
+                                                   LineBreakMode="TailTruncation"
+                                                   VerticalOptions="Center" />
+
+                                            <!-- Target Date -->
+                                            <Label Grid.Column="2"
+                                                   Text="{Binding TargetDateText}"
+                                                   TextColor="{DynamicResource KineticTextMuted}"
+                                                   FontSize="11"
+                                                   IsVisible="{Binding HasTargetDate}"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <!-- Values summary + Remaining -->
+                                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                            <Label Text="{Binding ValuesSummaryText}"
+                                                   TextColor="{DynamicResource KineticTextSecondary}"
+                                                   FontSize="12"
+                                                   VerticalOptions="Center" />
+
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding RemainingText}"
+                                                   TextColor="{DynamicResource KineticVolt}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <!-- Progress Bar Row -->
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                            <ProgressBar Progress="{Binding ProgressFraction}"
+                                                         ProgressColor="{DynamicResource KineticVolt}"
+                                                         BackgroundColor="{DynamicResource KineticWell}"
+                                                         HeightRequest="6"
+                                                         VerticalOptions="Center" />
+
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding ProgressPercentText}"
+                                                   TextColor="{DynamicResource KineticText}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <!-- Notes if present -->
+                                        <Label Text="{Binding Notes}"
+                                               TextColor="{DynamicResource KineticTextMuted}"
+                                               FontSize="11"
+                                               IsVisible="{Binding HasNotes}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- Completed Goals List -->
+                <VerticalStackLayout Spacing="8" IsVisible="{Binding HasCompletedGoals}">
+                    <Label Text="ДОСТИГНУТЫЕ И АРХИВНЫЕ"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           Margin="4,8,0,0" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding CompletedGoals}"
+                                         Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GoalItemViewModel">
+                                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 14"
+                                        Padding="14,12"
+                                        Opacity="0.85">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditGoalCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout Spacing="8">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                                    StrokeThickness="1"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="6,2"
+                                                    VerticalOptions="Center">
+                                                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                                    <Label Text="{Binding TypeIcon}" FontSize="11" VerticalOptions="Center" />
+                                                    <Label Text="{Binding TypeBadge}"
+                                                           TextColor="{DynamicResource KineticTextMuted}"
+                                                           FontSize="9"
+                                                           FontAttributes="Bold"
+                                                           VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+                                            </Border>
+
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Title}"
+                                                   TextColor="{DynamicResource KineticText}"
+                                                   FontSize="15"
+                                                   FontAttributes="Bold"
+                                                   LineBreakMode="TailTruncation"
+                                                   VerticalOptions="Center" />
+
+                                            <Border Grid.Column="2"
+                                                    BackgroundColor="{DynamicResource KineticVolt}"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="8,2"
+                                                    VerticalOptions="Center">
+                                                <Label Text="ДОСТИГНУТО 🎉"
+                                                       TextColor="#0A0D12"
+                                                       FontSize="10"
+                                                       FontAttributes="Bold"
+                                                       VerticalOptions="Center" />
+                                            </Border>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                            <Label Text="{Binding ValuesSummaryText}"
+                                                   TextColor="{DynamicResource KineticTextMuted}"
+                                                   FontSize="12"
+                                                   VerticalOptions="Center" />
+
+                                            <Label Grid.Column="1"
+                                                   Text="100%"
+                                                   TextColor="{DynamicResource KineticVolt}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <ProgressBar Progress="1.0"
+                                                     ProgressColor="{DynamicResource KineticVolt}"
+                                                     BackgroundColor="{DynamicResource KineticWell}"
+                                                     HeightRequest="6"
+                                                     VerticalOptions="Center" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

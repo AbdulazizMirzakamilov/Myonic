@@ -89,6 +89,13 @@ namespace Myonic
             builder.Services.AddTransient<BodyMeasurementsPage>();
             builder.Services.AddTransient<BodyMeasurementEditPage>();
 
+            // Goals & Targets
+            builder.Services.AddSingleton<IGoalRepository, GoalRepository>();
+            builder.Services.AddTransient<GoalsViewModel>();
+            builder.Services.AddTransient<GoalEditViewModel>();
+            builder.Services.AddTransient<GoalsPage>();
+            builder.Services.AddTransient<GoalEditPage>();
+
             // Profile
             builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<ProfilePage>();

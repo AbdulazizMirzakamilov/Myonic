@@ -56,6 +56,8 @@ namespace Myonic
             Routing.RegisterRoute(nameof(Pages.SettingsPage), typeof(Pages.SettingsPage));
             Routing.RegisterRoute(nameof(Pages.BodyMeasurementsPage), typeof(Pages.BodyMeasurementsPage));
             Routing.RegisterRoute(nameof(Pages.BodyMeasurementEditPage), typeof(Pages.BodyMeasurementEditPage));
+            Routing.RegisterRoute(nameof(Pages.GoalsPage), typeof(Pages.GoalsPage));
+            Routing.RegisterRoute(nameof(Pages.GoalEditPage), typeof(Pages.GoalEditPage));
 
             if (DeviceInfo.Idiom != DeviceIdiom.Phone)
             {

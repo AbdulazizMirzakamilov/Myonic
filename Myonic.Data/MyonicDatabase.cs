@@ -10,8 +10,10 @@ public sealed class MyonicDatabase : IAsyncDisposable
     [
         typeof(Exercise), typeof(TrainingProgram), typeof(ProgramWorkout),
         typeof(ProgramExercise), typeof(ScheduledWorkout), typeof(WorkoutSession),
-        typeof(WorkoutExercise), typeof(SetEntry), typeof(PersonalRecord),
-        typeof(BodyMeasurement)
+        typeof(WorkoutExercise), typeof(SetEntry), typeof(PersonalRecord),
+
+        typeof(BodyMeasurement),
+        typeof(Goal)
     ];
 
     private readonly string _path;

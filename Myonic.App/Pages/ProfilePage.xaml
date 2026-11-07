@@ -17,7 +17,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
 
-                        <!-- Active Workout Banner (Sticky Top) -->
+            <!-- Active Workout Banner (Sticky Top) -->
             <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
                     Stroke="{DynamicResource KineticVolt}"
                     StrokeThickness="1.5"
@@ -193,12 +193,96 @@
                 </Grid>
             </Border>
 
+            <!-- Goals Quick Card -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenGoalsCommand}" />
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label Text="🎯" FontSize="14" VerticalOptions="Center" />
+                            <Label Text="ЦЕЛИ И НОРМАТИВЫ"
+                                   TextColor="{DynamicResource KineticTextMuted}"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <Button Grid.Column="1"
+                                Text="+ Цель"
+                                Command="{Binding QuickAddGoalCommand}"
+                                Style="{StaticResource VoltButton}"
+                                HeightRequest="32"
+                                Padding="10,0"
+                                FontSize="11"
+                                VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- When user has a top active goal -->
+                    <VerticalStackLayout Spacing="6" IsVisible="{Binding HasTopGoal}">
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                            <Label Text="{Binding TopGoalTitle}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding TopGoalProgressText}"
+                                   TextColor="{DynamicResource KineticVolt}"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                        <ProgressBar Progress="{Binding TopGoalFraction}"
+                                     ProgressColor="{DynamicResource KineticVolt}"
+                                     BackgroundColor="{DynamicResource KineticWell}"
+                                     HeightRequest="6" />
+                    </VerticalStackLayout>
+
+                    <!-- When user has no active goals -->
+                    <Label Text="Поставьте силовую цель, целевой вес или норматив тренировок"
+                           TextColor="{DynamicResource KineticTextSecondary}"
+                           FontSize="12"
+                           IsVisible="{Binding HasNoTopGoal}" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- Quick Access Sections Header -->
             <Label Text="РАЗДЕЛЫ И БАЗА"
                    TextColor="{DynamicResource KineticTextMuted}"
                    FontSize="12"
                    FontAttributes="Bold"
                    Margin="4,6,0,0" />
+
+            <!-- Goals Menu Item -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenGoalsCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="🎯" FontSize="20" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Цели и нормативы"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="Силовые рубежи, целевой вес тела и замеры"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticTextMuted}" FontSize="20" VerticalOptions="Center" />
+                </Grid>
+            </Border>
 
             <!-- Exercise Library Menu Item -->
             <Border BackgroundColor="{DynamicResource KineticSurface}"

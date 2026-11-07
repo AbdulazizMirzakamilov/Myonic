@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Myonic.ViewModels"
+             x:Class="Myonic.Pages.GoalEditPage"
+             x:DataType="vm:GoalEditViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{DynamicResource KineticCanvas}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,14,16,40" Spacing="16">
+
+            <!-- Type & Category Section -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="ТИП ЦЕЛИ"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+
+                    <!-- Goal Type Picker -->
+                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="{DynamicResource KineticBorderSubtle}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="12,4">
+                        <Picker ItemsSource="{Binding GoalTypeOptions}"
+                                SelectedIndex="{Binding GoalTypeIndex}"
+                                TextColor="{DynamicResource KineticText}"
+                                Title="Выберите тип цели"
+                                TitleColor="{DynamicResource KineticTextMuted}"
+                                BackgroundColor="Transparent" />
+                    </Border>
+
+                    <!-- Exercise Picker (if ExerciseWeight) -->
+                    <VerticalStackLayout Spacing="6" IsVisible="{Binding IsExerciseGoal}">
+                        <Label Text="Упражнение"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,4">
+                            <Picker ItemsSource="{Binding Exercises}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding SelectedExercise}"
+                                    TextColor="{DynamicResource KineticText}"
+                                    Title="Выберите упражнение"
+                                    TitleColor="{DynamicResource KineticTextMuted}"
+                                    BackgroundColor="Transparent" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Body Part Picker (if BodyMeasurement) -->
+                    <VerticalStackLayout Spacing="6" IsVisible="{Binding IsMeasurementGoal}">
+                        <Label Text="Часть тела"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,4">
+                            <Picker ItemsSource="{Binding BodyPartOptions}"
+                                    SelectedItem="{Binding SelectedBodyPart}"
+                                    TextColor="{DynamicResource KineticText}"
+                                    Title="Выберите замер"
+                                    TitleColor="{DynamicResource KineticTextMuted}"
+                                    BackgroundColor="Transparent" />
+                        </Border>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Goal Title & Target Section -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="ПАРАМЕТРЫ ЦЕЛИ"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+
+                    <!-- Goal Title Input -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Название цели"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,4">
+                            <Entry Text="{Binding GoalTitle}"
+                                   Placeholder="Например: Жим лёжа 120 кг"
+                                   PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                   TextColor="{DynamicResource KineticText}"
+                                   FontSize="15"
+                                   BackgroundColor="Transparent" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Start & Target Values -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <!-- Start Value -->
+                        <VerticalStackLayout Spacing="4">
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="Старт ("
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="12" />
+                                <Label Text="{Binding ValueUnitText}"
+                                       TextColor="{DynamicResource KineticVolt}"
+                                       FontSize="12" />
+                                <Label Text=")"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="12" />
+                            </HorizontalStackLayout>
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="10,4">
+                                <Entry Text="{Binding StartValueText}"
+                                       Placeholder="0.0"
+                                       PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       Keyboard="Numeric"
+                                       HorizontalTextAlignment="Center"
+                                       BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Target Value -->
+                        <VerticalStackLayout Grid.Column="1" Spacing="4">
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="Цель ("
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="12" />
+                                <Label Text="{Binding ValueUnitText}"
+                                       TextColor="{DynamicResource KineticVolt}"
+                                       FontSize="12" />
+                                <Label Text=")"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="12" />
+                            </HorizontalStackLayout>
+                            <Border BackgroundColor="{DynamicResource KineticWell}"
+                                    Stroke="{DynamicResource KineticBorderSubtle}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="10,4">
+                                <Entry Text="{Binding TargetValueText}"
+                                       Placeholder="0.0"
+                                       PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                       TextColor="{DynamicResource KineticVolt}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       Keyboard="Numeric"
+                                       HorizontalTextAlignment="Center"
+                                       BackgroundColor="Transparent" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Label Text="💡 Текущий прогресс автоматически считывается из рекордов (PR), замеров и тренировок."
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Target Date & Status Section -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="СРОК И СТАТУС"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+
+                    <!-- Deadline Switch -->
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Указать срок достижения"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="14"
+                               VerticalOptions="Center" />
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding HasTargetDate}"
+                                OnColor="{DynamicResource KineticVolt}"
+                                VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Deadline DatePicker -->
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding HasTargetDate}">
+                        <Label Text="Дата завершения"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,4">
+                            <DatePicker Date="{Binding TargetDate}"
+                                        MinimumDate="{Binding MinDate}"
+                                        TextColor="{DynamicResource KineticText}"
+                                        Format="d MMMM yyyy"
+                                        BackgroundColor="Transparent" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Status Picker (if Editing) -->
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding IsEditing}">
+                        <Label Text="Статус"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,4">
+                            <Picker ItemsSource="{Binding StatusOptions}"
+                                    SelectedIndex="{Binding StatusIndex}"
+                                    TextColor="{DynamicResource KineticText}"
+                                    BackgroundColor="Transparent" />
+                        </Border>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Notes Section -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticBorder}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="ЗАМЕТКИ И ПЛАН"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="11"
+                           FontAttributes="Bold" />
+                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="{DynamicResource KineticBorderSubtle}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="10,4">
+                        <Editor Text="{Binding Notes}"
+                                Placeholder="План повторений, фаза периодизации, питание..."
+                                PlaceholderColor="{DynamicResource KineticTextMuted}"
+                                TextColor="{DynamicResource KineticText}"
+                                FontSize="14"
+                                HeightRequest="80"
+                                BackgroundColor="Transparent"
+                                AutoSize="TextChanges" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Button Text="Сохранить цель"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="50"
+                    FontSize="16"
+                    FontAttributes="Bold" />
+
+            <Button Text="Удалить цель"
+                    Command="{Binding DeleteCommand}"
+                    IsVisible="{Binding IsEditing}"
+                    Style="{StaticResource SecondaryActionButton}"
+                    TextColor="Red"
+                    HeightRequest="44"
+                    FontSize="14" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
