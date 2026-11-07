@@ -101,7 +101,8 @@ public partial class OneRepMaxViewModel : ObservableObject
                 });
             }
 
-            AverageText = $"{result.Average:0.#} кг";
+            var roundedAverage = OneRepMaxCalculator.RoundToPlateStep(result.Average, 2.5);
+            AverageText = $"{roundedAverage:0.#} кг";
             IsLowAccuracy = result.IsLowAccuracy;
             HasResult = true;
         }
