@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
@@ -52,6 +53,9 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _databasePathText = string.Empty;
+
+    [ObservableProperty]
+    private string _backupsDirectoryText = string.Empty;
 
     [ObservableProperty]
     private string _appVersionText = "1.0 (MVP)";
@@ -123,9 +127,30 @@ public partial class SettingsViewModel : ObservableObject
             await LoadBackupsListAsync();
             LoadDatabaseInfo();
 
+            // Give user choice of destination using native Save As dialog
+            try
+            {
+                await using var stream = File.OpenRead(backup.FilePath);
+                var saveResult = await FileSaver.Default.SaveAsync(backup.FileName, stream);
+
+                if (saveResult.IsSuccessful)
+                {
+                    await Shell.Current.DisplayAlertAsync(
+                        "Резервная копия сохранена",
+                        $"Файл успешно сохранён в выбранное место:\n{saveResult.FilePath}",
+                        "Отлично");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsViewModel] FileSaver error: {ex}");
+            }
+
+            // Fallback or if user closed save dialog, notify about local save
             await Shell.Current.DisplayAlertAsync(
-                "Резервная копия создана",
-                $"Атомарная копия SQLite успешно сохранена.\nФайл: {backup.FileName}\nРазмер: {backup.SizeFormatted}",
+                "Резервная копия сохранена",
+                $"Файл сохранён в папку бэкапов:\n{backup.FilePath}\n\nРазмер: {backup.SizeFormatted}",
                 "OK");
         }
         catch (Exception ex)
@@ -149,6 +174,28 @@ public partial class SettingsViewModel : ObservableObject
             var exportFilePath = await _backupService.ExportToJsonAsync();
             await LoadBackupsListAsync();
 
+            // Give user choice of destination using native Save As dialog
+            try
+            {
+                await using var stream = File.OpenRead(exportFilePath);
+                var fileName = Path.GetFileName(exportFilePath);
+                var saveResult = await FileSaver.Default.SaveAsync(fileName, stream);
+
+                if (saveResult.IsSuccessful)
+                {
+                    await Shell.Current.DisplayAlertAsync(
+                        "Экспорт JSON сохранён",
+                        $"Файл успешно сохранён в выбранное место:\n{saveResult.FilePath}",
+                        "Отлично");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsViewModel] FileSaver export error: {ex}");
+            }
+
+            // Also offer system Share sheet as fallback or convenience
             await Share.Default.RequestAsync(new ShareFileRequest
             {
                 Title = "Экспорт данных Myonic (JSON)",
@@ -166,56 +213,115 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public async Task ImportJsonAsync()
+    public async Task PickAndRestoreBackupAsync()
     {
         if (IsBusy) return;
         try
         {
             var result = await FilePicker.Default.PickAsync(new PickOptions
             {
-                PickerTitle = "Выберите JSON-файл резервной копии Myonic"
+                PickerTitle = "Выберите файл резервной копии (.db3 или .json)"
             });
 
             if (result == null) return;
 
+            bool isJson = result.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase);
+            bool isDb = result.FileName.EndsWith(".db3", StringComparison.OrdinalIgnoreCase) ||
+                        result.FileName.EndsWith(".db", StringComparison.OrdinalIgnoreCase) ||
+                        result.FileName.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
+
+            if (!isJson && !isDb)
+            {
+                await Shell.Current.DisplayAlertAsync(
+                    "Неподдерживаемый формат",
+                    "Пожалуйста, выберите файл с расширением .db3 или .json.",
+                    "OK");
+                return;
+            }
+
             bool confirm = await Shell.Current.DisplayAlertAsync(
-                "Подтверждение импорта",
-                $"Вы выбрали файл «{result.FileName}».\n\nВнимание: импорт перезапишет текущую базу тренировок и программ данными из файла!\n\nПродолжить?",
-                "Импортировать",
+                "Подтверждение восстановления",
+                $"Вы выбрали файл «{result.FileName}».\n\nВнимание: восстановление перезапишет текущую базу тренировок и программ!\n\nПродолжить?",
+                "Восстановить",
                 "Отмена");
 
             if (!confirm) return;
 
             IsBusy = true;
-            BusyMessage = "Импорт данных из JSON...";
+            BusyMessage = "Восстановление данных...";
 
-            var jsonContent = await File.ReadAllTextAsync(result.FullPath);
-            var summary = await _backupService.ImportFromJsonAsync(jsonContent);
-
-            LoadDatabaseInfo();
-
-            if (summary.Success)
+            if (isJson)
             {
-                await Shell.Current.DisplayAlertAsync(
-                    "Импорт завершён успешно! 🎉",
-                    summary.ToDisplayString(),
-                    "Отлично");
+                var jsonContent = await File.ReadAllTextAsync(result.FullPath);
+                var summary = await _backupService.ImportFromJsonAsync(jsonContent);
+
+                LoadDatabaseInfo();
+
+                if (summary.Success)
+                {
+                    await Shell.Current.DisplayAlertAsync(
+                        "Импорт завершён успешно! 🎉",
+                        summary.ToDisplayString(),
+                        "Отлично");
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlertAsync(
+                        "Ошибка импорта",
+                        summary.ErrorMessage ?? "Не удалось импортировать данные.",
+                        "OK");
+                }
             }
             else
             {
+                await _backupService.RestoreSqliteBackupAsync(result.FullPath);
+                LoadDatabaseInfo();
+
                 await Shell.Current.DisplayAlertAsync(
-                    "Ошибка импорта",
-                    summary.ErrorMessage ?? "Не удалось импортировать данные.",
-                    "OK");
+                    "База данных восстановлена 🎉",
+                    $"Данные успешно восстановлены из файла «{result.FileName}».",
+                    "Отлично");
             }
+
+            await LoadBackupsListAsync();
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlertAsync("Ошибка импорта", ex.Message, "OK");
+            await Shell.Current.DisplayAlertAsync("Ошибка восстановления", ex.Message, "OK");
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task OpenBackupsFolderAsync()
+    {
+        try
+        {
+            var baseDir = Path.GetDirectoryName(_dbPath) ?? "";
+            var backupDir = Path.Combine(baseDir, "Backups");
+            Directory.CreateDirectory(backupDir);
+
+#if WINDOWS
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = backupDir,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+#else
+            await Clipboard.Default.SetTextAsync(backupDir);
+            await Shell.Current.DisplayAlertAsync(
+                "Папка бэкапов",
+                $"Путь к папке бэкапов скопирован в буфер обмена:\n\n{backupDir}",
+                "OK");
+#endif
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync("Ошибка", ex.Message, "OK");
         }
     }
 
@@ -353,6 +459,9 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             DatabasePathText = _dbPath;
+            var baseDir = Path.GetDirectoryName(_dbPath) ?? "";
+            BackupsDirectoryText = Path.Combine(baseDir, "Backups");
+
             if (File.Exists(_dbPath))
             {
                 var fi = new FileInfo(_dbPath);
