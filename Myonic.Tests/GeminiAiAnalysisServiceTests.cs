@@ -55,6 +55,7 @@ public class GeminiAiAnalysisServiceTests
         public Task<int> GetCompletedSessionsCountAsync() => Task.FromResult(0);
         public Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromUtc, DateTime toUtc) => Task.FromResult<IReadOnlyList<DateTime>>([]);
         public Task<IReadOnlyList<WorkoutSessionDetail>> GetSessionsForDateAsync(DateTime date) => Task.FromResult<IReadOnlyList<WorkoutSessionDetail>>([]);
+        public Task<AnalyticsSummary> GetAnalyticsSummaryAsync(AnalyticsPeriod period = AnalyticsPeriod.Days30) => Task.FromResult(new AnalyticsSummary());
     }
 
     [Fact]

@@ -246,4 +246,63 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         var countAfter = await _sessionRepo.GetCompletedSessionsCountAsync();
         Assert.Equal(countBefore + 2, countAfter);
     }
+
+    [Fact]
+    public async Task GetAnalyticsSummary_WhenNoCompletedSessions_ReturnsEmptySummary()
+    {
+        var summary = await _sessionRepo.GetAnalyticsSummaryAsync(AnalyticsPeriod.Days30);
+        Assert.Equal(0, summary.TotalWorkouts);
+        Assert.Equal(0, summary.TotalVolumeKg);
+        Assert.Equal(0, summary.TotalSets);
+        Assert.Equal(0, summary.TotalReps);
+        Assert.Equal("0 кг", summary.FormattedTotalVolume);
+    }
+
+    [Fact]
+    public async Task GetAnalyticsSummary_CalculatesAccurateVolumeSetsAndWeeklyBuckets()
+    {
+        var sessionId = await _sessionRepo.StartEmptySessionAsync("Тест объёма");
+        var we = await _sessionRepo.AddExerciseToSessionAsync(sessionId, _exerciseId);
+        await _sessionRepo.AddSetAsync(we.WorkoutExerciseId, 100, 8, 8.0); // 800 kg
+        await _sessionRepo.AddSetAsync(we.WorkoutExerciseId, 100, 8, 8.5); // 800 kg
+        await _sessionRepo.AddSetAsync(we.WorkoutExerciseId, 50, 10, 7.0);  // 500 kg -> Total 2100 kg
+        await _sessionRepo.FinishSessionAsync(sessionId);
+
+        var summary = await _sessionRepo.GetAnalyticsSummaryAsync(AnalyticsPeriod.Days30);
+
+        Assert.True(summary.TotalWorkouts >= 1);
+        Assert.Equal(3, summary.TotalSets);
+        Assert.Equal(26, summary.TotalReps);
+        Assert.Equal(2100.0, summary.TotalVolumeKg);
+        Assert.Equal("2.1 т", summary.FormattedTotalVolume);
+        Assert.NotEmpty(summary.WeeklyPoints);
+        Assert.NotEmpty(summary.MuscleDistribution);
+    }
+
+    [Fact]
+    public async Task GetAnalyticsSummary_RespectsPeriodFiltering()
+    {
+        // 1. Current session
+        var s1 = await _sessionRepo.StartEmptySessionAsync("Текущая сессия");
+        var we1 = await _sessionRepo.AddExerciseToSessionAsync(s1, _exerciseId);
+        await _sessionRepo.AddSetAsync(we1.WorkoutExerciseId, 80, 10, 8.0);
+        await _sessionRepo.FinishSessionAsync(s1);
+
+        // 2. Old session (finished 60 days ago)
+        var s2 = await _sessionRepo.StartEmptySessionAsync("Старая сессия");
+        var we2 = await _sessionRepo.AddExerciseToSessionAsync(s2, _exerciseId);
+        await _sessionRepo.AddSetAsync(we2.WorkoutExerciseId, 80, 10, 8.0);
+        await _sessionRepo.FinishSessionAsync(s2);
+
+        // Backdate s2 to 60 days ago in DB
+        var conn = await _db.GetConnectionAsync();
+        var oldDate = DateTime.UtcNow.AddDays(-60);
+        await conn.ExecuteAsync("UPDATE WorkoutSession SET StartedAt = ?, FinishedAt = ? WHERE Id = ?", oldDate, oldDate.AddHours(1), s2);
+
+        var summary30 = await _sessionRepo.GetAnalyticsSummaryAsync(AnalyticsPeriod.Days30);
+        var summary90 = await _sessionRepo.GetAnalyticsSummaryAsync(AnalyticsPeriod.Days90);
+
+        Assert.Equal(1, summary30.TotalWorkouts);
+        Assert.Equal(2, summary90.TotalWorkouts);
+    }
 }

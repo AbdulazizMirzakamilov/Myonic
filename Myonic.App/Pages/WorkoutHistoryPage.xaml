@@ -2,118 +2,510 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
+             xmlns:models="clr-namespace:Myonic.Core.Models;assembly=Myonic.Core"
+             xmlns:conv="clr-namespace:Myonic.Converters"
              x:Class="Myonic.Pages.WorkoutHistoryPage"
              x:Name="HistoryPage"
              x:DataType="vm:WorkoutHistoryViewModel"
-             Title="История тренировок"
+             Title="История и Аналитика"
              BackgroundColor="{DynamicResource KineticCanvas}">
 
-    <Grid Padding="16" RowDefinitions="Auto,*" RowSpacing="12">
-                    <!-- Active Workout Banner (Sticky Top) -->
-            <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
-                    Stroke="{DynamicResource KineticVolt}"
-                    StrokeThickness="1.5"
-                    BackgroundColor="{DynamicResource KineticSurface}"
-                    StrokeShape="RoundRectangle 12"
-                    Padding="14,10">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
-                    <VerticalStackLayout VerticalOptions="Center" Spacing="3">
-                        <Label Text="{Binding ActiveWorkoutTracker.Title}"
-                               TextColor="{DynamicResource KineticText}"
-                               FontSize="15"
-                               FontAttributes="Bold"
-                               LineBreakMode="TailTruncation" />
-                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                            <Border BackgroundColor="{DynamicResource KineticWell}"
-                                    Stroke="{DynamicResource KineticBorderSubtle}"
-                                    StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 6"
-                                    Padding="6,2">
-                                <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
-                                       TextColor="{DynamicResource KineticVolt}"
-                                       FontSize="12"
-                                       FontAttributes="Bold" />
-                            </Border>
-                            <Label Text="Идёт тренировка"
-                                   TextColor="{DynamicResource KineticTextMuted}"
+    <ContentPage.Resources>
+        <conv:SwitcherBgColorConverter x:Key="SwitcherBgColorConverter" />
+        <conv:SwitcherTextColorConverter x:Key="SwitcherTextColorConverter" />
+    </ContentPage.Resources>
+
+    <Grid Padding="16,14,16,16" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+
+        <!-- 1. Active Workout Banner (Sticky Top) -->
+        <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
+                Stroke="{DynamicResource KineticVolt}"
+                StrokeThickness="1.5"
+                BackgroundColor="{DynamicResource KineticSurface}"
+                StrokeShape="RoundRectangle 12"
+                Padding="14,10">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                <VerticalStackLayout VerticalOptions="Center" Spacing="3">
+                    <Label Text="{Binding ActiveWorkoutTracker.Title}"
+                           TextColor="{DynamicResource KineticText}"
+                           FontSize="15"
+                           FontAttributes="Bold"
+                           LineBreakMode="TailTruncation" />
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 6"
+                                Padding="6,2">
+                            <Label Text="{Binding ActiveWorkoutTracker.DurationText}"
+                                   TextColor="{DynamicResource KineticVolt}"
                                    FontSize="12"
-                                   VerticalOptions="Center" />
-                        </HorizontalStackLayout>
+                                   FontAttributes="Bold" />
+                        </Border>
+                        <Label Text="Идёт тренировка"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <Button Grid.Column="1"
+                        Text="Продолжить"
+                        Command="{Binding ActiveWorkoutTracker.ResumeCommand}"
+                        Style="{StaticResource VoltButton}"
+                        HeightRequest="38"
+                        Padding="14,0"
+                        FontSize="13"
+                        VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <!-- 2. Mode Switcher: [ История ] | [ Аналитика и Графики ] -->
+        <Border Grid.Row="1"
+                BackgroundColor="{DynamicResource KineticSurface}"
+                Stroke="{DynamicResource KineticBorder}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 12"
+                Padding="4">
+            <Grid ColumnDefinitions="*,*">
+                <!-- History Tab Button -->
+                <Border BackgroundColor="{Binding IsHistoryMode, Converter={StaticResource SwitcherBgColorConverter}}"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="12,8">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectHistoryModeCommand}" />
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                        <Label Text="📋" FontSize="14" VerticalOptions="Center" />
+                        <Label Text="История"
+                               TextColor="{Binding IsHistoryMode, Converter={StaticResource SwitcherTextColorConverter}}"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Analytics Tab Button -->
+                <Border Grid.Column="1"
+                        BackgroundColor="{Binding IsAnalyticsMode, Converter={StaticResource SwitcherBgColorConverter}}"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="12,8">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectAnalyticsModeCommand}" />
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                        <Label Text="📊" FontSize="14" VerticalOptions="Center" />
+                        <Label Text="Аналитика и Графики"
+                               TextColor="{Binding IsAnalyticsMode, Converter={StaticResource SwitcherTextColorConverter}}"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ========================================== -->
+        <!-- 3A. HISTORY MODE VIEW                      -->
+        <!-- ========================================== -->
+        <Grid Grid.Row="2" IsVisible="{Binding IsHistoryMode}">
+            <!-- Empty state -->
+            <VerticalStackLayout IsVisible="{Binding HasNoHistory}"
+                                 VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 Spacing="8">
+                <Label Text="История пока пуста"
+                       TextColor="{DynamicResource KineticText}"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="18"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="Завершённые тренировки будут отображаться здесь."
+                       TextColor="{DynamicResource KineticTextMuted}"
+                       FontSize="13"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Sessions list -->
+            <CollectionView ItemsSource="{Binding PastSessions}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PastWorkoutItem">
+                        <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="16"
+                                Margin="0,0,0,10">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={x:Reference HistoryPage}, Path=BindingContext.OpenSessionDetailCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding Title}"
+                                           TextColor="{DynamicResource KineticText}"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="16" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding DurationText}"
+                                           TextColor="{DynamicResource KineticEmerald}"
+                                           FontSize="13"
+                                           FontAttributes="Bold" />
+                                </Grid>
+
+                                <Label Text="{Binding DateText}"
+                                       TextColor="{DynamicResource KineticTextMuted}"
+                                       FontSize="12" />
+
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                                    <Label Text="{Binding SummaryText}"
+                                           TextColor="{DynamicResource KineticTextSecondary}"
+                                           FontSize="13" />
+                                    <Label Grid.Column="1"
+                                           Text="Разбор →"
+                                           TextColor="{DynamicResource KineticVolt}"
+                                           FontSize="12"
+                                           FontAttributes="Bold" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+        <!-- ========================================== -->
+        <!-- 3B. ANALYTICS & CHARTS MODE VIEW           -->
+        <!-- ========================================== -->
+        <ScrollView Grid.Row="2" IsVisible="{Binding IsAnalyticsMode}">
+            <VerticalStackLayout Spacing="16" Padding="0,0,0,32">
+
+                <!-- Period Filter Pills -->
+                <Border BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="4">
+                    <Grid ColumnDefinitions="*,*,*,*">
+                        <!-- 30 Days -->
+                        <Border BackgroundColor="{Binding IsPeriod30, Converter={StaticResource SwitcherBgColorConverter}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="0,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetPeriod30Command}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="30 дней"
+                                   TextColor="{Binding IsPeriod30, Converter={StaticResource SwitcherTextColorConverter}}"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </Border>
+
+                        <!-- 90 Days -->
+                        <Border Grid.Column="1"
+                                BackgroundColor="{Binding IsPeriod90, Converter={StaticResource SwitcherBgColorConverter}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="0,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetPeriod90Command}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="90 дней"
+                                   TextColor="{Binding IsPeriod90, Converter={StaticResource SwitcherTextColorConverter}}"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </Border>
+
+                        <!-- 180 Days -->
+                        <Border Grid.Column="2"
+                                BackgroundColor="{Binding IsPeriod180, Converter={StaticResource SwitcherBgColorConverter}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="0,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetPeriod180Command}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="180 дней"
+                                   TextColor="{Binding IsPeriod180, Converter={StaticResource SwitcherTextColorConverter}}"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </Border>
+
+                        <!-- All Time -->
+                        <Border Grid.Column="3"
+                                BackgroundColor="{Binding IsPeriodAll, Converter={StaticResource SwitcherBgColorConverter}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="0,6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetPeriodAllCommand}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="Всё время"
+                                   TextColor="{Binding IsPeriodAll, Converter={StaticResource SwitcherTextColorConverter}}"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Empty state for Analytics -->
+                <Border IsVisible="{Binding HasNoAnalyticsData}"
+                        BackgroundColor="{DynamicResource KineticSurface}"
+                        Stroke="{DynamicResource KineticBorder}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 14"
+                        Padding="24"
+                        Margin="0,20,0,0">
+                    <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                        <Label Text="📊" FontSize="36" HorizontalTextAlignment="Center" />
+                        <Label Text="Нет данных за выбранный период"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Проводите тренировки, чтобы накапливать статистику объема, интенсивности и частоты."
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="13"
+                               HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
-                    <Button Grid.Column="1"
-                            Text="Продолжить"
-                            Command="{Binding ActiveWorkoutTracker.ResumeCommand}"
-                            Style="{StaticResource VoltButton}"
-                            HeightRequest="38"
-                            Padding="14,0"
-                            FontSize="13"
-                            VerticalOptions="Center" />
-                </Grid>
-            </Border>
+                </Border>
 
-        <!-- Empty state -->
-        <VerticalStackLayout Grid.Row="1"
-                             IsVisible="{Binding HasNoHistory}"
-                             VerticalOptions="Center"
-                             HorizontalOptions="Center"
-                             Spacing="8">
-            <Label Text="История пока пуста"
-                   TextColor="{DynamicResource KineticText}"
-                   FontFamily="OpenSansSemibold"
-                   FontSize="18"
-                   HorizontalTextAlignment="Center" />
-            <Label Text="Завершённые тренировки будут отображаться здесь."
-                   TextColor="{DynamicResource KineticTextMuted}"
-                   FontSize="13"
-                   HorizontalTextAlignment="Center" />
-        </VerticalStackLayout>
+                <!-- KPI CARDS GRID -->
+                <VerticalStackLayout IsVisible="{Binding HasAnalyticsData}" Spacing="16">
 
-        <!-- Sessions list -->
-        <CollectionView Grid.Row="1" ItemsSource="{Binding PastSessions}" SelectionMode="None">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="vm:PastWorkoutItem">
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+
+                        <!-- 1. Total Volume -->
+                        <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="ТОННАЖ" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" FontAttributes="Bold" />
+                                <Label Text="{Binding TotalVolumeText}" TextColor="{DynamicResource KineticVolt}" FontSize="20" FontAttributes="Bold" />
+                                <Label Text="Суммарный объём" TextColor="{DynamicResource KineticTextSecondary}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 2. Workouts Count -->
+                        <Border Grid.Column="1"
+                                BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="ТРЕНИРОВКИ" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" FontAttributes="Bold" />
+                                <Label Text="{Binding TotalWorkouts}" TextColor="{DynamicResource KineticText}" FontSize="20" FontAttributes="Bold" />
+                                <Label Text="Завершено сессий" TextColor="{DynamicResource KineticTextSecondary}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 3. Sets & Reps -->
+                        <Border Grid.Row="1"
+                                BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="ПОДХОДЫ И ПОВТОРЫ" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" FontAttributes="Bold" />
+                                <HorizontalStackLayout Spacing="4">
+                                    <Label Text="{Binding TotalSets}" TextColor="{DynamicResource KineticText}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="сет /" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" VerticalOptions="End" Margin="0,0,0,2" />
+                                    <Label Text="{Binding TotalReps}" TextColor="{DynamicResource KineticIceBlue}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="повт" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" VerticalOptions="End" Margin="0,0,0,2" />
+                                </HorizontalStackLayout>
+                                <Label Text="Общая нагрузка" TextColor="{DynamicResource KineticTextSecondary}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 4. Average Duration -->
+                        <Border Grid.Row="1" Grid.Column="1"
+                                BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="СРЕДНЯЯ ДЛИТЕЛЬНОСТЬ" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" FontAttributes="Bold" />
+                                <Label Text="{Binding AvgDurationText}" TextColor="{DynamicResource KineticEmerald}" FontSize="18" FontAttributes="Bold" />
+                                <Label Text="Время под нагрузкой" TextColor="{DynamicResource KineticTextSecondary}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 5. Frequency per week -->
+                        <Border Grid.Row="2"
+                                BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="ЧАСТОТА ТРЕНИРОВОК" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" FontAttributes="Bold" />
+                                <HorizontalStackLayout Spacing="4">
+                                    <Label Text="{Binding WorkoutsPerWeekText}" TextColor="{DynamicResource KineticVolt}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="тр / нед" TextColor="{DynamicResource KineticTextMuted}" FontSize="12" VerticalOptions="End" Margin="0,0,0,2" />
+                                </HorizontalStackLayout>
+                                <Label Text="Регулярность" TextColor="{DynamicResource KineticTextSecondary}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 6. Personal Records PR -->
+                        <Border Grid.Row="2" Grid.Column="1"
+                                BackgroundColor="{DynamicResource KineticSurface}"
+                                Stroke="{DynamicResource KineticBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="ЛИЧНЫЕ РЕКОРДЫ" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" FontAttributes="Bold" />
+                                <HorizontalStackLayout Spacing="4">
+                                    <Label Text="{Binding PersonalRecordsCount}" TextColor="{DynamicResource KineticVolt}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="🏆 PR" TextColor="{DynamicResource KineticTextSecondary}" FontSize="12" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <Label Text="За выбранный период" TextColor="{DynamicResource KineticTextSecondary}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- CHART 1: WEEKLY VOLUME BAR CHART -->
                     <Border BackgroundColor="{DynamicResource KineticSurface}"
                             Stroke="{DynamicResource KineticBorder}"
                             StrokeThickness="1"
-                            StrokeShape="RoundRectangle 12"
-                            Padding="16"
-                            Margin="0,0,0,10">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={x:Reference HistoryPage}, Path=BindingContext.OpenSessionDetailCommand}"
-                                                  CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-
-                        <VerticalStackLayout Spacing="6">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding Title}"
-                                       TextColor="{DynamicResource KineticText}"
-                                       FontFamily="OpenSansSemibold"
-                                       FontSize="16" />
-                                <Label Grid.Column="1"
-                                       Text="{Binding DurationText}"
-                                       TextColor="{DynamicResource KineticEmerald}"
-                                       FontSize="13"
-                                       FontAttributes="Bold" />
+                            StrokeShape="RoundRectangle 14"
+                            Padding="16">
+                        <VerticalStackLayout Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                <VerticalStackLayout Spacing="2">
+                                    <Label Text="ДИНАМИКА ТОННАЖА ПО НЕДЕЛЯМ"
+                                           TextColor="{DynamicResource KineticTextMuted}"
+                                           FontSize="11"
+                                           FontAttributes="Bold" />
+                                    <Label Text="Суммарный тоннаж (кг/т)"
+                                           TextColor="{DynamicResource KineticTextSecondary}"
+                                           FontSize="13" />
+                                </VerticalStackLayout>
+                                <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                    <BoxView WidthRequest="10" HeightRequest="10" Color="{DynamicResource KineticVolt}" CornerRadius="2" />
+                                    <Label Text="Объём" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
+                                </HorizontalStackLayout>
                             </Grid>
 
-                            <Label Text="{Binding DateText}"
-                                   TextColor="{DynamicResource KineticTextMuted}"
-                                   FontSize="12" />
-
-                            <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                                <Label Text="{Binding SummaryText}"
-                                       TextColor="{DynamicResource KineticTextSecondary}"
-                                       FontSize="13" />
-                                <Label Grid.Column="1"
-                                       Text="Разбор →"
-                                       TextColor="{DynamicResource KineticVolt}"
-                                       FontSize="12"
-                                       FontAttributes="Bold" />
-                            </Grid>
+                            <GraphicsView x:Name="VolumeChartView"
+                                          Drawable="{Binding VolumeBarDrawable}"
+                                          HeightRequest="190" />
                         </VerticalStackLayout>
                     </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+
+                    <!-- CHART 2: WEEKLY FREQUENCY CHART -->
+                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                            Stroke="{DynamicResource KineticBorder}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 14"
+                            Padding="16">
+                        <VerticalStackLayout Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                <VerticalStackLayout Spacing="2">
+                                    <Label Text="ЧАСТОТА ТРЕНИРОВОК В НЕДЕЛЮ"
+                                           TextColor="{DynamicResource KineticTextMuted}"
+                                           FontSize="11"
+                                           FontAttributes="Bold" />
+                                    <Label Text="Количество проведённых тренировок"
+                                           TextColor="{DynamicResource KineticTextSecondary}"
+                                           FontSize="13" />
+                                </VerticalStackLayout>
+                                <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                    <BoxView WidthRequest="10" HeightRequest="10" Color="{DynamicResource KineticIceBlue}" CornerRadius="2" />
+                                    <Label Text="Частота" TextColor="{DynamicResource KineticTextMuted}" FontSize="11" />
+                                </HorizontalStackLayout>
+                            </Grid>
+
+                            <GraphicsView x:Name="FrequencyChartView"
+                                          Drawable="{Binding FrequencyDrawable}"
+                                          HeightRequest="170" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- SECTION 3: LOAD STRUCTURE & MUSCLE GROUPS -->
+                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                            Stroke="{DynamicResource KineticBorder}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 14"
+                            Padding="16">
+                        <VerticalStackLayout Spacing="14">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="СТРУКТУРА НАГРУЗКИ"
+                                       TextColor="{DynamicResource KineticTextMuted}"
+                                       FontSize="11"
+                                       FontAttributes="Bold" />
+                                <Label Text="Распределение по типам и мышечным группам"
+                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                       FontSize="13" />
+                            </VerticalStackLayout>
+
+                            <!-- Compound vs Isolation Chips -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Border BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="10,8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="Базовые (Compound)" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" />
+                                        <Label Text="{Binding CompoundSetsCount, StringFormat='{0} подходов'}"
+                                               TextColor="{DynamicResource KineticVolt}"
+                                               FontSize="14"
+                                               FontAttributes="Bold" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border Grid.Column="1"
+                                        BackgroundColor="{DynamicResource KineticWell}"
+                                        Stroke="{DynamicResource KineticBorderSubtle}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="10,8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="Изоляция (Isolation)" TextColor="{DynamicResource KineticTextMuted}" FontSize="10" />
+                                        <Label Text="{Binding IsolationSetsCount, StringFormat='{0} подходов'}"
+                                               TextColor="{DynamicResource KineticIceBlue}"
+                                               FontSize="14"
+                                               FontAttributes="Bold" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <!-- Muscle Group Distribution List -->
+                            <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding MuscleDistribution}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="models:MuscleGroupDistributionItem">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Label Text="{Binding Name}"
+                                                       TextColor="{DynamicResource KineticText}"
+                                                       FontSize="13"
+                                                       FontAttributes="Bold" />
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding SubtitleText}"
+                                                       TextColor="{DynamicResource KineticTextSecondary}"
+                                                       FontSize="12" />
+                                            </Grid>
+
+                                            <!-- Visual progress bar -->
+                                            <ProgressBar Progress="{Binding ProgressFraction}"
+                                                         ProgressColor="{DynamicResource KineticVolt}"
+                                                         HeightRequest="6" />
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                        </VerticalStackLayout>
+                    </Border>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
     </Grid>
 </ContentPage>

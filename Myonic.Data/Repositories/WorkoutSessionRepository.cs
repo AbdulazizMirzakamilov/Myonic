@@ -506,6 +506,202 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         };
     }
 
+    public async Task<AnalyticsSummary> GetAnalyticsSummaryAsync(AnalyticsPeriod period = AnalyticsPeriod.Days30)
+    {
+        var db = await _database.GetConnectionAsync();
+        DateTime nowUtc = DateTime.UtcNow;
+        DateTime fromDateUtc = period switch
+        {
+            AnalyticsPeriod.Days30 => nowUtc.AddDays(-30),
+            AnalyticsPeriod.Days90 => nowUtc.AddDays(-90),
+            AnalyticsPeriod.Days180 => nowUtc.AddDays(-180),
+            _ => DateTime.MinValue
+        };
+
+        var sessions = await db.Table<WorkoutSession>()
+            .Where(s => s.FinishedAt != null && s.FinishedAt >= fromDateUtc)
+            .OrderBy(s => s.StartedAt)
+            .ToListAsync();
+
+        var summary = new AnalyticsSummary { Period = period };
+        if (sessions.Count == 0)
+        {
+            return summary;
+        }
+
+        var setRows = await db.QueryAsync<AnalyticsSetRow>(
+            @"SELECT
+                ws.Id AS SessionId,
+                ws.StartedAt,
+                ws.FinishedAt,
+                e.Id AS ExerciseId,
+                e.Name AS ExerciseName,
+                e.Type AS ExerciseType,
+                se.SetNumber,
+                se.Weight,
+                se.Reps
+              FROM SetEntry se
+              JOIN WorkoutExercise we ON se.WorkoutExerciseId = we.Id
+              JOIN WorkoutSession ws ON we.WorkoutSessionId = ws.Id
+              JOIN Exercise e ON we.ExerciseId = e.Id
+              WHERE ws.FinishedAt IS NOT NULL AND ws.FinishedAt >= ?
+              ORDER BY ws.StartedAt ASC, we.""Order"" ASC, se.SetNumber ASC",
+            fromDateUtc);
+
+        summary.TotalWorkouts = sessions.Count;
+        summary.TotalSets = setRows.Count;
+        summary.TotalReps = setRows.Sum(s => s.Reps);
+        summary.TotalVolumeKg = setRows.Sum(s => s.Weight * s.Reps);
+
+        var durations = sessions
+            .Select(s => (s.FinishedAt!.Value - s.StartedAt).TotalMinutes)
+            .Where(m => m > 0 && m < 600)
+            .ToList();
+
+        if (durations.Count > 0)
+        {
+            summary.AverageDuration = TimeSpan.FromMinutes(durations.Average());
+        }
+
+        double spanDays = period == AnalyticsPeriod.All
+            ? Math.Max(7, (nowUtc - sessions.Min(s => s.StartedAt)).TotalDays)
+            : (double)(int)period;
+
+        summary.WorkoutsPerWeek = Math.Round((summary.TotalWorkouts / spanDays) * 7.0, 1);
+
+        // PRs count
+        if (fromDateUtc == DateTime.MinValue)
+        {
+            summary.PersonalRecordsCount = await db.Table<PersonalRecord>().CountAsync();
+        }
+        else
+        {
+            summary.PersonalRecordsCount = await db.Table<PersonalRecord>()
+                .Where(pr => pr.AchievedAt >= fromDateUtc)
+                .CountAsync();
+        }
+
+        summary.CompoundSetsCount = setRows.Count(s => (ExerciseType)s.ExerciseType == ExerciseType.Compound);
+        summary.IsolationSetsCount = setRows.Count(s => (ExerciseType)s.ExerciseType == ExerciseType.Isolation);
+
+        // Weekly Volume Buckets
+        var culture = new System.Globalization.CultureInfo("ru-RU");
+        DateTime earliestLocal = (period == AnalyticsPeriod.All ? sessions.Min(s => s.StartedAt) : fromDateUtc).ToLocalTime().Date;
+        DateTime latestLocal = nowUtc.ToLocalTime().Date;
+
+        int earliestDiff = (7 + (earliestLocal.DayOfWeek - DayOfWeek.Monday)) % 7;
+        DateTime weekIter = earliestLocal.AddDays(-earliestDiff);
+
+        int latestDiff = (7 + (latestLocal.DayOfWeek - DayOfWeek.Monday)) % 7;
+        DateTime currentWeekStart = latestLocal.AddDays(-latestDiff);
+
+        var setsBySession = setRows.GroupBy(s => s.SessionId).ToDictionary(g => g.Key, g => g.ToList());
+        var sessionsByWeek = new Dictionary<DateTime, List<WorkoutSession>>();
+
+        foreach (var sess in sessions)
+        {
+            var lDate = sess.StartedAt.ToLocalTime().Date;
+            int d = (7 + (lDate.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var wStart = lDate.AddDays(-d);
+            if (!sessionsByWeek.TryGetValue(wStart, out var list))
+            {
+                list = [];
+                sessionsByWeek[wStart] = list;
+            }
+            list.Add(sess);
+        }
+
+        while (weekIter <= currentWeekStart)
+        {
+            double weekVol = 0;
+            int count = 0;
+            if (sessionsByWeek.TryGetValue(weekIter, out var wSessions))
+            {
+                count = wSessions.Count;
+                foreach (var ws in wSessions)
+                {
+                    if (setsBySession.TryGetValue(ws.Id, out var setsInSession))
+                    {
+                        weekVol += setsInSession.Sum(s => s.Weight * s.Reps);
+                    }
+                }
+            }
+
+            summary.WeeklyPoints.Add(new WeeklyVolumePoint(
+                weekIter,
+                weekIter.ToString("d MMM", culture),
+                weekVol,
+                count));
+
+            weekIter = weekIter.AddDays(7);
+        }
+
+        // Muscle Distribution
+        var muscleGroups = new Dictionary<string, (int sets, double volume)>();
+        foreach (var s in setRows)
+        {
+            string group = ClassifyMuscleGroup(s.ExerciseName);
+            if (!muscleGroups.TryGetValue(group, out var current))
+            {
+                current = (0, 0);
+            }
+            muscleGroups[group] = (current.sets + 1, current.volume + (s.Weight * s.Reps));
+        }
+
+        double totalVol = summary.TotalVolumeKg > 0 ? summary.TotalVolumeKg : 1;
+        summary.MuscleDistribution = muscleGroups
+            .Select(kv => new MuscleGroupDistributionItem(
+                kv.Key,
+                kv.Value.sets,
+                kv.Value.volume,
+                Math.Round((kv.Value.volume / totalVol) * 100.0, 1)))
+            .OrderByDescending(m => m.SetsCount)
+            .ToList();
+
+        return summary;
+    }
+
+    private static string ClassifyMuscleGroup(string name)
+    {
+        var lower = name.ToLowerInvariant();
+        if ((lower.Contains("жим") && (lower.Contains("лёжа") || lower.Contains("лежа") || lower.Contains("скамье") || lower.Contains("брусьях"))) ||
+            lower.Contains("разведение гантелей лёжа") || lower.Contains("кроссовер") || lower.Contains("груд"))
+            return "Грудь";
+
+        if (lower.Contains("тяга") || lower.Contains("подтягивания") || lower.Contains("спин"))
+            return "Спина";
+
+        if (lower.Contains("присед") || lower.Contains("ногами") || lower.Contains("выпады") || lower.Contains("ноги") ||
+            lower.Contains("голень") || lower.Contains("носок") || lower.Contains("квадрицепс") || lower.Contains("бедр"))
+            return "Ноги";
+
+        if (lower.Contains("жим штанги стоя") || lower.Contains("жим стоя") || lower.Contains("армейский") ||
+            lower.Contains("махи") || lower.Contains("плеч") || lower.Contains("дельта"))
+            return "Плечи";
+
+        if (lower.Contains("бицепс") || lower.Contains("трицепс") || lower.Contains("французский") ||
+            lower.Contains("молотков") || lower.Contains("сгибание рук") || lower.Contains("разгибание рук"))
+            return "Руки";
+
+        if (lower.Contains("пресс") || lower.Contains("скручиван") || lower.Contains("планк") || lower.Contains("кор"))
+            return "Кор";
+
+        return "Другое";
+    }
+
+    private sealed class AnalyticsSetRow
+    {
+        public int SessionId { get; set; }
+        public DateTime StartedAt { get; set; }
+        public DateTime? FinishedAt { get; set; }
+        public int ExerciseId { get; set; }
+        public string ExerciseName { get; set; } = string.Empty;
+        public int ExerciseType { get; set; }
+        public int SetNumber { get; set; }
+        public double Weight { get; set; }
+        public int Reps { get; set; }
+    }
+
     private sealed class ExerciseSessionHistoryRow
     {
         public int WorkoutExerciseId { get; set; }

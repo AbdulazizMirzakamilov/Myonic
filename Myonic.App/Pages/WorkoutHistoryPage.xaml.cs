@@ -10,11 +10,22 @@ public partial class WorkoutHistoryPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _vm = vm;
+
+        _vm.RequestChartsRedraw += () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                VolumeChartView?.Invalidate();
+                FrequencyChartView?.Invalidate();
+            });
+        };
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         await _vm.LoadHistoryAsync();
+        VolumeChartView?.Invalidate();
+        FrequencyChartView?.Invalidate();
     }
 }

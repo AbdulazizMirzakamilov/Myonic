@@ -98,4 +98,5 @@ public interface IWorkoutSessionRepository
     Task<IReadOnlyList<DateTime>> GetCompletedSessionDatesAsync(DateTime fromUtc, DateTime toUtc);
     Task<IReadOnlyList<WorkoutSessionDetail>> GetSessionsForDateAsync(DateTime date);
     Task<ExerciseHistorySummary> GetExerciseHistoryAsync(int exerciseId);
+    Task<AnalyticsSummary> GetAnalyticsSummaryAsync(AnalyticsPeriod period = AnalyticsPeriod.Days30);
 }
