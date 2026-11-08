@@ -1,3 +1,4 @@
+using Myonic.Core.Services;
 using Myonic.Services;
 
 namespace Myonic
@@ -5,17 +6,37 @@ namespace Myonic
     public partial class App : Application
     {
         private readonly IThemeService _themeService;
+        private readonly INotificationService _notificationService;
 
-        public App(IThemeService themeService)
+        public App(IThemeService themeService, INotificationService notificationService)
         {
             InitializeComponent();
             _themeService = themeService;
             _themeService.Initialize();
+            _notificationService = notificationService;
+
+            // Background initial sync of scheduled notifications
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _notificationService.SyncScheduledRemindersAsync();
+                }
+                catch
+                {
+                    // Ignore startup sync errors
+                }
+            });
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
             var window = new Window(new AppShell());
+
+            window.Resumed += (s, e) =>
+            {
+                _ = _notificationService.SyncScheduledRemindersAsync();
+            };
 
 #if WINDOWS
             window.MinimumWidth = 980;

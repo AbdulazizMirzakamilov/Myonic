@@ -109,6 +109,9 @@ namespace Myonic
             builder.Services.AddSingleton<Myonic.Core.Services.IDataBackupService, Myonic.Data.Services.DataBackupService>();
             builder.Services.AddSingleton<Myonic.Core.Services.IAiSettingsService, Myonic.Services.AiSettingsService>();
             builder.Services.AddSingleton<Myonic.Core.Services.IAiAnalysisService, Myonic.Data.Services.GeminiAiAnalysisService>();
+            builder.Services.AddSingleton<Myonic.Core.Services.INotificationScheduler, Myonic.Core.Services.NotificationScheduler>();
+            builder.Services.AddSingleton<Myonic.Core.Services.INotificationSettingsService, Myonic.Services.NotificationSettingsService>();
+            builder.Services.AddSingleton<Myonic.Core.Services.INotificationService, Myonic.Services.NotificationService>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsPage>();
 

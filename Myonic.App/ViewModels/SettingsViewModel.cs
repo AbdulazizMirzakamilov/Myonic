@@ -16,6 +16,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IDataBackupService _backupService;
     private readonly IAiSettingsService _aiSettingsService;
     private readonly IAiAnalysisService _aiAnalysisService;
+    private readonly INotificationSettingsService _notificationSettingsService;
+    private readonly INotificationService _notificationService;
     private readonly string _dbPath;
 
     public SettingsViewModel(
@@ -23,13 +25,17 @@ public partial class SettingsViewModel : ObservableObject
         MyonicDatabase database,
         IDataBackupService backupService,
         IAiSettingsService aiSettingsService,
-        IAiAnalysisService aiAnalysisService)
+        IAiAnalysisService aiAnalysisService,
+        INotificationSettingsService notificationSettingsService,
+        INotificationService notificationService)
     {
         _themeService = themeService;
         _database = database;
         _backupService = backupService;
         _aiSettingsService = aiSettingsService;
         _aiAnalysisService = aiAnalysisService;
+        _notificationSettingsService = notificationSettingsService;
+        _notificationService = notificationService;
         _dbPath = _database.DatabasePath;
 
         // Load current theme index (0: Dark, 1: Light, 2: System)
@@ -38,6 +44,14 @@ public partial class SettingsViewModel : ObservableObject
         // Load workout preferences
         _showPrBadges = Preferences.Get("show_pr_badges", true);
         _soundVibrationEnabled = Preferences.Get("sound_vibration_enabled", true);
+
+        // Load notification settings
+        _enableUpcomingWorkoutReminders = _notificationSettingsService.EnableUpcomingWorkoutReminders;
+        _upcomingWorkoutTime = _notificationSettingsService.UpcomingWorkoutTime;
+        _enableMissedWorkoutAlerts = _notificationSettingsService.EnableMissedWorkoutAlerts;
+        _missedWorkoutTime = _notificationSettingsService.MissedWorkoutTime;
+        _enableWeightReminders = _notificationSettingsService.EnableWeightReminders;
+        _weightReminderTime = _notificationSettingsService.WeightReminderTime;
 
         // Load AI settings
         _selectedProviderIndex = (int)_aiSettingsService.Provider;
@@ -129,6 +143,124 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _soundVibrationEnabled;
+
+    // Notifications
+    [ObservableProperty]
+    private bool _enableUpcomingWorkoutReminders;
+
+    [ObservableProperty]
+    private TimeSpan _upcomingWorkoutTime;
+
+    [ObservableProperty]
+    private bool _enableMissedWorkoutAlerts;
+
+    [ObservableProperty]
+    private TimeSpan _missedWorkoutTime;
+
+    [ObservableProperty]
+    private bool _enableWeightReminders;
+
+    [ObservableProperty]
+    private TimeSpan _weightReminderTime;
+
+    [ObservableProperty]
+    private bool _isTestingNotification;
+
+    public bool IsNotTestingNotification => !IsTestingNotification;
+
+    [ObservableProperty]
+    private string? _testNotificationMessage;
+
+    [ObservableProperty]
+    private bool _hasTestNotificationResult;
+
+    [ObservableProperty]
+    private bool _isTestNotificationSuccess;
+
+    partial void OnIsTestingNotificationChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsNotTestingNotification));
+    }
+
+    partial void OnEnableUpcomingWorkoutRemindersChanged(bool value)
+    {
+        _notificationSettingsService.EnableUpcomingWorkoutReminders = value;
+        _ = _notificationService.SyncScheduledRemindersAsync();
+    }
+
+    partial void OnUpcomingWorkoutTimeChanged(TimeSpan value)
+    {
+        _notificationSettingsService.UpcomingWorkoutTime = value;
+        _ = _notificationService.SyncScheduledRemindersAsync();
+    }
+
+    partial void OnEnableMissedWorkoutAlertsChanged(bool value)
+    {
+        _notificationSettingsService.EnableMissedWorkoutAlerts = value;
+        _ = _notificationService.SyncScheduledRemindersAsync();
+    }
+
+    partial void OnMissedWorkoutTimeChanged(TimeSpan value)
+    {
+        _notificationSettingsService.MissedWorkoutTime = value;
+        _ = _notificationService.SyncScheduledRemindersAsync();
+    }
+
+    partial void OnEnableWeightRemindersChanged(bool value)
+    {
+        _notificationSettingsService.EnableWeightReminders = value;
+        _ = _notificationService.SyncScheduledRemindersAsync();
+    }
+
+    partial void OnWeightReminderTimeChanged(TimeSpan value)
+    {
+        _notificationSettingsService.WeightReminderTime = value;
+        _ = _notificationService.SyncScheduledRemindersAsync();
+    }
+
+    [RelayCommand]
+    public async Task SendTestNotificationAsync()
+    {
+        if (IsTestingNotification) return;
+
+        IsTestingNotification = true;
+        HasTestNotificationResult = false;
+        TestNotificationMessage = "Отправка тестового уведомления...";
+
+        try
+        {
+            var granted = await _notificationService.RequestPermissionsAsync();
+            if (!granted)
+            {
+                IsTestNotificationSuccess = false;
+                TestNotificationMessage = "Разрешение на отправку уведомлений отклонено в системе";
+                HasTestNotificationResult = true;
+                return;
+            }
+
+            await _notificationService.ShowNotificationAsync(
+                NotificationIds.TestNotificationId,
+                "🔔 Тестовое уведомление Myonic",
+                "Система локальных уведомлений работает штатно! Все напоминания настроены.",
+                NotificationCategory.General);
+
+            IsTestNotificationSuccess = true;
+            TestNotificationMessage = "Тестовое уведомление успешно отправлено!";
+            HasTestNotificationResult = true;
+
+            await _notificationService.SyncScheduledRemindersAsync();
+        }
+        catch (Exception ex)
+        {
+            IsTestNotificationSuccess = false;
+            TestNotificationMessage = $"Ошибка отправки: {ex.Message}";
+            HasTestNotificationResult = true;
+        }
+        finally
+        {
+            IsTestingNotification = false;
+        }
+    }
 
     [ObservableProperty]
     private string _databaseSizeText = "Определение...";

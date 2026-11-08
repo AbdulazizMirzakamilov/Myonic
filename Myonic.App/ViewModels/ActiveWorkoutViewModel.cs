@@ -331,6 +331,15 @@ public partial class ActiveWorkoutViewModel : ObservableObject, IQueryAttributab
         StopTimer();
         var finishedSessionId = _sessionId;
         await _repository.FinishSessionAsync(finishedSessionId);
+        try
+        {
+            var notifService = _serviceProvider.GetService<Myonic.Core.Services.INotificationService>();
+            if (notifService != null)
+            {
+                _ = notifService.SyncScheduledRemindersAsync();
+            }
+        }
+        catch { }
         _activeWorkoutTracker.NotifySessionFinished();
         _hapticService.TriggerSuccess();
         await Shell.Current.DisplayAlertAsync("Отличная работа!", "Тренировка завершена! Открываем итоги тренировки.", "OK");

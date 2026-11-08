@@ -2,14 +2,20 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
+using Myonic.Core.Services;
 
 namespace Myonic.ViewModels;
 
 public partial class BodyMeasurementEditViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IBodyMeasurementRepository _repo;
+    private readonly INotificationService? _notificationService;
 
-    public BodyMeasurementEditViewModel(IBodyMeasurementRepository repo) => _repo = repo;
+    public BodyMeasurementEditViewModel(IBodyMeasurementRepository repo, INotificationService? notificationService = null)
+    {
+        _repo = repo;
+        _notificationService = notificationService;
+    }
 
     private int _measurementId;
     public int MeasurementId
@@ -181,6 +187,11 @@ public partial class BodyMeasurementEditViewModel : ObservableObject, IQueryAttr
                     Notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim()
                 };
                 await _repo.AddAsync(m);
+            }
+
+            if (_notificationService != null)
+            {
+                _ = _notificationService.SyncScheduledRemindersAsync();
             }
 
             await Shell.Current.GoToAsync("..");
