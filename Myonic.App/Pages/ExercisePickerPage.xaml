@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:Myonic.Core.Models;assembly=Myonic.Core"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              x:Class="Myonic.Pages.ExercisePickerPage"
              x:DataType="vm:ExercisePickerViewModel"
@@ -9,8 +8,8 @@
              Title="Выбор упражнения"
              BackgroundColor="{DynamicResource KineticCanvas}">
 
-    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
-        <!-- Header with close button -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="16" RowSpacing="10">
+        <!-- 1. Header with close button -->
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
             <Label Text="Выберите упражнение"
                    TextColor="{DynamicResource KineticText}"
@@ -26,7 +25,7 @@
                     FontSize="13" />
         </Grid>
 
-        <!-- Search Bar -->
+        <!-- 2. Search Bar -->
         <Border Grid.Row="1"
                 BackgroundColor="{DynamicResource KineticWell}"
                 Stroke="{DynamicResource KineticBorderSubtle}"
@@ -40,8 +39,56 @@
                        Text="{Binding SearchText}" />
         </Border>
 
-        <!-- Exercises List -->
-        <CollectionView Grid.Row="2"
+        <!-- 3. Muscle Group Filter Chips -->
+        <ScrollView Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never"
+                    Margin="0,0,0,2">
+            <HorizontalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding MuscleGroupFilters}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MuscleGroupFilterItem">
+                        <Border StrokeShape="RoundRectangle 8"
+                                StrokeThickness="1"
+                                Padding="12,6">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource KineticWell}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource KineticBorderSubtle}" />
+                                    <Style.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="#1A3300" />
+                                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectMuscleGroupCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding DisplayName}"
+                                   FontSize="12"
+                                   FontAttributes="Bold">
+                                <Label.Style>
+                                    <Style TargetType="Label">
+                                        <Setter Property="TextColor" Value="{DynamicResource KineticTextMuted}" />
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="{DynamicResource KineticVolt}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Label.Style>
+                            </Label>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- 4. Exercises List -->
+        <CollectionView Grid.Row="3"
                         ItemsSource="{Binding FilteredExercises}"
                         SelectionMode="None">
             <CollectionView.EmptyView>
@@ -54,24 +101,48 @@
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Exercise">
+                <DataTemplate x:DataType="vm:ExercisePickerDisplayItem">
                     <Border BackgroundColor="{DynamicResource KineticWell}"
                             Stroke="{DynamicResource KineticBorderSubtle}"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 10"
-                            Padding="14,12"
+                            Padding="14,10"
                             Margin="0,3">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectExerciseCommand}"
                                 CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="{Binding Name}"
-                                   TextColor="{DynamicResource KineticText}"
-                                   FontSize="15"
-                                   FontAttributes="Bold"
-                                   VerticalOptions="Center" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                                <Label Text="{Binding Name}"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+
+                                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                            Stroke="{DynamicResource KineticBorderSubtle}"
+                                            StrokeShape="RoundRectangle 6"
+                                            Padding="6,2"
+                                            IsVisible="{Binding HasMuscleGroup}">
+                                        <Label Text="{Binding MuscleGroupText}"
+                                               TextColor="{DynamicResource KineticIceBlue}"
+                                               FontSize="10"
+                                               FontAttributes="Bold" />
+                                    </Border>
+                                    <Border BackgroundColor="{DynamicResource KineticSurface}"
+                                            Stroke="{DynamicResource KineticBorderSubtle}"
+                                            StrokeShape="RoundRectangle 6"
+                                            Padding="6,2">
+                                        <Label Text="{Binding TypeText}"
+                                               TextColor="{DynamicResource KineticVolt}"
+                                               FontSize="10"
+                                               FontAttributes="Bold" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
 
                             <Label Grid.Column="1"
                                    Text="›"

@@ -43,6 +43,24 @@
                         </Border>
                     </Grid>
 
+                    <!-- Muscle Groups Row -->
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center" IsVisible="{Binding HasMuscleGroup}">
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="10,4">
+                            <Label Text="{Binding ExerciseMuscleGroupText}"
+                                   TextColor="{DynamicResource KineticIceBlue}"
+                                   FontSize="12"
+                                   FontAttributes="Bold" />
+                        </Border>
+                        <Label Text="{Binding SecondaryMuscleGroupText, StringFormat='• Вторичные: {0}'}"
+                               IsVisible="{Binding HasSecondaryMuscleGroup}"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
                     <Label Text="{Binding Description}"
                            IsVisible="{Binding HasDescription}"
                            TextColor="{DynamicResource KineticTextSecondary}"

@@ -10,7 +10,11 @@ public enum ExerciseRemoval
 
 public interface IExerciseRepository
 {
-    Task<IReadOnlyList<Exercise>> GetAllAsync(string? search = null, bool includeArchived = false);
+    Task<IReadOnlyList<Exercise>> GetAllAsync(
+        string? search = null,
+        MuscleGroup? muscleGroup = null,
+        ExerciseType? type = null,
+        bool includeArchived = false);
     Task<Exercise?> GetByIdAsync(int id);
 
     /// <summary>Добавляет пользовательское упражнение, возвращает его Id.</summary>

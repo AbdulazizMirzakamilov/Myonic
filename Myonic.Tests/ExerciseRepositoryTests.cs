@@ -105,4 +105,142 @@ public class ExerciseRepositoryTests : IAsyncLifetime
         Assert.DoesNotContain(await _repo.GetAllAsync(), e => e.Id == id);
         Assert.Contains(await _repo.GetAllAsync(includeArchived: true), e => e.Id == id);
     }
+
+    [Fact]
+    public async Task Seed_AllDefaultExercises_HaveAssignedMuscleGroups()
+    {
+        var all = await _repo.GetAllAsync();
+
+        Assert.NotEmpty(all);
+        Assert.All(all, e => Assert.NotEqual(MuscleGroup.None, e.MuscleGroup));
+
+        var bench = all.FirstOrDefault(e => e.Name == "Жим лёжа");
+        Assert.NotNull(bench);
+        Assert.Equal(MuscleGroup.Chest, bench.MuscleGroup);
+        Assert.Equal(MuscleGroup.Triceps, bench.SecondaryMuscleGroup);
+
+        var pullup = all.FirstOrDefault(e => e.Name == "Подтягивания");
+        Assert.NotNull(pullup);
+        Assert.Equal(MuscleGroup.Back, pullup.MuscleGroup);
+        Assert.Equal(MuscleGroup.Biceps, pullup.SecondaryMuscleGroup);
+
+        var squat = all.FirstOrDefault(e => e.Name == "Приседания со штангой");
+        Assert.NotNull(squat);
+        Assert.Equal(MuscleGroup.Quadriceps, squat.MuscleGroup);
+        Assert.Equal(MuscleGroup.Glutes, squat.SecondaryMuscleGroup);
+
+        var rdl = all.FirstOrDefault(e => e.Name == "Румынская тяга");
+        Assert.NotNull(rdl);
+        Assert.Equal(MuscleGroup.Hamstrings, rdl.MuscleGroup);
+        Assert.Equal(MuscleGroup.Glutes, rdl.SecondaryMuscleGroup);
+
+        var overheadPress = all.FirstOrDefault(e => e.Name == "Жим штанги стоя");
+        Assert.NotNull(overheadPress);
+        Assert.Equal(MuscleGroup.Shoulders, overheadPress.MuscleGroup);
+        Assert.Equal(MuscleGroup.Triceps, overheadPress.SecondaryMuscleGroup);
+
+        var calfRaise = all.FirstOrDefault(e => e.Name == "Подъём на носки стоя");
+        Assert.NotNull(calfRaise);
+        Assert.Equal(MuscleGroup.Calves, calfRaise.MuscleGroup);
+    }
+
+    [Fact]
+    public async Task FilterByMuscleGroup_ReturnsOnlyTargetGroupExercises()
+    {
+        var chestExercises = await _repo.GetAllAsync(muscleGroup: MuscleGroup.Chest);
+
+        Assert.NotEmpty(chestExercises);
+        Assert.All(chestExercises, e =>
+            Assert.True(e.MuscleGroup == MuscleGroup.Chest || e.SecondaryMuscleGroup == MuscleGroup.Chest));
+
+        Assert.Contains(chestExercises, e => e.Name == "Жим лёжа");
+        Assert.Contains(chestExercises, e => e.Name == "Разведение гантелей лёжа");
+        Assert.DoesNotContain(chestExercises, e => e.Name == "Приседания со штангой");
+    }
+
+    [Fact]
+    public async Task CombinedFilter_MuscleGroupAndType_FiltersCorrectly()
+    {
+        var compoundChest = await _repo.GetAllAsync(muscleGroup: MuscleGroup.Chest, type: ExerciseType.Compound);
+        Assert.Contains(compoundChest, e => e.Name == "Жим лёжа");
+        Assert.DoesNotContain(compoundChest, e => e.Name == "Разведение гантелей лёжа");
+
+        var isolationChest = await _repo.GetAllAsync(muscleGroup: MuscleGroup.Chest, type: ExerciseType.Isolation);
+        Assert.Contains(isolationChest, e => e.Name == "Разведение гантелей лёжа");
+        Assert.DoesNotContain(isolationChest, e => e.Name == "Жим лёжа");
+    }
+
+    [Fact]
+    public async Task CombinedFilter_SearchAndMuscleGroup_FiltersCorrectly()
+    {
+        var shoulderPress = await _repo.GetAllAsync(search: "жим", muscleGroup: MuscleGroup.Shoulders);
+        Assert.Contains(shoulderPress, e => e.Name == "Жим штанги стоя");
+        Assert.DoesNotContain(shoulderPress, e => e.Name == "Жим лёжа");
+    }
+
+    [Fact]
+    public async Task CustomExercise_WithAndWithoutMuscleGroup_SavesAndFiltersCorrectly()
+    {
+        // 1. Without muscle group
+        var unassignedId = await _repo.AddAsync(new Exercise
+        {
+            Name = "Упражнение без группы",
+            Type = ExerciseType.Isolation,
+            MuscleGroup = MuscleGroup.None
+        });
+
+        var loadedUnassigned = await _repo.GetByIdAsync(unassignedId);
+        Assert.NotNull(loadedUnassigned);
+        Assert.Equal(MuscleGroup.None, loadedUnassigned.MuscleGroup);
+        Assert.Null(loadedUnassigned.SecondaryMuscleGroup);
+
+        // 2. With Abs muscle group
+        var absId = await _repo.AddAsync(new Exercise
+        {
+            Name = "Скручивания на пресс",
+            Type = ExerciseType.Isolation,
+            MuscleGroup = MuscleGroup.Abs
+        });
+
+        var loadedAbs = await _repo.GetByIdAsync(absId);
+        Assert.NotNull(loadedAbs);
+        Assert.Equal(MuscleGroup.Abs, loadedAbs.MuscleGroup);
+
+        var absList = await _repo.GetAllAsync(muscleGroup: MuscleGroup.Abs);
+        Assert.Contains(absList, e => e.Id == absId);
+        Assert.DoesNotContain(absList, e => e.Id == unassignedId);
+
+        // Update muscle group
+        loadedUnassigned.MuscleGroup = MuscleGroup.Forearms;
+        await _repo.UpdateAsync(loadedUnassigned);
+
+        var updated = await _repo.GetByIdAsync(unassignedId);
+        Assert.NotNull(updated);
+        Assert.Equal(MuscleGroup.Forearms, updated.MuscleGroup);
+    }
+
+    [Fact]
+    public async Task MuscleGroups_SurviveDatabaseReconnection()
+    {
+        var id = await _repo.AddAsync(new Exercise
+        {
+            Name = "Пресс с роликом",
+            Type = ExerciseType.Compound,
+            MuscleGroup = MuscleGroup.Abs,
+            SecondaryMuscleGroup = MuscleGroup.Back
+        });
+
+        await _db.CloseConnectionAsync();
+
+        var reopenedDb = new MyonicDatabase(_path);
+        var reopenedRepo = new ExerciseRepository(reopenedDb);
+
+        var loaded = await reopenedRepo.GetByIdAsync(id);
+        Assert.NotNull(loaded);
+        Assert.Equal("Пресс с роликом", loaded.Name);
+        Assert.Equal(MuscleGroup.Abs, loaded.MuscleGroup);
+        Assert.Equal(MuscleGroup.Back, loaded.SecondaryMuscleGroup);
+
+        await reopenedDb.DisposeAsync();
+    }
 }

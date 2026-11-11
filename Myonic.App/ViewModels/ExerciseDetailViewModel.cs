@@ -31,18 +31,21 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
     private readonly IPersonalRecordRepository _prRepo;
     private readonly IAiAnalysisService _aiAnalysisService;
     private readonly IAiSettingsService _aiSettingsService;
+    private readonly IExerciseRepository _exerciseRepo;
     private static readonly CultureInfo RussianCulture = new("ru-RU");
 
     public ExerciseDetailViewModel(
         IWorkoutSessionRepository sessionRepo,
         IPersonalRecordRepository prRepo,
         IAiAnalysisService aiAnalysisService,
-        IAiSettingsService aiSettingsService)
+        IAiSettingsService aiSettingsService,
+        IExerciseRepository exerciseRepo)
     {
         _sessionRepo = sessionRepo;
         _prRepo = prRepo;
         _aiAnalysisService = aiAnalysisService;
         _aiSettingsService = aiSettingsService;
+        _exerciseRepo = exerciseRepo;
     }
 
     [ObservableProperty]
@@ -53,6 +56,18 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
 
     [ObservableProperty]
     private string _exerciseTypeText = string.Empty;
+
+    [ObservableProperty]
+    private string _exerciseMuscleGroupText = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasMuscleGroup;
+
+    [ObservableProperty]
+    private string? _secondaryMuscleGroupText;
+
+    [ObservableProperty]
+    private bool _hasSecondaryMuscleGroup;
 
     [ObservableProperty]
     private string? _description;
@@ -125,11 +140,29 @@ public partial class ExerciseDetailViewModel : ObservableObject, IQueryAttributa
         try
         {
             var summary = await _sessionRepo.GetExerciseHistoryAsync(ExerciseId);
+            var exercise = await _exerciseRepo.GetByIdAsync(ExerciseId);
 
             ExerciseName = summary.ExerciseName;
             ExerciseTypeText = summary.ExerciseType.ToDisplayText();
             Description = summary.Description;
             HasDescription = !string.IsNullOrWhiteSpace(summary.Description);
+
+            if (exercise != null)
+            {
+                ExerciseMuscleGroupText = exercise.MuscleGroup != MuscleGroup.None
+                    ? exercise.MuscleGroup.ToDisplayText()
+                    : string.Empty;
+                HasMuscleGroup = exercise.MuscleGroup != MuscleGroup.None;
+                SecondaryMuscleGroupText = exercise.SecondaryMuscleGroup?.ToDisplayText();
+                HasSecondaryMuscleGroup = exercise.SecondaryMuscleGroup.HasValue;
+            }
+            else
+            {
+                ExerciseMuscleGroupText = string.Empty;
+                HasMuscleGroup = false;
+                SecondaryMuscleGroupText = null;
+                HasSecondaryMuscleGroup = false;
+            }
 
             AllTimeMaxWeightText = summary.AllTimeMaxWeight > 0 ? $"{summary.AllTimeMaxWeight} кг" : "–";
             AllTimeBest1RmText = summary.AllTimeBest1Rm > 0 ? $"{summary.AllTimeBest1Rm} кг" : "–";

@@ -9,7 +9,11 @@ public sealed class ExerciseRepository : IExerciseRepository
 
     public ExerciseRepository(MyonicDatabase database) => _database = database;
 
-    public async Task<IReadOnlyList<Exercise>> GetAllAsync(string? search = null, bool includeArchived = false)
+    public async Task<IReadOnlyList<Exercise>> GetAllAsync(
+        string? search = null,
+        MuscleGroup? muscleGroup = null,
+        ExerciseType? type = null,
+        bool includeArchived = false)
     {
         var db = await _database.GetConnectionAsync();
 
@@ -17,7 +21,19 @@ public sealed class ExerciseRepository : IExerciseRepository
         if (!includeArchived)
             query = query.Where(e => e.IsArchived == false);
 
+        if (type.HasValue)
+        {
+            var t = type.Value;
+            query = query.Where(e => e.Type == t);
+        }
+
         var items = await query.ToListAsync();
+
+        if (muscleGroup.HasValue && muscleGroup.Value != MuscleGroup.None)
+        {
+            var mg = muscleGroup.Value;
+            items = items.Where(e => e.MuscleGroup == mg || e.SecondaryMuscleGroup == mg).ToList();
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {

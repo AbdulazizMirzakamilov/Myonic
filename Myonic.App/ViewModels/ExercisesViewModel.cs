@@ -7,7 +7,24 @@ using Myonic.Pages;
 
 namespace Myonic.ViewModels;
 
-public record ExerciseListItem(int Id, string Name, string TypeText, bool IsCompound = false);
+public record ExerciseListItem(
+    int Id,
+    string Name,
+    string TypeText,
+    bool IsCompound,
+    string MuscleGroupText,
+    bool HasMuscleGroup,
+    bool HasNoMuscleGroup,
+    string? SecondaryMuscleGroupText = null);
+
+public partial class MuscleGroupFilterItem : ObservableObject
+{
+    public MuscleGroup Group { get; init; }
+    public string DisplayName { get; init; } = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSelected;
+}
 
 internal static class ExerciseTypeExtensions
 {
@@ -23,15 +40,23 @@ public partial class ExercisesViewModel : ObservableObject
 {
     private readonly IExerciseRepository _repository;
 
-    public ExercisesViewModel(IExerciseRepository repository) => _repository = repository;
+    public ExercisesViewModel(IExerciseRepository repository)
+    {
+        _repository = repository;
+        InitializeMuscleGroupFilters();
+    }
 
     public ObservableCollection<ExerciseListItem> Exercises { get; } = [];
+    public ObservableCollection<MuscleGroupFilterItem> MuscleGroupFilters { get; } = [];
 
     [ObservableProperty]
     private string _searchText = string.Empty;
 
     [ObservableProperty]
     private int _filterIndex; // 0: Все, 1: Базовые, 2: Изолирующие
+
+    [ObservableProperty]
+    private MuscleGroup _selectedMuscleGroup = MuscleGroup.None;
 
     [ObservableProperty]
     private bool _hasExercises;
@@ -45,6 +70,23 @@ public partial class ExercisesViewModel : ObservableObject
     public bool IsAllFilter => FilterIndex == 0;
     public bool IsCompoundFilter => FilterIndex == 1;
     public bool IsIsolationFilter => FilterIndex == 2;
+
+    private void InitializeMuscleGroupFilters()
+    {
+        MuscleGroupFilters.Clear();
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.None, DisplayName = "Все мышцы", IsSelected = true });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Chest, DisplayName = "Грудь" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Back, DisplayName = "Спина" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Shoulders, DisplayName = "Плечи" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Biceps, DisplayName = "Бицепс" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Triceps, DisplayName = "Трицепс" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Forearms, DisplayName = "Предплечья" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Quadriceps, DisplayName = "Квадрицепсы" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Hamstrings, DisplayName = "Бёдра (задняя)" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Glutes, DisplayName = "Ягодицы" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Calves, DisplayName = "Икры" });
+        MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Abs, DisplayName = "Пресс" });
+    }
 
     partial void OnSearchTextChanged(string value) => _ = LoadAsync();
 
@@ -62,23 +104,56 @@ public partial class ExercisesViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public void SelectMuscleGroup(MuscleGroupFilterItem filterItem)
+    {
+        if (filterItem == null) return;
+
+        // Если повторно нажимаем на уже выбранную категорию (кроме "Все мышцы"), сбрасываем на "Все"
+        if (filterItem.Group != MuscleGroup.None && SelectedMuscleGroup == filterItem.Group)
+        {
+            SelectedMuscleGroup = MuscleGroup.None;
+        }
+        else
+        {
+            SelectedMuscleGroup = filterItem.Group;
+        }
+
+        foreach (var item in MuscleGroupFilters)
+        {
+            item.IsSelected = item.Group == SelectedMuscleGroup;
+        }
+
+        _ = LoadAsync();
+    }
+
+    [RelayCommand]
     public async Task LoadAsync()
     {
-        var items = await _repository.GetAllAsync(SearchText);
+        ExerciseType? typeFilter = FilterIndex switch
+        {
+            1 => ExerciseType.Compound,
+            2 => ExerciseType.Isolation,
+            _ => null
+        };
 
-        if (FilterIndex == 1)
-        {
-            items = items.Where(x => x.Type == ExerciseType.Compound).ToList();
-        }
-        else if (FilterIndex == 2)
-        {
-            items = items.Where(x => x.Type == ExerciseType.Isolation).ToList();
-        }
+        var items = await _repository.GetAllAsync(SearchText, SelectedMuscleGroup, typeFilter);
 
         Exercises.Clear();
         foreach (var e in items)
         {
-            Exercises.Add(new ExerciseListItem(e.Id, e.Name, e.Type.ToDisplayText(), e.Type == ExerciseType.Compound));
+            var hasMuscleGroup = e.MuscleGroup != MuscleGroup.None;
+            var muscleGroupText = hasMuscleGroup ? e.MuscleGroup.ToDisplayText() : string.Empty;
+            var secondaryText = e.SecondaryMuscleGroup.HasValue ? e.SecondaryMuscleGroup.Value.ToDisplayText() : null;
+
+            Exercises.Add(new ExerciseListItem(
+                e.Id,
+                e.Name,
+                e.Type.ToDisplayText(),
+                e.Type == ExerciseType.Compound,
+                muscleGroupText,
+                hasMuscleGroup,
+                !hasMuscleGroup,
+                secondaryText));
         }
 
         HasExercises = Exercises.Count > 0;

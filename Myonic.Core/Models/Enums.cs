@@ -6,6 +6,47 @@ public enum ExerciseType
     Isolation   // изолирующее
 }
 
+public enum MuscleGroup
+{
+    None = 0,               // Не указана / Все
+    Chest = 1,              // Грудь
+    Back = 2,               // Спина
+    Shoulders = 3,          // Плечи
+    Biceps = 4,             // Бицепс
+    Triceps = 5,            // Трицепс
+    Forearms = 6,           // Предплечья
+    Quadriceps = 7,         // Квадрицепсы
+    Hamstrings = 8,         // Задняя поверхность бедра
+    Glutes = 9,             // Ягодицы
+    Calves = 10,            // Икры
+    Abs = 11                // Пресс
+}
+
+public static class MuscleGroupExtensions
+{
+    public static string ToDisplayText(this MuscleGroup group) => group switch
+    {
+        MuscleGroup.Chest => "Грудь",
+        MuscleGroup.Back => "Спина",
+        MuscleGroup.Shoulders => "Плечи",
+        MuscleGroup.Biceps => "Бицепс",
+        MuscleGroup.Triceps => "Трицепс",
+        MuscleGroup.Forearms => "Предплечья",
+        MuscleGroup.Quadriceps => "Квадрицепсы",
+        MuscleGroup.Hamstrings => "Задняя поверхность бедра",
+        MuscleGroup.Glutes => "Ягодицы",
+        MuscleGroup.Calves => "Икры",
+        MuscleGroup.Abs => "Пресс",
+        _ => "Не указана"
+    };
+
+    public static string ToShortDisplayText(this MuscleGroup group) => group switch
+    {
+        MuscleGroup.Hamstrings => "Бёдра (задняя)",
+        _ => group.ToDisplayText()
+    };
+}
+
 public enum ScheduledWorkoutStatus
 {
     Planned,

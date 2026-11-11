@@ -16,10 +16,9 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-
-    <Grid RowDefinitions="Auto,Auto,Auto,*"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*"
           Padding="{OnIdiom Phone='16,12,16,20', Desktop='28,20,28,30'}"
-          RowSpacing="12">
+          RowSpacing="10">
 
         <!-- 1. Header with Title and Add Button -->
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
@@ -57,7 +56,7 @@
                        Text="{Binding SearchText}" />
         </Border>
 
-        <!-- 3. Category Filter Chips + Count Badge -->
+        <!-- 3. Category Filter Chips (Type) + Count Badge -->
         <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
             <Border BackgroundColor="{DynamicResource KineticWell}"
                     Stroke="{DynamicResource KineticBorderSubtle}"
@@ -72,7 +71,7 @@
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="0" />
                         </Border.GestureRecognizers>
-                        <Label Text="Все"
+                        <Label Text="Все типы"
                                TextColor="{Binding IsAllFilter, Converter={StaticResource SwitcherTextColorConverter}}"
                                FontSize="12"
                                FontAttributes="Bold" />
@@ -117,8 +116,56 @@
                    VerticalOptions="Center" />
         </Grid>
 
-        <!-- 4. Exercises List -->
-        <CollectionView Grid.Row="3"
+        <!-- 4. Muscle Group Filter Chips (Horizontal Scroll) -->
+        <ScrollView Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never"
+                    Margin="0,0,0,2">
+            <HorizontalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding MuscleGroupFilters}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MuscleGroupFilterItem">
+                        <Border StrokeShape="RoundRectangle 8"
+                                StrokeThickness="1"
+                                Padding="12,6">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource KineticWell}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource KineticBorderSubtle}" />
+                                    <Style.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="#1A3300" />
+                                            <Setter Property="Stroke" Value="{DynamicResource KineticVolt}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectMuscleGroupCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding DisplayName}"
+                                   FontSize="12"
+                                   FontAttributes="Bold">
+                                <Label.Style>
+                                    <Style TargetType="Label">
+                                        <Setter Property="TextColor" Value="{DynamicResource KineticTextMuted}" />
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="{DynamicResource KineticVolt}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Label.Style>
+                            </Label>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- 5. Exercises List -->
+        <CollectionView Grid.Row="4"
                         ItemsSource="{Binding Exercises}"
                         SelectionMode="None">
             <CollectionView.EmptyView>
@@ -135,7 +182,7 @@
                                FontSize="17"
                                FontAttributes="Bold"
                                HorizontalTextAlignment="Center" />
-                        <Label Text="Попробуйте изменить поисковый запрос или добавьте новое упражнение в базу."
+                        <Label Text="Попробуйте изменить поисковый запрос или фильтры, либо добавьте новое упражнение."
                                TextColor="{DynamicResource KineticTextMuted}"
                                FontSize="13"
                                HorizontalTextAlignment="Center" />
@@ -156,38 +203,64 @@
                             Stroke="{DynamicResource KineticBorder}"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 14"
-                            Padding="14,12"
+                            Padding="14,10"
                             Margin="0,3">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.OpenCommand}"
                                 CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" VerticalOptions="Center">
-                            <!-- Name -->
-                            <Label Text="{Binding Name}"
-                                   TextColor="{DynamicResource KineticText}"
-                                   FontSize="15"
-                                   FontAttributes="Bold"
-                                   LineBreakMode="TailTruncation"
-                                   VerticalOptions="Center" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                            <!-- Exercise info & badges -->
+                            <VerticalStackLayout Spacing="4" VerticalOptions="Center">
+                                <Label Text="{Binding Name}"
+                                       TextColor="{DynamicResource KineticText}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       LineBreakMode="TailTruncation" />
 
-                            <!-- Type badge -->
-                            <Border Grid.Column="1"
-                                    BackgroundColor="{DynamicResource KineticWell}"
-                                    Stroke="{DynamicResource KineticBorderSubtle}"
-                                    StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 8"
-                                    Padding="8,3"
-                                    VerticalOptions="Center">
-                                <Label Text="{Binding TypeText}"
-                                       TextColor="{DynamicResource KineticVolt}"
-                                       FontSize="11"
-                                       FontAttributes="Bold" />
-                            </Border>
+                                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                    <!-- Muscle Group Badge -->
+                                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                                            Stroke="{DynamicResource KineticBorderSubtle}"
+                                            StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 6"
+                                            Padding="6,2"
+                                            IsVisible="{Binding HasMuscleGroup}">
+                                        <Label Text="{Binding MuscleGroupText}"
+                                               TextColor="{DynamicResource KineticIceBlue}"
+                                               FontSize="10"
+                                               FontAttributes="Bold" />
+                                    </Border>
+
+                                    <!-- Undefined Muscle Group Badge -->
+                                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                                            Stroke="{DynamicResource KineticBorderSubtle}"
+                                            StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 6"
+                                            Padding="6,2"
+                                            IsVisible="{Binding HasNoMuscleGroup}">
+                                        <Label Text="Без группы"
+                                               TextColor="{DynamicResource KineticTextMuted}"
+                                               FontSize="10" />
+                                    </Border>
+
+                                    <!-- Type badge -->
+                                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                                            Stroke="{DynamicResource KineticBorderSubtle}"
+                                            StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 6"
+                                            Padding="6,2">
+                                        <Label Text="{Binding TypeText}"
+                                               TextColor="{DynamicResource KineticVolt}"
+                                               FontSize="10"
+                                               FontAttributes="Bold" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
 
                             <!-- Chevron -->
-                            <Label Grid.Column="2"
+                            <Label Grid.Column="1"
                                    Text="›"
                                    TextColor="{DynamicResource KineticVolt}"
                                    FontSize="22"

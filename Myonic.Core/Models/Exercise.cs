@@ -6,6 +6,8 @@ public class Exercise
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public ExerciseType Type { get; set; }
+    public MuscleGroup MuscleGroup { get; set; } = MuscleGroup.None;
+    public MuscleGroup? SecondaryMuscleGroup { get; set; }
     public string? Notes { get; set; }
     public bool IsCustom { get; set; }      // создано пользователем
     public bool IsArchived { get; set; }    // скрыто, но история сохранена

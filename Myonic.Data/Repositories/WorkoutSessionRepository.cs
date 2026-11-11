@@ -548,6 +548,7 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
                 e.Id AS ExerciseId,
                 e.Name AS ExerciseName,
                 e.Type AS ExerciseType,
+                e.MuscleGroup AS MuscleGroup,
                 se.SetNumber,
                 se.Weight,
                 se.Reps
@@ -651,7 +652,10 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var muscleGroups = new Dictionary<string, (int sets, double volume)>();
         foreach (var s in setRows)
         {
-            string group = ClassifyMuscleGroup(s.ExerciseName);
+            string group = s.MuscleGroup > 0
+                ? ((MuscleGroup)s.MuscleGroup).ToDisplayText()
+                : ClassifyMuscleGroup(s.ExerciseName);
+
             if (!muscleGroups.TryGetValue(group, out var current))
             {
                 current = (0, 0);
@@ -708,6 +712,7 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         public int ExerciseId { get; set; }
         public string ExerciseName { get; set; } = string.Empty;
         public int ExerciseType { get; set; }
+        public int MuscleGroup { get; set; }
         public int SetNumber { get; set; }
         public double Weight { get; set; }
         public int Reps { get; set; }

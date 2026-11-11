@@ -55,6 +55,42 @@
                         </Border>
                     </VerticalStackLayout>
 
+                    <!-- Primary Muscle Group Picker -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Основная мышечная группа"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="8,2">
+                            <Picker ItemsSource="{Binding MuscleGroupOptions}"
+                                    SelectedIndex="{Binding MuscleGroupIndex}"
+                                    TextColor="{DynamicResource KineticText}"
+                                    TitleColor="{DynamicResource KineticTextMuted}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Secondary Muscle Group Picker -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Вторичная мышечная группа (необязательно)"
+                               TextColor="{DynamicResource KineticTextMuted}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                        <Border BackgroundColor="{DynamicResource KineticWell}"
+                                Stroke="{DynamicResource KineticBorderSubtle}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="8,2">
+                            <Picker ItemsSource="{Binding SecondaryMuscleGroupOptions}"
+                                    SelectedIndex="{Binding SecondaryMuscleGroupIndex}"
+                                    TextColor="{DynamicResource KineticText}"
+                                    TitleColor="{DynamicResource KineticTextMuted}" />
+                        </Border>
+                    </VerticalStackLayout>
+
                     <!-- Description -->
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Описание техники (необязательно)"
