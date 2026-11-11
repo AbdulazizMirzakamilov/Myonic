@@ -25,7 +25,13 @@ public class GeminiAiAnalysisServiceTests
         public string BaseUrl { get; set; } = "https://generativelanguage.googleapis.com";
 
         public string? GetApiKey() => ApiKey;
+        public Task<string?> GetApiKeyAsync() => Task.FromResult(ApiKey);
         public void SaveApiKey(string? apiKey) => ApiKey = apiKey;
+        public Task SaveApiKeyAsync(string? apiKey)
+        {
+            ApiKey = apiKey;
+            return Task.CompletedTask;
+        }
         public string GetSelectedModel() => SelectedModel;
         public void SaveSelectedModel(string modelName) => SelectedModel = modelName;
         public string GetBaseUrl() => BaseUrl;

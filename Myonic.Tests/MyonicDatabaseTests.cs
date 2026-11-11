@@ -98,6 +98,133 @@ public class MyonicDatabaseTests : IAsyncLifetime
         }
     }
 
+    [Fact]
+    public async Task Pragma_IntegrityCheck_ReturnsOk()
+    {
+        var result = await _conn.ExecuteScalarAsync<string>("PRAGMA integrity_check");
+        Assert.Equal("ok", result);
+    }
+
+    [Fact]
+    public async Task Pragma_ForeignKeyCheck_ReturnsNoViolations()
+    {
+        var rows = await _conn.QueryScalarsAsync<string>("PRAGMA foreign_key_check");
+        Assert.Empty(rows);
+    }
+
+    [Fact]
+    public async Task Migration6_CreatesBodyMeasurementAndGoalTables_WithIndexes()
+    {
+        // Check tables exist and can accept records
+        var measurement = new BodyMeasurement
+        {
+            Date = DateTime.Today,
+            WeightKg = 75.5,
+            NeckCm = 38.0,
+            WaistCm = 80.0,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _conn.InsertAsync(measurement);
+        Assert.True(measurement.Id > 0);
+
+        var loadedMeasurement = await _conn.GetAsync<BodyMeasurement>(measurement.Id);
+        Assert.Equal(75.5, loadedMeasurement.WeightKg);
+
+        var goal = new Goal
+        {
+            Title = "Жим 100 кг",
+            Type = GoalType.ExerciseWeight,
+            StartValue = 80,
+            TargetValue = 100,
+            CurrentValue = 85,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _conn.InsertAsync(goal);
+        Assert.True(goal.Id > 0);
+
+        var loadedGoal = await _conn.GetAsync<Goal>(goal.Id);
+        Assert.Equal("Жим 100 кг", loadedGoal.Title);
+        Assert.Equal(85, loadedGoal.CurrentValue);
+
+        // Verify indexes exist
+        var indexes = await _conn.QueryScalarsAsync<string>(
+            "SELECT name FROM sqlite_master WHERE type='index'");
+        Assert.Contains("IX_BodyMeasurement_Date", indexes);
+        Assert.Contains("IX_Goal_Status", indexes);
+        Assert.Contains("IX_Goal_ExerciseId", indexes);
+    }
+
+    [Fact]
+    public async Task Migration6_OnExistingDatabaseWithData_PreservesExistingRecords()
+    {
+        var tempDbPath = Path.Combine(Path.GetTempPath(), $"myonic-mig-test-{Guid.NewGuid():N}.db3");
+        try
+        {
+            // 1. Создаем базу версии 5 вручную
+            var rawConn = new SQLiteAsyncConnection(tempDbPath, storeDateTimeAsTicks: false);
+            await rawConn.ExecuteAsync("PRAGMA foreign_keys = ON");
+            await rawConn.ExecuteScalarAsync<string>("PRAGMA journal_mode = WAL");
+
+            // Применяем миграции с 1 по 5
+            foreach (var mig in Myonic.Data.Migrations.Migrations.All.Where(m => m.Version <= 5).OrderBy(m => m.Version))
+            {
+                await rawConn.RunInTransactionAsync(conn =>
+                {
+                    foreach (var sql in mig.Statements)
+                        conn.Execute(sql);
+                    conn.Execute($"PRAGMA user_version = {mig.Version}");
+                });
+            }
+
+            // Допустим, таблица BodyMeasurement уже существовала (как было в v5 через CreateTableAsync)
+            await rawConn.ExecuteAsync("""
+                CREATE TABLE IF NOT EXISTS BodyMeasurement (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Date TEXT NOT NULL,
+                    WeightKg REAL NOT NULL,
+                    CreatedAt TEXT NOT NULL
+                )
+            """);
+
+            await rawConn.ExecuteAsync(
+                "INSERT INTO BodyMeasurement (Date, WeightKg, CreatedAt) VALUES (?, ?, ?)",
+                "2026-11-01", 82.5, "2026-11-01T10:00:00");
+
+            var v5 = await rawConn.ExecuteScalarAsync<int>("PRAGMA user_version");
+            Assert.Equal(5, v5);
+
+            await rawConn.CloseAsync();
+
+            // 2. Открываем через MyonicDatabase - это должно накатить миграцию 6
+            var upgradedDb = new MyonicDatabase(tempDbPath);
+            var upgradedConn = await upgradedDb.GetConnectionAsync();
+
+            var v6 = await upgradedConn.ExecuteScalarAsync<int>("PRAGMA user_version");
+            Assert.Equal(6, v6);
+
+            // Проверяем, что существующие данные не потерялись
+            var count = await upgradedConn.Table<BodyMeasurement>().CountAsync();
+            Assert.Equal(1, count);
+
+            var item = await upgradedConn.Table<BodyMeasurement>().FirstAsync();
+            Assert.Equal(82.5, item.WeightKg);
+
+            // Проверяем целостность и внешние ключи
+            var integrity = await upgradedConn.ExecuteScalarAsync<string>("PRAGMA integrity_check");
+            Assert.Equal("ok", integrity);
+
+            var fkErrors = await upgradedConn.QueryScalarsAsync<string>("PRAGMA foreign_key_check");
+            Assert.Empty(fkErrors);
+
+            await upgradedDb.DisposeAsync();
+        }
+        finally
+        {
+            if (File.Exists(tempDbPath))
+                File.Delete(tempDbPath);
+        }
+    }
+
     private async Task<(Exercise, WorkoutSession, WorkoutExercise, SetEntry)> SeedWorkoutAsync()
     {
         var exercise = new Exercise { Name = "Bench press", Type = ExerciseType.Compound };

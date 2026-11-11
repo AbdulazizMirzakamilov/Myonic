@@ -8,7 +8,8 @@ public static class Migrations
         new Migration(2, "Seed default exercises", SeedExercises.Statements),
         new Migration(3, "Add rep and rpe ranges", AddRepAndRpeRanges.Statements),
         new Migration(4, "Add reps to personal record", AddRepsToPersonalRecord.Statements),
-        new Migration(5, "Add muscle groups to exercise", AddMuscleGroupsToExercise.Statements)
+        new Migration(5, "Add muscle groups to exercise", AddMuscleGroupsToExercise.Statements),
+        new Migration(6, "Add body measurements and goals", AddBodyMeasurementsAndGoals.Statements)
     ];
 
     public static int LatestVersion => All.Max(m => m.Version);

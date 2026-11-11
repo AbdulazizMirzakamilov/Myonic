@@ -11,9 +11,7 @@ public sealed class MyonicDatabase : IAsyncDisposable
         typeof(Exercise), typeof(TrainingProgram), typeof(ProgramWorkout),
         typeof(ProgramExercise), typeof(ScheduledWorkout), typeof(WorkoutSession),
         typeof(WorkoutExercise), typeof(SetEntry), typeof(PersonalRecord),
-
-        typeof(BodyMeasurement),
-        typeof(Goal)
+        typeof(BodyMeasurement), typeof(Goal)
     ];
 
     private readonly string _path;
@@ -24,7 +22,7 @@ public sealed class MyonicDatabase : IAsyncDisposable
 
     public string DatabasePath => _path;
 
-    /// <summary>Открывает базу при первом обращении и применяет миграции.</summary>
+    /// <summary>Открывает базу при первом обращении и применяет единый механизм миграций.</summary>
     public async Task<SQLiteAsyncConnection> GetConnectionAsync()
     {
         if (_connection is not null) return _connection;
@@ -40,10 +38,14 @@ public sealed class MyonicDatabase : IAsyncDisposable
             await connection.ExecuteAsync("PRAGMA foreign_keys = ON");
             await connection.ExecuteScalarAsync<string>("PRAGMA journal_mode = WAL");
 
+            // Единый механизм миграций: создание и версионирование всех таблиц схемы
             await Migrator.MigrateAsync(connection);
 
+            // Инициализация внутреннего сопоставления типов sqlite-net (AutoIncPK)
             foreach (var type in ModelTypes)
+            {
                 await connection.CreateTableAsync(type, CreateFlags.ImplicitPK | CreateFlags.AutoIncPK);
+            }
 
             _connection = connection;
             return connection;

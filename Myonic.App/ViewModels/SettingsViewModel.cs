@@ -315,7 +315,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         var provider = (AiProviderType)SelectedProviderIndex;
         _aiSettingsService.Provider = provider;
-        _aiSettingsService.SaveApiKey(GeminiApiKey);
+        await _aiSettingsService.SaveApiKeyAsync(GeminiApiKey);
         _aiSettingsService.SaveSelectedModel(SelectedModel);
         _aiSettingsService.SaveBaseUrl(BaseUrl);
 
@@ -340,7 +340,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             _aiSettingsService.Provider = provider;
-            _aiSettingsService.SaveApiKey(GeminiApiKey);
+            await _aiSettingsService.SaveApiKeyAsync(GeminiApiKey);
             _aiSettingsService.SaveSelectedModel(SelectedModel);
             _aiSettingsService.SaveBaseUrl(BaseUrl);
 

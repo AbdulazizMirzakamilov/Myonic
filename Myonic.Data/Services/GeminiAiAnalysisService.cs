@@ -147,7 +147,7 @@ public class GeminiAiAnalysisService : IAiAnalysisService, IDisposable
 
     public async Task<AiAnalysisResult> AnalyzeWorkoutSessionAsync(int sessionId, CancellationToken cancellationToken = default)
     {
-        var apiKey = _settingsService.GetApiKey();
+        var apiKey = await _settingsService.GetApiKeyAsync();
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             return AiAnalysisResult.Failure("API-ключ не задан в Настройках приложения. Перейдите в Настройки и сохраните ваш API-ключ.");
@@ -170,7 +170,7 @@ public class GeminiAiAnalysisService : IAiAnalysisService, IDisposable
 
     public async Task<AiAnalysisResult> AnalyzeExerciseProgressAsync(int exerciseId, int days = 90, CancellationToken cancellationToken = default)
     {
-        var apiKey = _settingsService.GetApiKey();
+        var apiKey = await _settingsService.GetApiKeyAsync();
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             return AiAnalysisResult.Failure("API-ключ не задан в Настройках приложения. Перейдите в Настройки и сохраните ваш API-ключ.");
@@ -262,11 +262,21 @@ public class GeminiAiAnalysisService : IAiAnalysisService, IDisposable
         }
         catch (HttpRequestException ex)
         {
-            return AiAnalysisResult.Failure($"Сетевая ошибка при запросе к ИИ: {ex.Message}");
+            var msg = ex.Message;
+            if (msg.Contains("key="))
+            {
+                msg = System.Text.RegularExpressions.Regex.Replace(msg, @"key=[^&\s]+", "key=***");
+            }
+            return AiAnalysisResult.Failure($"Сетевая ошибка при запросе к ИИ: {msg}");
         }
         catch (Exception ex)
         {
-            return AiAnalysisResult.Failure($"Ошибка формирования сводки: {ex.Message}");
+            var msg = ex.Message;
+            if (msg.Contains("key="))
+            {
+                msg = System.Text.RegularExpressions.Regex.Replace(msg, @"key=[^&\s]+", "key=***");
+            }
+            return AiAnalysisResult.Failure($"Ошибка формирования сводки: {msg}");
         }
     }
 
@@ -280,9 +290,11 @@ public class GeminiAiAnalysisService : IAiAnalysisService, IDisposable
         var cleanBaseUrl = baseUrl.TrimEnd('/');
         var url = $"{cleanBaseUrl}/v1beta/models/{Uri.EscapeDataString(model)}:generateContent?key={Uri.EscapeDataString(apiKey)}";
         var jsonPayload = JsonSerializer.Serialize(requestBody, JsonOptions);
-        using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+        requestMessage.Headers.Add("x-goog-api-key", apiKey);
+        requestMessage.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        using var response = await _httpClient.PostAsync(url, content, cancellationToken);
+        using var response = await _httpClient.SendAsync(requestMessage, cancellationToken);
         var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode)

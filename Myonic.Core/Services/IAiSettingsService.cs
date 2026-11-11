@@ -6,7 +6,9 @@ public interface IAiSettingsService
 {
     AiProviderType Provider { get; set; }
     string? GetApiKey();
+    Task<string?> GetApiKeyAsync();
     void SaveApiKey(string? apiKey);
+    Task SaveApiKeyAsync(string? apiKey);
     string GetSelectedModel();
     void SaveSelectedModel(string modelName);
     string GetBaseUrl();
