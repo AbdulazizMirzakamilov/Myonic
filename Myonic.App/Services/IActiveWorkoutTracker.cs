@@ -19,6 +19,11 @@ public interface IActiveWorkoutTracker : INotifyPropertyChanged
     void NotifySessionFinished();
 }
 
+public interface IHasActiveWorkoutTracker
+{
+    IActiveWorkoutTracker? ActiveWorkoutTracker { get; }
+}
+
 public class ActiveWorkoutTracker : ObservableObject, IActiveWorkoutTracker
 {
     private readonly IWorkoutSessionRepository _sessionRepo;

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 using Myonic.Pages;
+using Myonic.Services;
 
 namespace Myonic.ViewModels;
 
@@ -36,13 +37,17 @@ internal static class ExerciseTypeExtensions
     };
 }
 
-public partial class ExercisesViewModel : ObservableObject
+public partial class ExercisesViewModel : ObservableObject, IHasActiveWorkoutTracker
 {
     private readonly IExerciseRepository _repository;
+    public IActiveWorkoutTracker? ActiveWorkoutTracker { get; }
 
-    public ExercisesViewModel(IExerciseRepository repository)
+    public ExercisesViewModel(
+        IExerciseRepository repository,
+        IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _repository = repository;
+        ActiveWorkoutTracker = activeWorkoutTracker;
         InitializeMuscleGroupFilters();
     }
 

@@ -15,6 +15,10 @@ public partial class GoalsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (_vm.ActiveWorkoutTracker != null)
+        {
+            await _vm.ActiveWorkoutTracker.RefreshAsync();
+        }
         await _vm.LoadAsync();
     }
 }

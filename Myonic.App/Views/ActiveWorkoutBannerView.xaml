@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Myonic.Views"
+             x:Class="Myonic.Views.ActiveWorkoutBannerView"
+             x:Name="ThisBanner"
+             x:DataType="views:ActiveWorkoutBannerView">
+
+    <!-- Active Workout Banner (Sticky Top) -->
+    <Border IsVisible="{Binding Tracker.HasActiveSession, Source={x:Reference ThisBanner}}"
+            Stroke="{DynamicResource KineticVolt}"
+            StrokeThickness="1.5"
+            BackgroundColor="{DynamicResource KineticSurface}"
+            StrokeShape="RoundRectangle 12"
+            Padding="14,10">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+            <VerticalStackLayout VerticalOptions="Center" Spacing="3">
+                <Label Text="{Binding Tracker.Title, Source={x:Reference ThisBanner}}"
+                       TextColor="{DynamicResource KineticText}"
+                       FontSize="15"
+                       FontAttributes="Bold"
+                       LineBreakMode="TailTruncation" />
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <Border BackgroundColor="{DynamicResource KineticWell}"
+                            Stroke="{DynamicResource KineticBorderSubtle}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 6"
+                            Padding="6,2">
+                        <Label Text="{Binding Tracker.DurationText, Source={x:Reference ThisBanner}}"
+                               TextColor="{DynamicResource KineticVolt}"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+                    </Border>
+                    <Label Text="Идёт тренировка"
+                           TextColor="{DynamicResource KineticTextMuted}"
+                           FontSize="12"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <Button Grid.Column="1"
+                    Text="Продолжить"
+                    Command="{Binding Tracker.ResumeCommand, Source={x:Reference ThisBanner}}"
+                    Style="{StaticResource VoltButton}"
+                    HeightRequest="38"
+                    Padding="14,0"
+                    FontSize="13" />
+        </Grid>
+    </Border>
+
+</ContentView>

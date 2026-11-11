@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              xmlns:models="clr-namespace:Myonic.Core.Models;assembly=Myonic.Core"
+             xmlns:views="clr-namespace:Myonic.Views"
              x:Class="Myonic.Pages.SettingsPage"
              x:DataType="vm:SettingsViewModel"
              x:Name="ThisPage"
@@ -11,6 +12,9 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="16,14,16,40" Spacing="20">
+
+            <!-- Active Workout Banner -->
+            <views:ActiveWorkoutBannerView />
 
             <!-- 1. THEME SELECTION -->
             <VerticalStackLayout Spacing="8">

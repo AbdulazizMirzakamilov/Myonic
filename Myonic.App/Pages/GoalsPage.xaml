@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              xmlns:conv="clr-namespace:Myonic.Converters"
+             xmlns:views="clr-namespace:Myonic.Views"
              x:Class="Myonic.Pages.GoalsPage"
              x:DataType="vm:GoalsViewModel"
              x:Name="ThisPage"
@@ -44,6 +45,9 @@
         <!-- Main Content -->
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Spacing="14">
+
+                <!-- Active Workout Banner -->
+                <views:ActiveWorkoutBannerView />
 
                 <!-- Summary Stats Card -->
                 <Border BackgroundColor="{DynamicResource KineticSurface}"

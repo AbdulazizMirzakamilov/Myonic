@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 using Myonic.Pages;
+using Myonic.Services;
 
 namespace Myonic.ViewModels;
 
@@ -106,13 +107,17 @@ public partial class GoalItemViewModel : ObservableObject
     }
 }
 
-public partial class GoalsViewModel : ObservableObject
+public partial class GoalsViewModel : ObservableObject, IHasActiveWorkoutTracker
 {
     private readonly IGoalRepository _goalRepo;
+    public IActiveWorkoutTracker? ActiveWorkoutTracker { get; }
 
-    public GoalsViewModel(IGoalRepository goalRepo)
+    public GoalsViewModel(
+        IGoalRepository goalRepo,
+        IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _goalRepo = goalRepo;
+        ActiveWorkoutTracker = activeWorkoutTracker;
     }
 
     public ObservableCollection<GoalItemViewModel> ActiveGoals { get; } = [];

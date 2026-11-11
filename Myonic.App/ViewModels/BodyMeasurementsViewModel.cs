@@ -5,6 +5,7 @@ using Myonic.Core.Models;
 using Myonic.Core.Repositories;
 using Myonic.Drawables;
 using Myonic.Pages;
+using Myonic.Services;
 
 namespace Myonic.ViewModels;
 
@@ -20,13 +21,17 @@ public record MeasurementListItem(
     bool HasNotes,
     string? Notes);
 
-public partial class BodyMeasurementsViewModel : ObservableObject
+public partial class BodyMeasurementsViewModel : ObservableObject, IHasActiveWorkoutTracker
 {
     private readonly IBodyMeasurementRepository _repo;
+    public IActiveWorkoutTracker? ActiveWorkoutTracker { get; }
 
-    public BodyMeasurementsViewModel(IBodyMeasurementRepository repo)
+    public BodyMeasurementsViewModel(
+        IBodyMeasurementRepository repo,
+        IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _repo = repo;
+        ActiveWorkoutTracker = activeWorkoutTracker;
         Drawable = new WeightTrendDrawable();
     }
 

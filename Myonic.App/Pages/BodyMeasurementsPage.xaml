@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              xmlns:conv="clr-namespace:Myonic.Converters"
              xmlns:draw="clr-namespace:Myonic.Drawables"
+             xmlns:views="clr-namespace:Myonic.Views"
              x:Class="Myonic.Pages.BodyMeasurementsPage"
              x:DataType="vm:BodyMeasurementsViewModel"
              x:Name="ThisPage"
@@ -47,6 +48,9 @@
         <!-- Content -->
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Spacing="14">
+
+                <!-- Active Workout Banner -->
+                <views:ActiveWorkoutBannerView />
 
                 <!-- Weight Trend Stats Card -->
                 <Border BackgroundColor="{DynamicResource KineticSurface}"

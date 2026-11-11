@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Myonic.ViewModels"
              xmlns:conv="clr-namespace:Myonic.Converters"
+             xmlns:views="clr-namespace:Myonic.Views"
              x:Class="Myonic.Pages.ExercisesPage"
              x:DataType="vm:ExercisesViewModel"
              x:Name="ThisPage"
@@ -16,12 +17,15 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
           Padding="{OnIdiom Phone='16,12,16,20', Desktop='28,20,28,30'}"
           RowSpacing="10">
 
+        <!-- 0. Active Workout Banner -->
+        <views:ActiveWorkoutBannerView Grid.Row="0" />
+
         <!-- 1. Header with Title and Add Button -->
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
             <VerticalStackLayout VerticalOptions="Center" Spacing="2">
                 <Label Text="БАЗА УПРАЖНЕНИЙ"
                        TextColor="{DynamicResource KineticTextMuted}"
@@ -43,7 +47,7 @@
         </Grid>
 
         <!-- 2. Search Bar -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 BackgroundColor="{DynamicResource KineticWell}"
                 Stroke="{DynamicResource KineticBorderSubtle}"
                 StrokeThickness="1"
@@ -57,7 +61,7 @@
         </Border>
 
         <!-- 3. Category Filter Chips (Type) + Count Badge -->
-        <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+        <Grid Grid.Row="3" ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
             <Border BackgroundColor="{DynamicResource KineticWell}"
                     Stroke="{DynamicResource KineticBorderSubtle}"
                     StrokeThickness="1"
@@ -117,7 +121,7 @@
         </Grid>
 
         <!-- 4. Muscle Group Filter Chips (Horizontal Scroll) -->
-        <ScrollView Grid.Row="3"
+        <ScrollView Grid.Row="4"
                     Orientation="Horizontal"
                     HorizontalScrollBarVisibility="Never"
                     Margin="0,0,0,2">
@@ -165,7 +169,7 @@
         </ScrollView>
 
         <!-- 5. Exercises List -->
-        <CollectionView Grid.Row="4"
+        <CollectionView Grid.Row="5"
                         ItemsSource="{Binding Exercises}"
                         SelectionMode="None">
             <CollectionView.EmptyView>

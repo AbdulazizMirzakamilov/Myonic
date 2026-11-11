@@ -9,7 +9,7 @@ using Myonic.Services;
 
 namespace Myonic.ViewModels;
 
-public partial class SettingsViewModel : ObservableObject
+public partial class SettingsViewModel : ObservableObject, IHasActiveWorkoutTracker
 {
     private readonly IThemeService _themeService;
     private readonly MyonicDatabase _database;
@@ -19,6 +19,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly INotificationSettingsService _notificationSettingsService;
     private readonly INotificationService _notificationService;
     private readonly string _dbPath;
+    public IActiveWorkoutTracker? ActiveWorkoutTracker { get; }
 
     public SettingsViewModel(
         IThemeService themeService,
@@ -27,7 +28,8 @@ public partial class SettingsViewModel : ObservableObject
         IAiSettingsService aiSettingsService,
         IAiAnalysisService aiAnalysisService,
         INotificationSettingsService notificationSettingsService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IActiveWorkoutTracker? activeWorkoutTracker = null)
     {
         _themeService = themeService;
         _database = database;
@@ -36,6 +38,7 @@ public partial class SettingsViewModel : ObservableObject
         _aiAnalysisService = aiAnalysisService;
         _notificationSettingsService = notificationSettingsService;
         _notificationService = notificationService;
+        ActiveWorkoutTracker = activeWorkoutTracker;
         _dbPath = _database.DatabasePath;
 
         // Load current theme index (0: Dark, 1: Light, 2: System)

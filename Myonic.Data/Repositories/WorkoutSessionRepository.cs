@@ -652,9 +652,7 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var muscleGroups = new Dictionary<string, (int sets, double volume)>();
         foreach (var s in setRows)
         {
-            string group = s.MuscleGroup > 0
-                ? ((MuscleGroup)s.MuscleGroup).ToDisplayText()
-                : ClassifyMuscleGroup(s.ExerciseName);
+            string group = ResolveMuscleGroupDisplayName(s.MuscleGroup, s.ExerciseName);
 
             if (!muscleGroups.TryGetValue(group, out var current))
             {
@@ -676,32 +674,61 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         return summary;
     }
 
-    private static string ClassifyMuscleGroup(string name)
+    private static readonly Dictionary<string, MuscleGroup> CanonicalExerciseMuscleGroups = new(StringComparer.OrdinalIgnoreCase)
     {
-        var lower = name.ToLowerInvariant();
-        if ((lower.Contains("жим") && (lower.Contains("лёжа") || lower.Contains("лежа") || lower.Contains("скамье") || lower.Contains("брусьях"))) ||
-            lower.Contains("разведение гантелей лёжа") || lower.Contains("кроссовер") || lower.Contains("груд"))
-            return "Грудь";
+        ["Жим лёжа"] = MuscleGroup.Chest,
+        ["Жим лёжа на наклонной скамье"] = MuscleGroup.Chest,
+        ["Жим гантелей лёжа"] = MuscleGroup.Chest,
+        ["Отжимания на брусьях"] = MuscleGroup.Chest,
+        ["Разведение гантелей лёжа"] = MuscleGroup.Chest,
+        ["Сведение рук в кроссовере"] = MuscleGroup.Chest,
 
-        if (lower.Contains("тяга") || lower.Contains("подтягивания") || lower.Contains("спин"))
-            return "Спина";
+        ["Становая тяга"] = MuscleGroup.Back,
+        ["Подтягивания"] = MuscleGroup.Back,
+        ["Тяга штанги в наклоне"] = MuscleGroup.Back,
+        ["Тяга верхнего блока"] = MuscleGroup.Back,
+        ["Тяга нижнего блока"] = MuscleGroup.Back,
 
-        if (lower.Contains("присед") || lower.Contains("ногами") || lower.Contains("выпады") || lower.Contains("ноги") ||
-            lower.Contains("голень") || lower.Contains("носок") || lower.Contains("квадрицепс") || lower.Contains("бедр"))
-            return "Ноги";
+        ["Жим штанги стоя"] = MuscleGroup.Shoulders,
+        ["Махи гантелей в стороны"] = MuscleGroup.Shoulders,
+        ["Разведение гантелей в наклоне"] = MuscleGroup.Shoulders,
 
-        if (lower.Contains("жим штанги стоя") || lower.Contains("жим стоя") || lower.Contains("армейский") ||
-            lower.Contains("махи") || lower.Contains("плеч") || lower.Contains("дельта"))
-            return "Плечи";
+        ["Подъём штанги на бицепс"] = MuscleGroup.Biceps,
+        ["Молотковые сгибания"] = MuscleGroup.Biceps,
 
-        if (lower.Contains("бицепс") || lower.Contains("трицепс") || lower.Contains("французский") ||
-            lower.Contains("молотков") || lower.Contains("сгибание рук") || lower.Contains("разгибание рук"))
-            return "Руки";
+        ["Разгибание рук на блоке"] = MuscleGroup.Triceps,
+        ["Французский жим"] = MuscleGroup.Triceps,
 
-        if (lower.Contains("пресс") || lower.Contains("скручиван") || lower.Contains("планк") || lower.Contains("кор"))
-            return "Кор";
+        ["Приседания со штангой"] = MuscleGroup.Quadriceps,
+        ["Фронтальные приседания"] = MuscleGroup.Quadriceps,
+        ["Жим ногами"] = MuscleGroup.Quadriceps,
+        ["Выпады с гантелями"] = MuscleGroup.Quadriceps,
+        ["Разгибание ног в тренажёре"] = MuscleGroup.Quadriceps,
 
-        return "Другое";
+        ["Румынская тяга"] = MuscleGroup.Hamstrings,
+        ["Сгибание ног лёжа"] = MuscleGroup.Hamstrings,
+
+        ["Подъём на носки стоя"] = MuscleGroup.Calves,
+    };
+
+    public static string ResolveMuscleGroupDisplayName(int muscleGroupValue, string exerciseName)
+    {
+        if (muscleGroupValue > 0 && Enum.IsDefined(typeof(MuscleGroup), (MuscleGroup)muscleGroupValue))
+        {
+            var mg = (MuscleGroup)muscleGroupValue;
+            if (mg != MuscleGroup.None)
+            {
+                return mg.ToDisplayText();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(exerciseName) &&
+            CanonicalExerciseMuscleGroups.TryGetValue(exerciseName.Trim(), out var canonicalGroup))
+        {
+            return canonicalGroup.ToDisplayText();
+        }
+
+        return MuscleGroup.None.ToDisplayText();
     }
 
     private sealed class AnalyticsSetRow

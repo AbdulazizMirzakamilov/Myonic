@@ -305,4 +305,34 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         Assert.Equal(1, summary30.TotalWorkouts);
         Assert.Equal(2, summary90.TotalWorkouts);
     }
-}
+
+    [Theory]
+    [InlineData((int)MuscleGroup.Chest, "Произвольное", "Грудь")]
+    [InlineData((int)MuscleGroup.Back, "Жим", "Спина")]
+    [InlineData((int)MuscleGroup.Shoulders, "Что угодно", "Плечи")]
+    [InlineData((int)MuscleGroup.Quadriceps, "Упражнение", "Квадрицепсы")]
+    public void ResolveMuscleGroupDisplayName_WithExplicitGroup_ReturnsEnumDisplayText(int groupValue, string exerciseName, string expected)
+    {
+        var result = WorkoutSessionRepository.ResolveMuscleGroupDisplayName(groupValue, exerciseName);
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(0, "Жим лёжа", "Грудь")]
+    [InlineData(0, "Подтягивания", "Спина")]
+    [InlineData(0, "Приседания со штангой", "Квадрицепсы")]
+    [InlineData(0, "Французский жим", "Трицепс")]
+    [InlineData(0, "Подъём на носки стоя", "Икры")]
+    public void ResolveMuscleGroupDisplayName_LegacyExerciseWithZeroGroup_ResolvesByCanonicalDictionary(int groupValue, string exerciseName, string expected)
+    {
+        var result = WorkoutSessionRepository.ResolveMuscleGroupDisplayName(groupValue, exerciseName);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ResolveMuscleGroupDisplayName_UnknownExerciseWithZeroGroup_ReturnsUnspecified()
+    {
+        var result = WorkoutSessionRepository.ResolveMuscleGroupDisplayName(0, "Кастомное редкое упражнение");
+        Assert.Equal("Не указана", result);
+    }
+    }
