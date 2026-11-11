@@ -12,6 +12,8 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
 
     public async Task<IReadOnlyList<PlannedWorkoutSummary>> GetPlannedWorkoutsForDateAsync(DateTime date)
     {
+        await EnsureScheduledWorkoutsForRangeAsync(date, date);
+
         var db = await _database.GetConnectionAsync();
         var targetDate = date.Date;
         var dayOfWeek = date.DayOfWeek;
@@ -21,7 +23,9 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
             .Where(sw => sw.Date == targetDate && sw.Status != ScheduledWorkoutStatus.Cancelled)
             .ToListAsync();
 
-        var scheduledWorkoutIds = scheduledEntries.Select(sw => sw.ProgramWorkoutId).ToHashSet();
+        var scheduledMap = scheduledEntries
+            .GroupBy(sw => sw.ProgramWorkoutId)
+            .ToDictionary(g => g.Key, g => g.First());
 
         // 2. Program workouts matching DefaultDayOfWeek (only from non-archived programs)
         var defaultDayWorkouts = await db.QueryAsync<ProgramWorkout>(
@@ -44,7 +48,7 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
             .Select(sw => sw.ProgramWorkoutId)
             .ToHashSet();
 
-        var matchedWorkoutIds = new HashSet<int>(scheduledWorkoutIds);
+        var matchedWorkoutIds = new HashSet<int>(scheduledMap.Keys);
         foreach (var dw in defaultDayWorkouts)
         {
             if (!movedAwayIds.Contains(dw.Id) && !cancelledIds.Contains(dw.Id))
@@ -58,7 +62,20 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
         {
             var summary = await BuildSummaryAsync(workoutId);
             if (summary != null)
+            {
+                summary.ScheduledDate = targetDate;
+                if (scheduledMap.TryGetValue(workoutId, out var sw))
+                {
+                    summary.ScheduledWorkoutId = sw.Id;
+                    summary.OriginalDate = sw.OriginalDate;
+                    summary.Status = sw.Status;
+                }
+                else
+                {
+                    summary.OriginalDate = targetDate;
+                }
                 result.Add(summary);
+            }
         }
 
         return result;
@@ -88,6 +105,8 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
 
     public async Task<(IReadOnlySet<DayOfWeek> DefaultDays, IReadOnlySet<DateTime> ScheduledDates)> GetPlannedDayIndicatorsForWeekAsync(DateTime fromDate, DateTime toDate)
     {
+        await EnsureScheduledWorkoutsForRangeAsync(fromDate, toDate);
+
         var db = await _database.GetConnectionAsync();
 
         var defaultDaysRaw = await db.ExecuteScalarAsync<string>(
@@ -115,6 +134,181 @@ public sealed class WorkoutScheduleRepository : IWorkoutScheduleRepository
         var scheduledDates = new HashSet<DateTime>(scheduled.Select(s => s.Date.Date));
 
         return (defaultDays, scheduledDates);
+    }
+
+    public async Task<(IReadOnlySet<DateTime> MovedAwayDates, IReadOnlySet<DateTime> CancelledDates)> GetScheduleOverridesForRangeAsync(DateTime fromDate, DateTime toDate)
+    {
+        var db = await _database.GetConnectionAsync();
+        var start = fromDate.Date;
+        var end = toDate.Date;
+
+        var movedAway = await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.OriginalDate >= start && sw.OriginalDate <= end && sw.Date != sw.OriginalDate)
+            .ToListAsync();
+
+        var cancelled = await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.Date >= start && sw.Date <= end && sw.Status == ScheduledWorkoutStatus.Cancelled)
+            .ToListAsync();
+
+        var movedAwayDates = new HashSet<DateTime>(movedAway.Where(m => m.OriginalDate.HasValue).Select(m => m.OriginalDate!.Value.Date));
+        var cancelledDates = new HashSet<DateTime>(cancelled.Select(c => c.Date.Date));
+
+        return (movedAwayDates, cancelledDates);
+    }
+
+    public async Task<ScheduledWorkout> RescheduleWorkoutAsync(int programWorkoutId, DateTime originalDate, DateTime newDate)
+    {
+        var db = await _database.GetConnectionAsync();
+        var orig = originalDate.Date;
+        var target = newDate.Date;
+
+        // Try to find an existing ScheduledWorkout record for this workout on original date or already rescheduled
+        var existing = await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.ProgramWorkoutId == programWorkoutId && (sw.Date == orig || sw.OriginalDate == orig))
+            .FirstOrDefaultAsync();
+
+        if (existing != null)
+        {
+            existing.OriginalDate ??= orig;
+            existing.Date = target;
+            existing.Status = ScheduledWorkoutStatus.Planned;
+            await db.UpdateAsync(existing);
+            return existing;
+        }
+
+        var newEntry = new ScheduledWorkout
+        {
+            ProgramWorkoutId = programWorkoutId,
+            OriginalDate = orig,
+            Date = target,
+            Status = ScheduledWorkoutStatus.Planned
+        };
+        await db.InsertAsync(newEntry);
+        return newEntry;
+    }
+
+    public async Task<ScheduledWorkout> ScheduleWorkoutAsync(int programWorkoutId, DateTime targetDate)
+    {
+        var db = await _database.GetConnectionAsync();
+        var target = targetDate.Date;
+
+        var existing = await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.ProgramWorkoutId == programWorkoutId && sw.Date == target)
+            .FirstOrDefaultAsync();
+
+        if (existing != null)
+        {
+            existing.Status = ScheduledWorkoutStatus.Planned;
+            await db.UpdateAsync(existing);
+            return existing;
+        }
+
+        var entry = new ScheduledWorkout
+        {
+            ProgramWorkoutId = programWorkoutId,
+            Date = target,
+            OriginalDate = target,
+            Status = ScheduledWorkoutStatus.Planned
+        };
+        await db.InsertAsync(entry);
+        return entry;
+    }
+
+    public async Task CancelScheduledWorkoutAsync(int programWorkoutId, DateTime date)
+    {
+        var db = await _database.GetConnectionAsync();
+        var target = date.Date;
+
+        var existing = await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.ProgramWorkoutId == programWorkoutId && (sw.Date == target || sw.OriginalDate == target))
+            .FirstOrDefaultAsync();
+
+        if (existing != null)
+        {
+            existing.Status = ScheduledWorkoutStatus.Cancelled;
+            await db.UpdateAsync(existing);
+        }
+        else
+        {
+            var cancelled = new ScheduledWorkout
+            {
+                ProgramWorkoutId = programWorkoutId,
+                Date = target,
+                OriginalDate = target,
+                Status = ScheduledWorkoutStatus.Cancelled
+            };
+            await db.InsertAsync(cancelled);
+        }
+    }
+
+    public async Task EnsureScheduledWorkoutsForRangeAsync(DateTime fromDate, DateTime toDate)
+    {
+        var db = await _database.GetConnectionAsync();
+        var start = fromDate.Date;
+        var end = toDate.Date;
+        if (start > end) (start, end) = (end, start);
+
+        // Active programs and their workouts with DefaultDayOfWeek
+        var defaultDayWorkouts = await db.QueryAsync<ProgramWorkout>(
+            """
+            SELECT pw.* FROM ProgramWorkout pw
+            INNER JOIN TrainingProgram p ON p.Id = pw.ProgramId
+            WHERE pw.DefaultDayOfWeek IS NOT NULL AND p.IsArchived = 0
+            """);
+
+        if (defaultDayWorkouts.Count == 0) return;
+
+        // Existing scheduled workouts in the range (either Date in range or OriginalDate in range)
+        var existingSchedules = await db.Table<ScheduledWorkout>()
+            .Where(sw => (sw.Date >= start && sw.Date <= end) || (sw.OriginalDate >= start && sw.OriginalDate <= end))
+            .ToListAsync();
+
+        var existingKeySet = new HashSet<(int ProgramWorkoutId, DateTime Date)>();
+        foreach (var s in existingSchedules)
+        {
+            existingKeySet.Add((s.ProgramWorkoutId, s.Date.Date));
+            if (s.OriginalDate.HasValue)
+            {
+                existingKeySet.Add((s.ProgramWorkoutId, s.OriginalDate.Value.Date));
+            }
+        }
+
+        var toInsert = new List<ScheduledWorkout>();
+        for (var d = start; d <= end; d = d.AddDays(1))
+        {
+            var dow = (int)d.DayOfWeek;
+            foreach (var pw in defaultDayWorkouts)
+            {
+                if ((int?)pw.DefaultDayOfWeek == dow)
+                {
+                    if (!existingKeySet.Contains((pw.Id, d)))
+                    {
+                        toInsert.Add(new ScheduledWorkout
+                        {
+                            ProgramWorkoutId = pw.Id,
+                            Date = d,
+                            OriginalDate = d,
+                            Status = ScheduledWorkoutStatus.Planned
+                        });
+                        existingKeySet.Add((pw.Id, d));
+                    }
+                }
+            }
+        }
+
+        if (toInsert.Count > 0)
+        {
+            await db.InsertAllAsync(toInsert);
+        }
+    }
+
+    public async Task<ScheduledWorkout?> GetScheduledWorkoutForDateAsync(int programWorkoutId, DateTime date)
+    {
+        var db = await _database.GetConnectionAsync();
+        var target = date.Date;
+        return await db.Table<ScheduledWorkout>()
+            .Where(sw => sw.ProgramWorkoutId == programWorkoutId && sw.Date == target && sw.Status != ScheduledWorkoutStatus.Cancelled)
+            .FirstOrDefaultAsync();
     }
 
     private async Task<PlannedWorkoutSummary?> BuildSummaryAsync(int programWorkoutId)

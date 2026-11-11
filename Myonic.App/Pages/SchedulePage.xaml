@@ -188,6 +188,7 @@
                                 <HorizontalStackLayout Spacing="3" HorizontalOptions="Center">
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                    <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -209,6 +210,7 @@
                                 <HorizontalStackLayout Spacing="3" HorizontalOptions="Center">
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                    <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -230,6 +232,7 @@
                                 <HorizontalStackLayout Spacing="3" HorizontalOptions="Center">
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                    <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -251,6 +254,7 @@
                                 <HorizontalStackLayout Spacing="3" HorizontalOptions="Center">
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                    <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -272,6 +276,7 @@
                                 <HorizontalStackLayout Spacing="3" HorizontalOptions="Center">
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                    <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -293,6 +298,7 @@
                                 <HorizontalStackLayout Spacing="3" HorizontalOptions="Center">
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                    <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -314,6 +320,7 @@
                                 <HorizontalStackLayout Spacing="3" HorizontalOptions="Center">
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                     <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                    <Ellipse WidthRequest="5" HeightRequest="5" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -358,6 +365,7 @@
                                                 <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                                    <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
                                         </Border>
@@ -379,6 +387,7 @@
                                                 <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                                    <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
                                         </Border>
@@ -400,6 +409,7 @@
                                                 <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                                    <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
                                         </Border>
@@ -421,6 +431,7 @@
                                                 <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                                    <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
                                         </Border>
@@ -442,6 +453,7 @@
                                                 <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                                    <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
                                         </Border>
@@ -463,6 +475,7 @@
                                                 <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                                    <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
                                         </Border>
@@ -484,6 +497,7 @@
                                                 <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticEmerald}" IsVisible="{Binding HasCompletedWorkout}" />
                                                     <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticIceBlue}" IsVisible="{Binding ShowPlannedIndicator}" />
+                                                    <Ellipse WidthRequest="4" HeightRequest="4" Fill="{DynamicResource KineticCrimson}" IsVisible="{Binding ShowMissedIndicator}" />
                                                 </HorizontalStackLayout>
                                             </VerticalStackLayout>
                                         </Border>
@@ -541,6 +555,11 @@
                                                 <Setter Property="Stroke" Value="{DynamicResource KineticIceBlue}" />
                                                 <Setter Property="StrokeThickness" Value="1" />
                                             </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsMissed}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource KineticWell}" />
+                                                <Setter Property="Stroke" Value="{DynamicResource KineticCrimson}" />
+                                                <Setter Property="StrokeThickness" Value="1" />
+                                            </DataTrigger>
                                         </Border.Triggers>
                                         <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
                                             <Label Text="{Binding StatusIcon}"
@@ -553,6 +572,9 @@
                                                     <DataTrigger TargetType="Label" Binding="{Binding IsPlanned}" Value="True">
                                                         <Setter Property="TextColor" Value="{DynamicResource KineticIceBlue}" />
                                                     </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsMissed}" Value="True">
+                                                        <Setter Property="TextColor" Value="{DynamicResource KineticCrimson}" />
+                                                    </DataTrigger>
                                                 </Label.Triggers>
                                             </Label>
                                             <Label Text="{Binding StatusDisplayName}"
@@ -564,6 +586,9 @@
                                                     </DataTrigger>
                                                     <DataTrigger TargetType="Label" Binding="{Binding IsPlanned}" Value="True">
                                                         <Setter Property="TextColor" Value="{DynamicResource KineticIceBlue}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsMissed}" Value="True">
+                                                        <Setter Property="TextColor" Value="{DynamicResource KineticCrimson}" />
                                                     </DataTrigger>
                                                 </Label.Triggers>
                                             </Label>
@@ -585,6 +610,12 @@
                                        TextColor="{DynamicResource KineticTextMuted}"
                                        FontSize="12"
                                        IsVisible="{Binding IsPlanned}" />
+
+                                <!-- Missed summary info (for Missed workouts) -->
+                                <Label Text="{Binding SummaryText}"
+                                       TextColor="{DynamicResource KineticCrimson}"
+                                       FontSize="12"
+                                       IsVisible="{Binding IsMissed}" />
 
                                 <BoxView HeightRequest="1" Color="{DynamicResource KineticBorderSubtle}" />
 
@@ -657,6 +688,14 @@
                                         HeightRequest="44"
                                         FontSize="14" />
 
+                                <Button Text="🔁 Перенести на другую дату"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.RescheduleWorkoutCommand}"
+                                        CommandParameter="{Binding .}"
+                                        IsVisible="{Binding CanReschedule}"
+                                        Style="{StaticResource SecondaryActionButton}"
+                                        HeightRequest="42"
+                                        FontSize="13" />
+
                                 <Border BackgroundColor="{DynamicResource KineticWell}"
                                         Stroke="{DynamicResource KineticBorderSubtle}"
                                         StrokeThickness="1"
@@ -694,6 +733,9 @@
                            HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Border>
+
+            <!-- Hidden DatePicker for custom date picking -->
+            <DatePicker x:Name="HiddenDatePicker" IsVisible="False" DateSelected="OnRescheduleDateSelected" />
 
         </VerticalStackLayout>
     </ScrollView>

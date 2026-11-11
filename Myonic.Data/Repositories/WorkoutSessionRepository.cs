@@ -30,7 +30,7 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         };
     }
 
-    public async Task<int> StartSessionFromProgramWorkoutAsync(int programWorkoutId)
+    public async Task<int> StartSessionFromProgramWorkoutAsync(int programWorkoutId, int? scheduledWorkoutId = null)
     {
         var db = await _database.GetConnectionAsync();
 
@@ -50,6 +50,7 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
         var session = new WorkoutSession
         {
             Title = programWorkout.Name,
+            ScheduledWorkoutId = scheduledWorkoutId,
             StartedAt = DateTime.UtcNow
         };
         await db.InsertAsync(session);
@@ -284,6 +285,16 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
             session.Comment = comment.Trim();
 
         await db.UpdateAsync(session);
+
+        if (session.ScheduledWorkoutId.HasValue)
+        {
+            var sw = await db.FindAsync<ScheduledWorkout>(session.ScheduledWorkoutId.Value);
+            if (sw != null)
+            {
+                sw.Status = ScheduledWorkoutStatus.Completed;
+                await db.UpdateAsync(sw);
+            }
+        }
 
         // Гарантируем, что в базе не останется других незакрытых «зависших» сессий
         var dangling = await db.Table<WorkoutSession>()

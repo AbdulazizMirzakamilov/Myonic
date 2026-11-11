@@ -43,7 +43,7 @@ public class GeminiAiAnalysisServiceTests
         public Task<ExerciseHistorySummary> GetExerciseHistoryAsync(int exerciseId) => Task.FromResult(ExerciseHistory ?? new ExerciseHistorySummary());
 
         public Task<ActiveSessionSummary?> GetActiveSessionSummaryAsync() => Task.FromResult<ActiveSessionSummary?>(null);
-        public Task<int> StartSessionFromProgramWorkoutAsync(int programWorkoutId) => Task.FromResult(1);
+        public Task<int> StartSessionFromProgramWorkoutAsync(int programWorkoutId, int? scheduledWorkoutId = null) => Task.FromResult(1);
         public Task<int> StartEmptySessionAsync(string title) => Task.FromResult(1);
         public Task<SessionExerciseDetail> AddExerciseToSessionAsync(int sessionId, int exerciseId) => throw new NotImplementedException();
         public Task DeleteExerciseFromSessionAsync(int workoutExerciseId) => Task.CompletedTask;

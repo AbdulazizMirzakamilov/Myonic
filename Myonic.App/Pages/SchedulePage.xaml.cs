@@ -6,11 +6,35 @@ namespace Myonic.Pages;
 public partial class SchedulePage : ContentPage
 {
     private readonly ScheduleViewModel _viewModel;
+    private CalendarWorkoutItem? _reschedulingWorkout;
 
     public SchedulePage(ScheduleViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+
+        _viewModel.RequestRescheduleDateSelection += workout =>
+        {
+            _reschedulingWorkout = workout;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (HiddenDatePicker != null)
+                {
+                    HiddenDatePicker.Date = workout.ScheduledDate ?? DateTime.Today;
+                    HiddenDatePicker.Focus();
+                }
+            });
+        };
+    }
+
+    private async void OnRescheduleDateSelected(object? sender, DateChangedEventArgs e)
+    {
+        if (_reschedulingWorkout != null && e.NewDate.HasValue)
+        {
+            var workout = _reschedulingWorkout;
+            _reschedulingWorkout = null;
+            await _viewModel.ExecuteRescheduleAsync(workout, e.NewDate.Value);
+        }
     }
 
     protected override async void OnAppearing()

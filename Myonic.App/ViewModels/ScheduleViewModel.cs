@@ -20,6 +20,7 @@ public sealed class CalendarDayItem : ObservableObject
     private bool _isCurrentMonth = true;
     private bool _hasCompletedWorkout;
     private bool _hasPlannedWorkout;
+    private bool _hasMissedWorkout;
 
     public DateTime Date
     {
@@ -65,6 +66,7 @@ public sealed class CalendarDayItem : ObservableObject
             if (SetProperty(ref _hasCompletedWorkout, value))
             {
                 OnPropertyChanged(nameof(ShowPlannedIndicator));
+                OnPropertyChanged(nameof(ShowMissedIndicator));
                 OnPropertyChanged(nameof(HasAnyWorkout));
             }
         }
@@ -78,14 +80,29 @@ public sealed class CalendarDayItem : ObservableObject
             if (SetProperty(ref _hasPlannedWorkout, value))
             {
                 OnPropertyChanged(nameof(ShowPlannedIndicator));
+                OnPropertyChanged(nameof(ShowMissedIndicator));
+                OnPropertyChanged(nameof(HasAnyWorkout));
+            }
+        }
+    }
+
+    public bool HasMissedWorkout
+    {
+        get => _hasMissedWorkout;
+        set
+        {
+            if (SetProperty(ref _hasMissedWorkout, value))
+            {
+                OnPropertyChanged(nameof(ShowPlannedIndicator));
+                OnPropertyChanged(nameof(ShowMissedIndicator));
                 OnPropertyChanged(nameof(HasAnyWorkout));
             }
         }
     }
 
     public bool ShowPlannedIndicator => HasPlannedWorkout && !HasCompletedWorkout;
-    public bool ShowMissedIndicator => false;
-    public bool HasAnyWorkout => HasCompletedWorkout || ShowPlannedIndicator;
+    public bool ShowMissedIndicator => HasMissedWorkout && !HasCompletedWorkout;
+    public bool HasAnyWorkout => HasCompletedWorkout || ShowPlannedIndicator || ShowMissedIndicator;
 
     public void NotifyThemeChanged()
     {
@@ -333,11 +350,13 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
                 {
                     item.HasCompletedWorkout = ind.HasCompleted;
                     item.HasPlannedWorkout = ind.HasPlanned;
+                    item.HasMissedWorkout = ind.HasMissed;
                 }
                 else
                 {
                     item.HasCompletedWorkout = false;
                     item.HasPlannedWorkout = false;
+                    item.HasMissedWorkout = false;
                 }
 
                 item.NotifyThemeChanged();
@@ -368,11 +387,13 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
 
                     var hasCompleted = false;
                     var hasPlanned = false;
+                    var hasMissed = false;
 
                     if (indicators.TryGetValue(curDate.Date, out var ind))
                     {
                         hasCompleted = ind.HasCompleted;
                         hasPlanned = ind.HasPlanned;
+                        hasMissed = ind.HasMissed;
                     }
 
                     rowDays[d] = new CalendarDayItem
@@ -384,7 +405,8 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
                         IsSelected = isSelected,
                         IsCurrentMonth = isCurrentMonth,
                         HasCompletedWorkout = hasCompleted,
-                        HasPlannedWorkout = hasPlanned
+                        HasPlannedWorkout = hasPlanned,
+                        HasMissedWorkout = hasMissed
                     };
 
                     curDate = curDate.AddDays(1);
@@ -573,9 +595,102 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(workout.ProgramWorkoutId.Value);
+        var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(workout.ProgramWorkoutId.Value, workout.ScheduledWorkoutId);
         ActiveWorkoutTracker.NotifySessionStarted(sessionId, workout.Title);
         await Shell.Current.GoToAsync($"{nameof(ActiveWorkoutPage)}?sessionId={sessionId}");
+    }
+
+    public event Action<CalendarWorkoutItem>? RequestRescheduleDateSelection;
+
+    [RelayCommand]
+    public async Task RescheduleWorkoutAsync(CalendarWorkoutItem? workout)
+    {
+        if (workout == null || !workout.ProgramWorkoutId.HasValue || !workout.ScheduledDate.HasValue)
+            return;
+
+        var currentScheduled = workout.ScheduledDate.Value.Date;
+        var tomorrow = DateTime.Today.AddDays(1);
+        var dayAfterTomorrow = DateTime.Today.AddDays(2);
+        var nextWeek = currentScheduled.AddDays(7);
+
+        var optTomorrow = $"Завтра ({tomorrow:d MMMM})";
+        var optDayAfter = $"Через 2 дня ({dayAfterTomorrow:d MMMM})";
+        var optNextWeek = $"Через неделю ({nextWeek:d MMMM})";
+        const string optCustom = "📅 Выбрать точную дату...";
+
+        var choice = await Shell.Current.DisplayActionSheetAsync(
+            $"Перенести «{workout.Title}»",
+            "Отмена",
+            null,
+            optTomorrow,
+            optDayAfter,
+            optNextWeek,
+            optCustom);
+
+        if (string.IsNullOrEmpty(choice) || choice == "Отмена")
+            return;
+
+        if (choice == optTomorrow)
+        {
+            await ExecuteRescheduleAsync(workout, tomorrow);
+        }
+        else if (choice == optDayAfter)
+        {
+            await ExecuteRescheduleAsync(workout, dayAfterTomorrow);
+        }
+        else if (choice == optNextWeek)
+        {
+            await ExecuteRescheduleAsync(workout, nextWeek);
+        }
+        else if (choice == optCustom)
+        {
+            RequestRescheduleDateSelection?.Invoke(workout);
+        }
+    }
+
+    public async Task ExecuteRescheduleAsync(CalendarWorkoutItem workout, DateTime newDate)
+    {
+        if (!workout.ProgramWorkoutId.HasValue || !workout.ScheduledDate.HasValue) return;
+
+        var origDate = workout.ScheduledDate.Value.Date;
+        var targetDate = newDate.Date;
+
+        if (targetDate == origDate)
+        {
+            await Shell.Current.DisplayAlertAsync("Та же дата", "Тренировка уже запланирована на эту дату.", "OK");
+            return;
+        }
+
+        if (targetDate < DateTime.Today)
+        {
+            var confirmPast = await Shell.Current.DisplayAlertAsync(
+                "Прошедшая дата",
+                $"Вы выбрали прошедшую дату ({targetDate:d MMMM yyyy}). Тренировка будет отмечена как пропущенная. Перенести?",
+                "Да, перенести",
+                "Отмена");
+            if (!confirmPast) return;
+        }
+
+        var existingOnDate = await _calendarService.GetWorkoutsForDateAsync(targetDate);
+        if (existingOnDate.Count > 0)
+        {
+            var confirmOccupied = await Shell.Current.DisplayAlertAsync(
+                "Дата уже занята",
+                $"На {targetDate:d MMMM yyyy} уже есть тренировка «{existingOnDate[0].Title}». Всё равно перенести?",
+                "Перенести",
+                "Отмена");
+            if (!confirmOccupied) return;
+        }
+
+        await _scheduleRepo.RescheduleWorkoutAsync(workout.ProgramWorkoutId.Value, origDate, targetDate);
+        SelectedDate = targetDate;
+        CurrentPeriodDate = targetDate;
+        await RefreshCalendarAsync();
+
+        await Shell.Current.DisplayAlertAsync(
+            "Тренировка перенесена",
+            $"«{workout.Title}» перенесена на {targetDate:d MMMM yyyy}.",
+            "OK");
     }
 
     [RelayCommand]

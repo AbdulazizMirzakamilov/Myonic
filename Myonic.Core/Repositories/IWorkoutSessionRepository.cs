@@ -84,7 +84,7 @@ public class ExerciseHistorySummary
 public interface IWorkoutSessionRepository
 {
     Task<ActiveSessionSummary?> GetActiveSessionSummaryAsync();
-    Task<int> StartSessionFromProgramWorkoutAsync(int programWorkoutId);
+    Task<int> StartSessionFromProgramWorkoutAsync(int programWorkoutId, int? scheduledWorkoutId = null);
     Task<int> StartEmptySessionAsync(string title);
     Task<SessionExerciseDetail> AddExerciseToSessionAsync(int sessionId, int exerciseId);
     Task DeleteExerciseFromSessionAsync(int workoutExerciseId);

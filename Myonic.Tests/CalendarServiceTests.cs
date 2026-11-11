@@ -105,7 +105,7 @@ public class CalendarServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PastUncompletedWorkout_DoesNotReturnMissedCards()
+    public async Task PastUncompletedWorkout_ReturnsMissedStatus()
     {
         // Find past Monday (e.g. 2 weeks ago)
         var date = DateTime.Today.AddDays(-1);
@@ -116,8 +116,12 @@ public class CalendarServiceTests : IAsyncLifetime
 
         var workouts = await _calendarService.GetWorkoutsForDateAsync(date);
 
-        // Past uncompleted workouts are not shown as separate missed cards
-        Assert.Empty(workouts);
+        // Past uncompleted workout is returned as Missed
+        Assert.Single(workouts);
+        Assert.Equal(CalendarWorkoutStatus.Missed, workouts[0].Status);
+        Assert.True(workouts[0].IsMissed);
+        Assert.False(workouts[0].IsCompleted);
+        Assert.False(workouts[0].IsPlanned);
     }
 
     [Fact]
@@ -260,5 +264,144 @@ public class CalendarServiceTests : IAsyncLifetime
         var exItem = completed.CompletedExercises.First();
         Assert.Equal(2, exItem.SetsSummary.Count);
         Assert.Contains("90", exItem.SetsSummary[0]);
+    }
+
+    [Fact]
+    public async Task RescheduleWorkout_PersistsToSqlite_AndSurvivesDbReconnection()
+    {
+        var nextMonday = DateTime.Today.AddDays(1);
+        while (nextMonday.DayOfWeek != DayOfWeek.Monday)
+        {
+            nextMonday = nextMonday.AddDays(1);
+        }
+
+        var targetThursday = nextMonday.AddDays(3); // Thursday of same week
+
+        // Reschedule Monday to Thursday
+        await _scheduleRepo.RescheduleWorkoutAsync(_programWorkoutId, nextMonday, targetThursday);
+
+        // Disconnect and reopen new context from the same file
+        var reopenedDb = new MyonicDatabase(_path);
+        var newScheduleRepo = new WorkoutScheduleRepository(reopenedDb);
+        var newCalendar = new CalendarService(new WorkoutSessionRepository(reopenedDb), newScheduleRepo);
+
+        // Verify Monday has 0 workouts (rescheduled away)
+        var mondayWorkouts = await newCalendar.GetWorkoutsForDateAsync(nextMonday);
+        Assert.Empty(mondayWorkouts);
+
+        // Verify Thursday has the rescheduled workout
+        var thursdayWorkouts = await newCalendar.GetWorkoutsForDateAsync(targetThursday);
+        Assert.Single(thursdayWorkouts);
+        Assert.Equal("Грудь и трицепс", thursdayWorkouts[0].Title);
+        Assert.Equal(CalendarWorkoutStatus.Planned, thursdayWorkouts[0].Status);
+
+        await reopenedDb.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task RescheduledWorkout_DoesNotAffectOtherProgramDays()
+    {
+        // Add a second workout in the program for Friday
+        var conn = await _db.GetConnectionAsync();
+        var workoutFriday = new ProgramWorkout
+        {
+            ProgramId = _programId,
+            Name = "Спина и бицепс",
+            DefaultDayOfWeek = DayOfWeek.Friday,
+            Order = 2
+        };
+        await conn.InsertAsync(workoutFriday);
+
+        var nextMonday = DateTime.Today.AddDays(1);
+        while (nextMonday.DayOfWeek != DayOfWeek.Monday)
+        {
+            nextMonday = nextMonday.AddDays(1);
+        }
+        var nextFriday = nextMonday.AddDays(4);
+
+        // Reschedule Monday to Tuesday
+        await _scheduleRepo.RescheduleWorkoutAsync(_programWorkoutId, nextMonday, nextMonday.AddDays(1));
+
+        // Friday workout should remain completely untouched on Friday
+        var fridayWorkouts = await _calendarService.GetWorkoutsForDateAsync(nextFriday);
+        Assert.Single(fridayWorkouts);
+        Assert.Equal("Спина и бицепс", fridayWorkouts[0].Title);
+    }
+
+    [Fact]
+    public async Task CompletedWorkout_OnPastDate_NeverDisplaysAsMissed()
+    {
+        var pastMonday = DateTime.Today.AddDays(-7);
+        while (pastMonday.DayOfWeek != DayOfWeek.Monday)
+        {
+            pastMonday = pastMonday.AddDays(-1);
+        }
+
+        // Complete a session on past Monday
+        var conn = await _db.GetConnectionAsync();
+        var session = new WorkoutSession
+        {
+            Title = "Грудь и трицепс",
+            StartedAt = pastMonday.AddHours(10).ToUniversalTime(),
+            FinishedAt = pastMonday.AddHours(11).ToUniversalTime()
+        };
+        await conn.InsertAsync(session);
+
+        var workouts = await _calendarService.GetWorkoutsForDateAsync(pastMonday);
+
+        Assert.Single(workouts);
+        Assert.Equal(CalendarWorkoutStatus.Completed, workouts[0].Status);
+        Assert.False(workouts[0].IsMissed);
+        Assert.True(workouts[0].IsCompleted);
+    }
+
+    [Fact]
+    public async Task GetIndicatorsForRange_PastUncompletedDay_HasMissedIsTrue()
+    {
+        var pastMonday = DateTime.Today.AddDays(-7);
+        while (pastMonday.DayOfWeek != DayOfWeek.Monday)
+        {
+            pastMonday = pastMonday.AddDays(-1);
+        }
+
+        var indicators = await _calendarService.GetIndicatorsForRangeAsync(pastMonday.AddDays(-1), pastMonday.AddDays(1));
+
+        Assert.True(indicators.ContainsKey(pastMonday));
+        Assert.True(indicators[pastMonday].HasMissed);
+        Assert.False(indicators[pastMonday].HasCompleted);
+    }
+
+    [Fact]
+    public async Task EdgeCases_YearTransition_MonthEnd_LeapYear()
+    {
+        // 1. Month end transition (e.g. October 31 -> November 1)
+        var oct31 = new DateTime(2025, 10, 31);
+        var nov1 = new DateTime(2025, 11, 1);
+        var res1 = await _scheduleRepo.RescheduleWorkoutAsync(_programWorkoutId, oct31, nov1);
+        Assert.Equal(nov1.Date, res1.Date);
+
+        // 2. Year boundary transition (December 31 -> January 1)
+        var dec31 = new DateTime(2025, 12, 31);
+        var jan1 = new DateTime(2026, 1, 1);
+        var res2 = await _scheduleRepo.RescheduleWorkoutAsync(_programWorkoutId, dec31, jan1);
+        Assert.Equal(jan1.Date, res2.Date);
+
+        // 3. Leap year (February 28, 2028 -> February 29, 2028)
+        var feb28 = new DateTime(2028, 2, 28);
+        var feb29 = new DateTime(2028, 2, 29);
+        var res3 = await _scheduleRepo.RescheduleWorkoutAsync(_programWorkoutId, feb28, feb29);
+        Assert.Equal(feb29.Date, res3.Date);
+    }
+
+    [Fact]
+    public async Task ScheduledWorkouts_ArePersistedToSqliteTable_CountIsGreaterThanZero()
+    {
+        var conn = await _db.GetConnectionAsync();
+
+        // Ensure range materialization
+        await _scheduleRepo.EnsureScheduledWorkoutsForRangeAsync(DateTime.Today, DateTime.Today.AddDays(14));
+
+        var count = await conn.Table<ScheduledWorkout>().CountAsync();
+        Assert.True(count > 0);
     }
 }

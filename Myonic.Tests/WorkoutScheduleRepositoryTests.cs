@@ -108,4 +108,60 @@ public class WorkoutScheduleRepositoryTests : IAsyncLifetime
         var (defaultDays, _) = await _scheduleRepo.GetPlannedDayIndicatorsForWeekAsync(friday.AddDays(-6), friday);
         Assert.DoesNotContain(DayOfWeek.Friday, defaultDays);
     }
+
+    [Fact]
+    public async Task RescheduleWorkoutAsync_MovesWorkoutToNewDate_AndExcludesFromOriginalDate()
+    {
+        var wednesday = DateTime.Today;
+        while (wednesday.DayOfWeek != DayOfWeek.Wednesday)
+        {
+            wednesday = wednesday.AddDays(1);
+        }
+        var thursday = wednesday.AddDays(1);
+
+        // Before reschedule: Wednesday has workout
+        var beforeWed = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(wednesday);
+        Assert.Single(beforeWed);
+
+        // Reschedule Wednesday -> Thursday
+        await _scheduleRepo.RescheduleWorkoutAsync(_programWorkoutId, wednesday, thursday);
+
+        // After reschedule: Wednesday has 0, Thursday has 1
+        var afterWed = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(wednesday);
+        Assert.Empty(afterWed);
+
+        var afterThu = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(thursday);
+        Assert.Single(afterThu);
+        Assert.Equal("Upper Body A", afterThu[0].WorkoutName);
+        Assert.Equal(thursday.Date, afterThu[0].ScheduledDate);
+        Assert.Equal(wednesday.Date, afterThu[0].OriginalDate);
+    }
+
+    [Fact]
+    public async Task CancelScheduledWorkout_ExcludesFromSchedule()
+    {
+        var wednesday = DateTime.Today;
+        while (wednesday.DayOfWeek != DayOfWeek.Wednesday)
+        {
+            wednesday = wednesday.AddDays(1);
+        }
+
+        await _scheduleRepo.CancelScheduledWorkoutAsync(_programWorkoutId, wednesday);
+
+        var planned = await _scheduleRepo.GetPlannedWorkoutsForDateAsync(wednesday);
+        Assert.Empty(planned);
+    }
+
+    [Fact]
+    public async Task EnsureScheduledWorkoutsForRange_InsertsRowsInSqliteTable()
+    {
+        var conn = await _db.GetConnectionAsync();
+        var fromDate = DateTime.Today;
+        var toDate = DateTime.Today.AddDays(21);
+
+        await _scheduleRepo.EnsureScheduledWorkoutsForRangeAsync(fromDate, toDate);
+
+        var count = await conn.Table<ScheduledWorkout>().CountAsync();
+        Assert.True(count > 0);
+    }
 }

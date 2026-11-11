@@ -106,11 +106,9 @@ public sealed class CalendarService : ICalendarService
                 continue;
             }
 
-            // Do not show separate cards just because a past planned date was uncompleted
-            if (targetDate < today)
-            {
-                continue;
-            }
+            var status = targetDate < today
+                ? CalendarWorkoutStatus.Missed
+                : CalendarWorkoutStatus.Planned;
 
             var summaryText = p.ExerciseCount > 0
                 ? $"{p.ExerciseCount} запланированных упражнений"
@@ -118,11 +116,12 @@ public sealed class CalendarService : ICalendarService
 
             result.Add(new CalendarWorkoutItem
             {
+                ScheduledWorkoutId = p.ScheduledWorkoutId,
                 ProgramWorkoutId = p.ProgramWorkoutId,
                 Title = pTitle,
                 ProgramName = p.ProgramName,
                 ScheduledDate = targetDate.Date,
-                Status = CalendarWorkoutStatus.Planned,
+                Status = status,
                 ExercisesCount = p.ExerciseCount,
                 SummaryText = summaryText,
                 PlannedExercises = p.Exercises
@@ -142,6 +141,7 @@ public sealed class CalendarService : ICalendarService
 
         // 2. Planned day indicators
         var (defaultDays, scheduledDates) = await _scheduleRepo.GetPlannedDayIndicatorsForWeekAsync(fromDate, toDate);
+        var (movedAwayDates, cancelledDates) = await _scheduleRepo.GetScheduleOverridesForRangeAsync(fromDate, toDate);
 
         var today = DateTime.Today;
         var indicators = new Dictionary<DateTime, CalendarDayIndicators>();
@@ -149,15 +149,30 @@ public sealed class CalendarService : ICalendarService
         for (var date = fromDate.Date; date <= toDate.Date; date = date.AddDays(1))
         {
             var hasCompleted = completedDates.Contains(date);
-            var isPlannedDay = scheduledDates.Contains(date) || defaultDays.Contains(date.DayOfWeek);
 
-            // A day has planned workout if isPlannedDay is true, not completed yet, and date >= today
-            var hasPlanned = isPlannedDay && !hasCompleted && date >= today;
+            var isScheduledDay = scheduledDates.Contains(date) ||
+                (defaultDays.Contains(date.DayOfWeek) && !movedAwayDates.Contains(date) && !cancelledDates.Contains(date));
+
+            var hasPlanned = false;
+            var hasMissed = false;
+
+            if (isScheduledDay && !hasCompleted)
+            {
+                if (date < today)
+                {
+                    hasMissed = true;
+                }
+                else
+                {
+                    hasPlanned = true;
+                }
+            }
 
             indicators[date] = new CalendarDayIndicators
             {
                 HasCompleted = hasCompleted,
-                HasPlanned = hasPlanned
+                HasPlanned = hasPlanned,
+                HasMissed = hasMissed
             };
         }
 
