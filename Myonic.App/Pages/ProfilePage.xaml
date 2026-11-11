@@ -104,6 +104,9 @@
                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                     <!-- Completed Workouts -->
                     <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenWorkoutHistoryCommand}" />
+                        </VerticalStackLayout.GestureRecognizers>
                         <Label Text="{Binding CompletedWorkoutsCount}"
                                TextColor="{DynamicResource KineticText}"
                                FontSize="20"
@@ -259,6 +262,30 @@
                    FontSize="12"
                    FontAttributes="Bold"
                    Margin="4,6,0,0" />
+
+            <!-- Workout History & Analytics Menu Item -->
+            <Border BackgroundColor="{DynamicResource KineticSurface}"
+                    Stroke="{DynamicResource KineticVolt}"
+                    StrokeThickness="1.5"
+                    StrokeShape="RoundRectangle 14"
+                    Padding="16,14">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenWorkoutHistoryCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                    <Label Text="📊" FontSize="22" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="История и Аналитика тренировок"
+                               TextColor="{DynamicResource KineticText}"
+                               FontSize="15"
+                               FontAttributes="Bold" />
+                        <Label Text="Графики объёма, частота, тоннаж и список сессий"
+                               TextColor="{DynamicResource KineticTextSecondary}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" TextColor="{DynamicResource KineticVolt}" FontSize="22" VerticalOptions="Center" />
+                </Grid>
+            </Border>
 
             <!-- Goals Menu Item -->
             <Border BackgroundColor="{DynamicResource KineticSurface}"
