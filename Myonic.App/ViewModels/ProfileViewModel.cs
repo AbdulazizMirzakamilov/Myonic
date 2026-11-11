@@ -205,6 +205,12 @@ public partial class ProfileViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public async Task OpenAnalyticsAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(WorkoutHistoryPage));
+    }
+
+    [RelayCommand]
     public async Task OpenSettingsAsync()
     {
         await Shell.Current.GoToAsync(nameof(SettingsPage));

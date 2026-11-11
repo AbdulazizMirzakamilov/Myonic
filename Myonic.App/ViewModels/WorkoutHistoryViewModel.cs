@@ -100,32 +100,7 @@ public partial class WorkoutHistoryViewModel : ObservableObject
     public async Task LoadHistoryAsync()
     {
         await ActiveWorkoutTracker.RefreshAsync();
-        var items = await _repository.GetPastSessionsAsync();
-        PastSessions.Clear();
-
-        foreach (var s in items)
-        {
-            var duration = s.FinishedAt - s.StartedAt;
-            var durationStr = duration.TotalHours >= 1
-                ? $"{(int)duration.TotalHours} ч {duration.Minutes} мин"
-                : $"{Math.Max(1, (int)duration.TotalMinutes)} мин";
-
-            PastSessions.Add(new PastWorkoutItem
-            {
-                Id = s.Id,
-                Title = s.Title,
-                DateText = s.StartedAt.ToLocalTime().ToString("d MMMM yyyy, HH:mm"),
-                DurationText = durationStr,
-                SummaryText = $"Упражнений: {s.ExerciseCount} • Подходов: {s.CompletedSetsCount}"
-            });
-        }
-
-        HasNoHistory = PastSessions.Count == 0;
-
-        if (IsAnalyticsMode)
-        {
-            await LoadAnalyticsAsync();
-        }
+        await LoadAnalyticsAsync();
     }
 
     [RelayCommand]

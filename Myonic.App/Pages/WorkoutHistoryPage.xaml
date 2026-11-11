@@ -7,7 +7,7 @@
              x:Class="Myonic.Pages.WorkoutHistoryPage"
              x:Name="HistoryPage"
              x:DataType="vm:WorkoutHistoryViewModel"
-             Title="История и Аналитика"
+             Title="Аналитика и Графики"
              BackgroundColor="{DynamicResource KineticCanvas}">
 
     <ContentPage.Resources>
@@ -15,7 +15,7 @@
         <conv:SwitcherTextColorConverter x:Key="SwitcherTextColorConverter" />
     </ContentPage.Resources>
 
-    <Grid Padding="16,14,16,16" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+    <Grid Padding="16,14,16,16" RowDefinitions="Auto,*" RowSpacing="12">
 
         <!-- 1. Active Workout Banner (Sticky Top) -->
         <Border IsVisible="{Binding ActiveWorkoutTracker.HasActiveSession}"
@@ -59,124 +59,10 @@
             </Grid>
         </Border>
 
-        <!-- 2. Mode Switcher: [ История ] | [ Аналитика и Графики ] -->
-        <Border Grid.Row="1"
-                BackgroundColor="{DynamicResource KineticSurface}"
-                Stroke="{DynamicResource KineticBorder}"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 12"
-                Padding="4">
-            <Grid ColumnDefinitions="*,*">
-                <!-- History Tab Button -->
-                <Border BackgroundColor="{Binding IsHistoryMode, Converter={StaticResource SwitcherBgColorConverter}}"
-                        StrokeShape="RoundRectangle 8"
-                        Padding="12,8">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SelectHistoryModeCommand}" />
-                    </Border.GestureRecognizers>
-                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
-                        <Label Text="📋" FontSize="14" VerticalOptions="Center" />
-                        <Label Text="История"
-                               TextColor="{Binding IsHistoryMode, Converter={StaticResource SwitcherTextColorConverter}}"
-                               FontSize="13"
-                               FontAttributes="Bold"
-                               VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-                </Border>
-
-                <!-- Analytics Tab Button -->
-                <Border Grid.Column="1"
-                        BackgroundColor="{Binding IsAnalyticsMode, Converter={StaticResource SwitcherBgColorConverter}}"
-                        StrokeShape="RoundRectangle 8"
-                        Padding="12,8">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding SelectAnalyticsModeCommand}" />
-                    </Border.GestureRecognizers>
-                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
-                        <Label Text="📊" FontSize="14" VerticalOptions="Center" />
-                        <Label Text="Аналитика и Графики"
-                               TextColor="{Binding IsAnalyticsMode, Converter={StaticResource SwitcherTextColorConverter}}"
-                               FontSize="13"
-                               FontAttributes="Bold"
-                               VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-                </Border>
-            </Grid>
-        </Border>
-
         <!-- ========================================== -->
-        <!-- 3A. HISTORY MODE VIEW                      -->
+        <!-- 2. ANALYTICS & CHARTS DASHBOARD            -->
         <!-- ========================================== -->
-        <Grid Grid.Row="2" IsVisible="{Binding IsHistoryMode}">
-            <!-- Empty state -->
-            <VerticalStackLayout IsVisible="{Binding HasNoHistory}"
-                                 VerticalOptions="Center"
-                                 HorizontalOptions="Center"
-                                 Spacing="8">
-                <Label Text="История пока пуста"
-                       TextColor="{DynamicResource KineticText}"
-                       FontFamily="OpenSansSemibold"
-                       FontSize="18"
-                       HorizontalTextAlignment="Center" />
-                <Label Text="Завершённые тренировки будут отображаться здесь."
-                       TextColor="{DynamicResource KineticTextMuted}"
-                       FontSize="13"
-                       HorizontalTextAlignment="Center" />
-            </VerticalStackLayout>
-
-            <!-- Sessions list -->
-            <CollectionView ItemsSource="{Binding PastSessions}" SelectionMode="None">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:PastWorkoutItem">
-                        <Border BackgroundColor="{DynamicResource KineticSurface}"
-                                Stroke="{DynamicResource KineticBorder}"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="16"
-                                Margin="0,0,0,10">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference HistoryPage}, Path=BindingContext.OpenSessionDetailCommand}"
-                                                      CommandParameter="{Binding .}" />
-                            </Border.GestureRecognizers>
-
-                            <VerticalStackLayout Spacing="6">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="{Binding Title}"
-                                           TextColor="{DynamicResource KineticText}"
-                                           FontFamily="OpenSansSemibold"
-                                           FontSize="16" />
-                                    <Label Grid.Column="1"
-                                           Text="{Binding DurationText}"
-                                           TextColor="{DynamicResource KineticEmerald}"
-                                           FontSize="13"
-                                           FontAttributes="Bold" />
-                                </Grid>
-
-                                <Label Text="{Binding DateText}"
-                                       TextColor="{DynamicResource KineticTextMuted}"
-                                       FontSize="12" />
-
-                                <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                                    <Label Text="{Binding SummaryText}"
-                                           TextColor="{DynamicResource KineticTextSecondary}"
-                                           FontSize="13" />
-                                    <Label Grid.Column="1"
-                                           Text="Разбор →"
-                                           TextColor="{DynamicResource KineticVolt}"
-                                           FontSize="12"
-                                           FontAttributes="Bold" />
-                                </Grid>
-                            </VerticalStackLayout>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </Grid>
-
-        <!-- ========================================== -->
-        <!-- 3B. ANALYTICS & CHARTS MODE VIEW           -->
-        <!-- ========================================== -->
-        <ScrollView Grid.Row="2" IsVisible="{Binding IsAnalyticsMode}">
+        <ScrollView Grid.Row="1">
             <VerticalStackLayout Spacing="16" Padding="0,0,0,32">
 
                 <!-- Period Filter Pills -->
