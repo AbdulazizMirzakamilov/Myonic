@@ -6,6 +6,8 @@ using Myonic.Core.Services;
 
 #if ANDROID
 using Myonic.Platforms.Android;
+#elif WINDOWS
+using Myonic.Platforms.Windows;
 #endif
 
 namespace Myonic.Services;
@@ -44,12 +46,28 @@ public class NotificationService : INotificationService
             }
             return status == PermissionStatus.Granted;
         }
-#endif
         return true;
+#elif WINDOWS
+        try
+        {
+            return WindowsNotificationHelper.AreNotificationsEnabled();
+        }
+        catch
+        {
+            return true;
+        }
+#else
+        return await Task.FromResult(true);
+#endif
     }
 
     public async Task ShowNotificationAsync(int id, string title, string body, NotificationCategory category)
     {
+        if (!IsNotificationEnabled(category))
+        {
+            return;
+        }
+
 #if ANDROID
         try
         {
@@ -59,9 +77,18 @@ public class NotificationService : INotificationService
         {
             System.Diagnostics.Debug.WriteLine($"Android ShowNotification error: {ex.Message}");
         }
+#elif WINDOWS
+        try
+        {
+            WindowsNotificationHelper.ShowNotification(id, title, body, category);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Windows ShowNotification error: {ex.Message}");
+        }
 #endif
 
-        // In-app visual toast feedback across platforms
+        // Внутриприкладное уведомление для мгновенной обратной связи при открытом окне
         try
         {
             await MainThread.InvokeOnMainThreadAsync(async () =>
@@ -78,6 +105,16 @@ public class NotificationService : INotificationService
 
     public async Task ScheduleNotificationAsync(int id, string title, string body, DateTime notifyTime, NotificationCategory category)
     {
+        if (!IsNotificationEnabled(category))
+        {
+            return;
+        }
+
+        if (notifyTime <= DateTime.Now)
+        {
+            return;
+        }
+
 #if ANDROID
         try
         {
@@ -86,6 +123,15 @@ public class NotificationService : INotificationService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Android ScheduleNotification error: {ex.Message}");
+        }
+#elif WINDOWS
+        try
+        {
+            WindowsNotificationHelper.ScheduleNotification(id, title, body, notifyTime, category);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Windows ScheduleNotification error: {ex.Message}");
         }
 #endif
         await Task.CompletedTask;
@@ -102,12 +148,31 @@ public class NotificationService : INotificationService
         {
             System.Diagnostics.Debug.WriteLine($"Android CancelNotification error: {ex.Message}");
         }
+#elif WINDOWS
+        try
+        {
+            WindowsNotificationHelper.CancelNotification(id);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Windows CancelNotification error: {ex.Message}");
+        }
 #endif
         await Task.CompletedTask;
     }
 
     public async Task CancelAllAsync()
     {
+#if WINDOWS
+        try
+        {
+            WindowsNotificationHelper.CancelAll();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Windows CancelAll error: {ex.Message}");
+        }
+#endif
         await CancelNotificationAsync(NotificationIds.UpcomingWorkoutId);
         await CancelNotificationAsync(NotificationIds.MissedWorkoutId);
         await CancelNotificationAsync(NotificationIds.WeightReminderId);
@@ -132,12 +197,12 @@ public class NotificationService : INotificationService
                 todayMeasurement,
                 _settingsService);
 
-            // Cancel any previously armed alarms for these recurring IDs
+            // Отменяем ранее запланированные системные напоминания для исключения дублирования
             await CancelNotificationAsync(NotificationIds.UpcomingWorkoutId);
             await CancelNotificationAsync(NotificationIds.MissedWorkoutId);
             await CancelNotificationAsync(NotificationIds.WeightReminderId);
 
-            // Re-arm alarms for calculated schedule
+            // Регистрируем вычисленные уведомления
             foreach (var item in itemsToSchedule)
             {
                 await ScheduleNotificationAsync(item.Id, item.Title, item.Body, item.ScheduledTime, item.Category);
@@ -148,4 +213,12 @@ public class NotificationService : INotificationService
             System.Diagnostics.Debug.WriteLine($"SyncScheduledRemindersAsync error: {ex.Message}");
         }
     }
+
+    private bool IsNotificationEnabled(NotificationCategory category) => category switch
+    {
+        NotificationCategory.UpcomingWorkout => _settingsService.EnableUpcomingWorkoutReminders,
+        NotificationCategory.MissedWorkout => _settingsService.EnableMissedWorkoutAlerts,
+        NotificationCategory.WeightMeasurement => _settingsService.EnableWeightReminders,
+        _ => true
+    };
 }

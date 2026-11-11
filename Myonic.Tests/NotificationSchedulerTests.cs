@@ -210,4 +210,47 @@ public class NotificationSchedulerTests
         // Assert
         Assert.Empty(result);
     }
+
+    [Fact]
+    public void Calculate_WhenOnlyUpcomingDisabled_MissedAndWeightStillScheduled()
+    {
+        var now = new DateTime(2026, 11, 9, 6, 0, 0);
+        var settings = new TestNotificationSettings
+        {
+            EnableUpcomingWorkoutReminders = false,
+            EnableMissedWorkoutAlerts = true,
+            EnableWeightReminders = true
+        };
+        var todayPlanned = new List<PlannedWorkoutSummary>
+        {
+            new() { WorkoutName = "Спина + Бицепс" }
+        };
+
+        var result = _scheduler.CalculateScheduledNotifications(
+            now, todayPlanned, [], [], null, settings);
+
+        Assert.DoesNotContain(result, n => n.Id == NotificationIds.UpcomingWorkoutId);
+        Assert.Contains(result, n => n.Id == NotificationIds.MissedWorkoutId);
+        Assert.Contains(result, n => n.Id == NotificationIds.WeightReminderId);
+    }
+
+    [Fact]
+    public void Calculate_EnsuresNoDuplicateIdsInOutputList()
+    {
+        var now = new DateTime(2026, 11, 9, 6, 0, 0);
+        var todayPlanned = new List<PlannedWorkoutSummary>
+        {
+            new() { WorkoutName = "Ноги" }
+        };
+        var tomorrowPlanned = new List<PlannedWorkoutSummary>
+        {
+            new() { WorkoutName = "Плечи" }
+        };
+
+        var result = _scheduler.CalculateScheduledNotifications(
+            now, todayPlanned, tomorrowPlanned, [], null, _settings);
+
+        var idGroups = result.GroupBy(n => n.Id);
+        Assert.All(idGroups, g => Assert.Single(g));
+    }
 }

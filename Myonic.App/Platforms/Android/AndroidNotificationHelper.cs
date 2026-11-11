@@ -1,3 +1,4 @@
+#if ANDROID
 #pragma warning disable CA1416
 
 using Android.App;
@@ -14,6 +15,17 @@ public static class AndroidNotificationHelper
     public const string ChannelMissed = "channel_missed";
     public const string ChannelMeasurements = "channel_measurements";
     public const string ChannelGeneral = "channel_general";
+
+    public static bool IsNotificationCategoryEnabled(NotificationCategory category)
+    {
+        return category switch
+        {
+            NotificationCategory.UpcomingWorkout => Microsoft.Maui.Storage.Preferences.Get("notif_enable_upcoming_workouts", true),
+            NotificationCategory.MissedWorkout => Microsoft.Maui.Storage.Preferences.Get("notif_enable_missed_workouts", true),
+            NotificationCategory.WeightMeasurement => Microsoft.Maui.Storage.Preferences.Get("notif_enable_weight_reminders", true),
+            _ => true
+        };
+    }
 
     public static void EnsureChannels(Context context)
     {
@@ -48,6 +60,11 @@ public static class AndroidNotificationHelper
 
     public static void ShowNotification(Context context, int id, string title, string body, NotificationCategory category)
     {
+        if (!IsNotificationCategoryEnabled(category))
+        {
+            return;
+        }
+
         EnsureChannels(context);
 
         string channelId = category switch
@@ -75,13 +92,16 @@ public static class AndroidNotificationHelper
             icon = global::Android.Resource.Drawable.IcDialogInfo;
         }
 
-        var builder = new NotificationCompat.Builder(context, channelId)
-            .SetSmallIcon(icon)
-            .SetContentTitle(title)
-            .SetContentText(body)
-            .SetStyle(new NotificationCompat.BigTextStyle().BigText(body))
-            .SetPriority(NotificationCompat.PriorityHigh)
-            .SetAutoCancel(true);
+        var builder = new NotificationCompat.Builder(context, channelId);
+        builder.SetSmallIcon(icon);
+        builder.SetContentTitle(title);
+        builder.SetContentText(body);
+
+        var bigTextStyle = new NotificationCompat.BigTextStyle();
+        bigTextStyle.BigText(body);
+        builder.SetStyle(bigTextStyle);
+        builder.SetPriority(NotificationCompat.PriorityHigh);
+        builder.SetAutoCancel(true);
 
         if (pendingIntent != null)
         {
@@ -89,15 +109,34 @@ public static class AndroidNotificationHelper
         }
 
         var manager = NotificationManagerCompat.From(context);
-        manager?.Notify(id, builder.Build());
+        if (manager != null)
+        {
+            using var builtNotification = builder.Build();
+            if (builtNotification != null)
+            {
+                manager.Notify(id, builtNotification);
+            }
+        }
     }
 
     public static void ScheduleNotification(Context context, int id, string title, string body, DateTime notifyTime, NotificationCategory category)
     {
+        if (!IsNotificationCategoryEnabled(category))
+        {
+            return;
+        }
+
         EnsureChannels(context);
 
         var utcTime = notifyTime.ToUniversalTime();
         var triggerMillis = (long)(utcTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+        var nowMillis = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        // Не планируем устаревшие уведомления в прошлом
+        if (triggerMillis <= nowMillis + 2000)
+        {
+            return;
+        }
 
         var intent = new Intent(context, typeof(NotificationAlarmReceiver));
         intent.PutExtra("id", id);
@@ -170,3 +209,4 @@ public static class AndroidNotificationHelper
 }
 
 #pragma warning restore CA1416
+#endif
