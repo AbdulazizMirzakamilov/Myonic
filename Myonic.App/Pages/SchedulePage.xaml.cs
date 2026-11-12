@@ -12,19 +12,19 @@ public partial class SchedulePage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+    }
 
-        _viewModel.RequestRescheduleDateSelection += workout =>
+    private void OnRequestRescheduleDateSelection(CalendarWorkoutItem workout)
+    {
+        _reschedulingWorkout = workout;
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            _reschedulingWorkout = workout;
-            MainThread.BeginInvokeOnMainThread(() =>
+            if (HiddenDatePicker != null)
             {
-                if (HiddenDatePicker != null)
-                {
-                    HiddenDatePicker.Date = workout.ScheduledDate ?? DateTime.Today;
-                    HiddenDatePicker.Focus();
-                }
-            });
-        };
+                HiddenDatePicker.Date = workout.ScheduledDate ?? DateTime.Today;
+                HiddenDatePicker.Focus();
+            }
+        });
     }
 
     private async void OnRescheduleDateSelected(object? sender, DateChangedEventArgs e)
@@ -40,6 +40,8 @@ public partial class SchedulePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _viewModel.RequestRescheduleDateSelection -= OnRequestRescheduleDateSelection;
+        _viewModel.RequestRescheduleDateSelection += OnRequestRescheduleDateSelection;
         _viewModel.NotifyAllThemeElements();
         await _viewModel.RefreshCalendarAsync();
     }
@@ -47,8 +49,7 @@ public partial class SchedulePage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        // Do not unsubscribe singleton ViewModel from theme changes,
-        // so it seamlessly reflects themes when user toggles themes in Settings
+        _viewModel.RequestRescheduleDateSelection -= OnRequestRescheduleDateSelection;
     }
 
     private async void OnDayTapped(object? sender, TappedEventArgs e)

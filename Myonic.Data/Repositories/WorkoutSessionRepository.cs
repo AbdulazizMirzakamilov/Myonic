@@ -176,12 +176,24 @@ public sealed class WorkoutSessionRepository : IWorkoutSessionRepository
             Comment = session.Comment
         };
 
+        var allSets = workoutExercises.Count > 0
+            ? await db.QueryAsync<SetEntry>(
+                """
+                SELECT se.* FROM SetEntry se
+                INNER JOIN WorkoutExercise we ON we.Id = se.WorkoutExerciseId
+                WHERE we.WorkoutSessionId = ?
+                ORDER BY se.WorkoutExerciseId, se.SetNumber ASC
+                """,
+                sessionId)
+            : [];
+
+        var setsByExercise = allSets
+            .GroupBy(s => s.WorkoutExerciseId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
         foreach (var row in workoutExercises)
         {
-            var sets = await db.Table<SetEntry>()
-                .Where(s => s.WorkoutExerciseId == row.Id)
-                .OrderBy(s => s.SetNumber)
-                .ToListAsync();
+            var sets = setsByExercise.TryGetValue(row.Id, out var sList) ? sList : [];
 
             var planText = string.Empty;
             if (row.PlannedSets.HasValue && row.PlannedReps.HasValue)

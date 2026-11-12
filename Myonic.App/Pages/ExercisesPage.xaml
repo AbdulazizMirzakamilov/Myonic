@@ -168,9 +168,12 @@
             </HorizontalStackLayout>
         </ScrollView>
 
-        <!-- 5. Exercises List -->
+        <!-- 5. Exercises List (Virtualized with progressive pagination) -->
         <CollectionView Grid.Row="5"
                         ItemsSource="{Binding Exercises}"
+                        ItemSizingStrategy="MeasureFirstItem"
+                        RemainingItemsThreshold="5"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreExercisesCommand}"
                         SelectionMode="None">
             <CollectionView.EmptyView>
                 <Border BackgroundColor="{DynamicResource KineticSurface}"

@@ -7,6 +7,7 @@ public class PlannedExerciseItem
     public int ExerciseId { get; set; }
     public string ExerciseName { get; set; } = string.Empty;
     public string PlanText { get; set; } = string.Empty;
+    public string TargetSummary => PlanText;
 }
 
 public class PlannedWorkoutSummary

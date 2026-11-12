@@ -10,6 +10,13 @@ public sealed class DataBackupService : IDataBackupService
 {
     private static readonly byte[] SqliteHeaderMagic = Encoding.ASCII.GetBytes("SQLite format 3\0");
 
+    private static readonly JsonSerializerOptions ExportJsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     private readonly MyonicDatabase _database;
 
     public DataBackupService(MyonicDatabase database)
@@ -61,15 +68,6 @@ public sealed class DataBackupService : IDataBackupService
             Goals = goals
         };
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-
-        var json = JsonSerializer.Serialize(root, options);
-
         if (string.IsNullOrWhiteSpace(targetFilePath))
         {
             var baseDir = Path.GetDirectoryName(_database.DatabasePath) ?? "";
@@ -86,7 +84,10 @@ public sealed class DataBackupService : IDataBackupService
             }
         }
 
-        await File.WriteAllTextAsync(targetFilePath, json, Encoding.UTF8);
+        await using (var fileStream = File.Create(targetFilePath))
+        {
+            await JsonSerializer.SerializeAsync(fileStream, root, ExportJsonOptions);
+        }
         return targetFilePath;
     }
 

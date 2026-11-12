@@ -335,4 +335,43 @@ public class WorkoutSessionRepositoryTests : IAsyncLifetime
         var result = WorkoutSessionRepository.ResolveMuscleGroupDisplayName(0, "Кастомное редкое упражнение");
         Assert.Equal("Не указана", result);
     }
+
+    [Fact]
+    public async Task GetSessionDetailAsync_MultipleExercisesAndSets_CorrectlyGroupsBatchedSets()
+    {
+        var sessionId = await _sessionRepo.StartSessionFromProgramWorkoutAsync(_programWorkoutId);
+        var conn = await _db.GetConnectionAsync();
+
+        var ex2 = new Exercise { Name = "Incline Dumbbell Press", Type = ExerciseType.Isolation };
+        await conn.InsertAsync(ex2);
+
+        var we2 = new WorkoutExercise { WorkoutSessionId = sessionId, ExerciseId = ex2.Id, Order = 2 };
+        await conn.InsertAsync(we2);
+
+        // Session already has one exercise from program (we1). Add sets to both exercises.
+        var exercises = await conn.Table<WorkoutExercise>().Where(w => w.WorkoutSessionId == sessionId).ToListAsync();
+        var we1 = exercises.First(e => e.ExerciseId == _exerciseId);
+
+        await conn.InsertAsync(new SetEntry { WorkoutExerciseId = we1.Id, SetNumber = 1, Weight = 80, Reps = 8 });
+        await conn.InsertAsync(new SetEntry { WorkoutExerciseId = we1.Id, SetNumber = 2, Weight = 85, Reps = 6 });
+
+        await conn.InsertAsync(new SetEntry { WorkoutExerciseId = we2.Id, SetNumber = 1, Weight = 30, Reps = 10 });
+        await conn.InsertAsync(new SetEntry { WorkoutExerciseId = we2.Id, SetNumber = 2, Weight = 32, Reps = 10 });
+        await conn.InsertAsync(new SetEntry { WorkoutExerciseId = we2.Id, SetNumber = 3, Weight = 34, Reps = 8 });
+
+        var detail = await _sessionRepo.GetSessionDetailAsync(sessionId);
+        Assert.NotNull(detail);
+        Assert.Equal(2, detail.Exercises.Count);
+
+        var loadedWe1 = detail.Exercises.First(e => e.WorkoutExerciseId == we1.Id);
+        Assert.Equal(2, loadedWe1.Sets.Count);
+        Assert.Equal(80, loadedWe1.Sets[0].Weight);
+        Assert.Equal(85, loadedWe1.Sets[1].Weight);
+
+        var loadedWe2 = detail.Exercises.First(e => e.WorkoutExerciseId == we2.Id);
+        Assert.Equal(3, loadedWe2.Sets.Count);
+        Assert.Equal(30, loadedWe2.Sets[0].Weight);
+        Assert.Equal(32, loadedWe2.Sets[1].Weight);
+        Assert.Equal(34, loadedWe2.Sets[2].Weight);
     }
+}

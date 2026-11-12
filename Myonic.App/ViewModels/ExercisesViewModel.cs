@@ -37,9 +37,13 @@ internal static class ExerciseTypeExtensions
     };
 }
 
-public partial class ExercisesViewModel : ObservableObject, IHasActiveWorkoutTracker
+public partial class ExercisesViewModel : ObservableObject, IHasActiveWorkoutTracker, IDisposable
 {
+    private const int PageSize = 30;
     private readonly IExerciseRepository _repository;
+    private readonly List<ExerciseListItem> _allFilteredExercises = [];
+    private int _loadedCount;
+    private CancellationTokenSource? _searchCts;
     public IActiveWorkoutTracker? ActiveWorkoutTracker { get; }
 
     public ExercisesViewModel(
@@ -93,7 +97,34 @@ public partial class ExercisesViewModel : ObservableObject, IHasActiveWorkoutTra
         MuscleGroupFilters.Add(new MuscleGroupFilterItem { Group = MuscleGroup.Abs, DisplayName = "Пресс" });
     }
 
-    partial void OnSearchTextChanged(string value) => _ = LoadAsync();
+    partial void OnSearchTextChanged(string value)
+    {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(250, token);
+                if (!token.IsCancellationRequested)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(LoadAsync);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+    }
 
     [RelayCommand]
     public void SelectFilter(string indexStr)
@@ -132,6 +163,19 @@ public partial class ExercisesViewModel : ObservableObject, IHasActiveWorkoutTra
     }
 
     [RelayCommand]
+    public void LoadMoreExercises()
+    {
+        if (_loadedCount >= _allFilteredExercises.Count) return;
+
+        var countToTake = Math.Min(PageSize, _allFilteredExercises.Count - _loadedCount);
+        for (int i = 0; i < countToTake; i++)
+        {
+            Exercises.Add(_allFilteredExercises[_loadedCount + i]);
+        }
+        _loadedCount += countToTake;
+    }
+
+    [RelayCommand]
     public async Task LoadAsync()
     {
         ExerciseType? typeFilter = FilterIndex switch
@@ -143,14 +187,14 @@ public partial class ExercisesViewModel : ObservableObject, IHasActiveWorkoutTra
 
         var items = await _repository.GetAllAsync(SearchText, SelectedMuscleGroup, typeFilter);
 
-        Exercises.Clear();
+        _allFilteredExercises.Clear();
         foreach (var e in items)
         {
             var hasMuscleGroup = e.MuscleGroup != MuscleGroup.None;
             var muscleGroupText = hasMuscleGroup ? e.MuscleGroup.ToDisplayText() : string.Empty;
             var secondaryText = e.SecondaryMuscleGroup.HasValue ? e.SecondaryMuscleGroup.Value.ToDisplayText() : null;
 
-            Exercises.Add(new ExerciseListItem(
+            _allFilteredExercises.Add(new ExerciseListItem(
                 e.Id,
                 e.Name,
                 e.Type.ToDisplayText(),
@@ -161,9 +205,16 @@ public partial class ExercisesViewModel : ObservableObject, IHasActiveWorkoutTra
                 secondaryText));
         }
 
-        HasExercises = Exercises.Count > 0;
+        Exercises.Clear();
+        _loadedCount = Math.Min(PageSize, _allFilteredExercises.Count);
+        for (int i = 0; i < _loadedCount; i++)
+        {
+            Exercises.Add(_allFilteredExercises[i]);
+        }
+
+        HasExercises = _allFilteredExercises.Count > 0;
         HasNoExercises = !HasExercises;
-        CountText = $"Всего: {Exercises.Count}";
+        CountText = $"Всего: {_allFilteredExercises.Count}";
     }
 
     [RelayCommand]
