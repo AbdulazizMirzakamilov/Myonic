@@ -19,6 +19,7 @@ public class NotificationService : INotificationService
     private readonly IWorkoutScheduleRepository _scheduleRepository;
     private readonly IWorkoutSessionRepository _sessionRepository;
     private readonly IBodyMeasurementRepository _measurementRepository;
+    private readonly SemaphoreSlim _syncLock = new(1, 1);
 
     public NotificationService(
         INotificationSettingsService settingsService,
@@ -181,6 +182,12 @@ public class NotificationService : INotificationService
 
     public async Task SyncScheduledRemindersAsync()
     {
+        if (!await _syncLock.WaitAsync(0))
+        {
+            // Another sync is currently in progress; avoid redundant overlapping executions
+            return;
+        }
+
         try
         {
             var now = DateTime.Now;
@@ -211,6 +218,10 @@ public class NotificationService : INotificationService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"SyncScheduledRemindersAsync error: {ex.Message}");
+        }
+        finally
+        {
+            _syncLock.Release();
         }
     }
 

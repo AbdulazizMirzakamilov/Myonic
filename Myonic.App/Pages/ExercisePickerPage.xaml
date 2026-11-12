@@ -87,9 +87,12 @@
             </HorizontalStackLayout>
         </ScrollView>
 
-        <!-- 4. Exercises List -->
+        <!-- 4. Exercises List (Virtualized with progressive pagination) -->
         <CollectionView Grid.Row="3"
                         ItemsSource="{Binding FilteredExercises}"
+                        ItemSizingStrategy="MeasureFirstItem"
+                        RemainingItemsThreshold="5"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreExercisesCommand}"
                         SelectionMode="None">
             <CollectionView.EmptyView>
                 <VerticalStackLayout Padding="32" Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">

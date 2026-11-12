@@ -174,6 +174,7 @@
                         <!-- Day 0: Monday -->
                         <Border Grid.Column="0"
                                 BindingContext="{Binding Day0}"
+                                x:DataType="vm:CalendarDayItem"
                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
                                 StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}}"
@@ -196,6 +197,7 @@
                         <!-- Day 1: Tuesday -->
                         <Border Grid.Column="1"
                                 BindingContext="{Binding Day1}"
+                                x:DataType="vm:CalendarDayItem"
                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
                                 StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}}"
@@ -218,6 +220,7 @@
                         <!-- Day 2: Wednesday -->
                         <Border Grid.Column="2"
                                 BindingContext="{Binding Day2}"
+                                x:DataType="vm:CalendarDayItem"
                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
                                 StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}}"
@@ -240,6 +243,7 @@
                         <!-- Day 3: Thursday -->
                         <Border Grid.Column="3"
                                 BindingContext="{Binding Day3}"
+                                x:DataType="vm:CalendarDayItem"
                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
                                 StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}}"
@@ -262,6 +266,7 @@
                         <!-- Day 4: Friday -->
                         <Border Grid.Column="4"
                                 BindingContext="{Binding Day4}"
+                                x:DataType="vm:CalendarDayItem"
                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
                                 StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}}"
@@ -284,6 +289,7 @@
                         <!-- Day 5: Saturday -->
                         <Border Grid.Column="5"
                                 BindingContext="{Binding Day5}"
+                                x:DataType="vm:CalendarDayItem"
                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
                                 StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}}"
@@ -306,6 +312,7 @@
                         <!-- Day 6: Sunday -->
                         <Border Grid.Column="6"
                                 BindingContext="{Binding Day6}"
+                                x:DataType="vm:CalendarDayItem"
                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
                                 StrokeThickness="{Binding IsSelected, Converter={StaticResource DayStrokeConverter}}"
@@ -351,6 +358,7 @@
                                         <!-- Day 0: Monday -->
                                         <Border Grid.Column="0"
                                                 BindingContext="{Binding Day0}"
+                                                x:DataType="vm:CalendarDayItem"
                                                 Opacity="{Binding IsCurrentMonth, Converter={StaticResource MonthDayOpacityConverter}}"
                                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
@@ -373,6 +381,7 @@
                                         <!-- Day 1: Tuesday -->
                                         <Border Grid.Column="1"
                                                 BindingContext="{Binding Day1}"
+                                                x:DataType="vm:CalendarDayItem"
                                                 Opacity="{Binding IsCurrentMonth, Converter={StaticResource MonthDayOpacityConverter}}"
                                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
@@ -395,6 +404,7 @@
                                         <!-- Day 2: Wednesday -->
                                         <Border Grid.Column="2"
                                                 BindingContext="{Binding Day2}"
+                                                x:DataType="vm:CalendarDayItem"
                                                 Opacity="{Binding IsCurrentMonth, Converter={StaticResource MonthDayOpacityConverter}}"
                                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
@@ -417,6 +427,7 @@
                                         <!-- Day 3: Thursday -->
                                         <Border Grid.Column="3"
                                                 BindingContext="{Binding Day3}"
+                                                x:DataType="vm:CalendarDayItem"
                                                 Opacity="{Binding IsCurrentMonth, Converter={StaticResource MonthDayOpacityConverter}}"
                                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
@@ -439,6 +450,7 @@
                                         <!-- Day 4: Friday -->
                                         <Border Grid.Column="4"
                                                 BindingContext="{Binding Day4}"
+                                                x:DataType="vm:CalendarDayItem"
                                                 Opacity="{Binding IsCurrentMonth, Converter={StaticResource MonthDayOpacityConverter}}"
                                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
@@ -461,6 +473,7 @@
                                         <!-- Day 5: Saturday -->
                                         <Border Grid.Column="5"
                                                 BindingContext="{Binding Day5}"
+                                                x:DataType="vm:CalendarDayItem"
                                                 Opacity="{Binding IsCurrentMonth, Converter={StaticResource MonthDayOpacityConverter}}"
                                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"
@@ -483,6 +496,7 @@
                                         <!-- Day 6: Sunday -->
                                         <Border Grid.Column="6"
                                                 BindingContext="{Binding Day6}"
+                                                x:DataType="vm:CalendarDayItem"
                                                 Opacity="{Binding IsCurrentMonth, Converter={StaticResource MonthDayOpacityConverter}}"
                                                 BackgroundColor="{Binding IsSelected, Converter={StaticResource DayBgColorConverter}}"
                                                 Stroke="{Binding IsSelected, Converter={StaticResource DayStrokeColorConverter}}"

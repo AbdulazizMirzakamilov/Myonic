@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -204,6 +205,14 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
             WeekDays.Add(new CalendarDayItem());
         }
 
+        for (int i = 0; i < 6; i++)
+        {
+            MonthWeeks.Add(new CalendarWeekRowItem(
+                new CalendarDayItem(), new CalendarDayItem(), new CalendarDayItem(),
+                new CalendarDayItem(), new CalendarDayItem(), new CalendarDayItem(),
+                new CalendarDayItem()));
+        }
+
         UpdateHeaders();
 
         _themeChangedHandler = _ =>
@@ -261,6 +270,8 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     {
         if (_isDisposed) return;
         _isDisposed = true;
+        _preloadCts?.Cancel();
+        _preloadCts?.Dispose();
         UnsubscribeThemeEvents();
     }
 
@@ -296,15 +307,26 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         await RefreshCalendarAsync();
     }
 
+    private readonly ConcurrentDictionary<DateTime, CalendarDayIndicators> _indicatorsCache = new();
+    private CancellationTokenSource? _preloadCts;
+    private int _refreshCalendarRequestId;
+    private int _loadWorkoutsRequestId;
+
+    public void InvalidateCalendarCache()
+    {
+        _indicatorsCache.Clear();
+    }
+
     [RelayCommand]
     public async Task RefreshCalendarAsync()
     {
-        if (IsLoading) return;
+        var requestId = Interlocked.Increment(ref _refreshCalendarRequestId);
 
         IsLoading = true;
         try
         {
             await ActiveWorkoutTracker.RefreshAsync();
+            if (requestId != _refreshCalendarRequestId) return;
 
             var current = CurrentPeriodDate;
             UpdateHeaders();
@@ -327,100 +349,163 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
             var daysAfter = lastDow == 0 ? 0 : 7 - lastDow;
             var gridEnd = lastOfMonth.AddDays(daysAfter);
 
-            // Fetch indicators for the union range
             var overallStart = weekStart < gridStart ? weekStart : gridStart;
             var overallEnd = weekEnd > gridEnd ? weekEnd : gridEnd;
+
+            // Check if entire requested range is available in in-memory cache
+            bool allCached = true;
+            for (var d = overallStart.Date; d <= overallEnd.Date; d = d.AddDays(1))
+            {
+                if (!_indicatorsCache.ContainsKey(d))
+                {
+                    allCached = false;
+                    break;
+                }
+            }
+
+            if (allCached)
+            {
+                // Instant zero-latency render from pre-cached memory
+                ApplyIndicatorsToView(current, weekStart, gridStart, gridEnd, _indicatorsCache);
+            }
+
+            // Fetch fresh indicators for union range from service
             var indicators = await _calendarService.GetIndicatorsForRangeAsync(overallStart, overallEnd);
+            if (requestId != _refreshCalendarRequestId) return;
 
-            // 3. Populate 7 days of WeekDays
-            var dayNames = new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
-            for (int i = 0; i < 7; i++)
+            foreach (var kvp in indicators)
             {
-                var d = weekStart.AddDays(i);
-                var item = WeekDays[i];
-
-                item.Date = d;
-                item.DayName = dayNames[i];
-                item.DayNumber = d.Day.ToString();
-                item.IsToday = d.Date == DateTime.Today;
-                item.IsSelected = d.Date == SelectedDate.Date;
-                item.IsCurrentMonth = d.Month == current.Month;
-
-                if (indicators.TryGetValue(d.Date, out var ind))
-                {
-                    item.HasCompletedWorkout = ind.HasCompleted;
-                    item.HasPlannedWorkout = ind.HasPlanned;
-                    item.HasMissedWorkout = ind.HasMissed;
-                }
-                else
-                {
-                    item.HasCompletedWorkout = false;
-                    item.HasPlannedWorkout = false;
-                    item.HasMissedWorkout = false;
-                }
-
-                item.NotifyThemeChanged();
+                _indicatorsCache[kvp.Key] = kvp.Value;
             }
 
-            OnPropertyChanged(nameof(Day0));
-            OnPropertyChanged(nameof(Day1));
-            OnPropertyChanged(nameof(Day2));
-            OnPropertyChanged(nameof(Day3));
-            OnPropertyChanged(nameof(Day4));
-            OnPropertyChanged(nameof(Day5));
-            OnPropertyChanged(nameof(Day6));
+            ApplyIndicatorsToView(current, weekStart, gridStart, gridEnd, indicators);
 
-            // 4. Populate Month Grid (MonthWeeks)
-            MonthWeeks.Clear();
-            var totalDays = (gridEnd - gridStart).Days + 1;
-            var numWeeks = totalDays / 7;
-            var curDate = gridStart;
-
-            for (int w = 0; w < numWeeks; w++)
-            {
-                var rowDays = new CalendarDayItem[7];
-                for (int d = 0; d < 7; d++)
-                {
-                    var isSelected = curDate.Date == SelectedDate.Date;
-                    var isToday = curDate.Date == DateTime.Today;
-                    var isCurrentMonth = curDate.Month == current.Month;
-
-                    var hasCompleted = false;
-                    var hasPlanned = false;
-                    var hasMissed = false;
-
-                    if (indicators.TryGetValue(curDate.Date, out var ind))
-                    {
-                        hasCompleted = ind.HasCompleted;
-                        hasPlanned = ind.HasPlanned;
-                        hasMissed = ind.HasMissed;
-                    }
-
-                    rowDays[d] = new CalendarDayItem
-                    {
-                        Date = curDate,
-                        DayName = dayNames[d],
-                        DayNumber = curDate.Day.ToString(),
-                        IsToday = isToday,
-                        IsSelected = isSelected,
-                        IsCurrentMonth = isCurrentMonth,
-                        HasCompletedWorkout = hasCompleted,
-                        HasPlannedWorkout = hasPlanned,
-                        HasMissedWorkout = hasMissed
-                    };
-
-                    curDate = curDate.AddDays(1);
-                }
-
-                MonthWeeks.Add(new CalendarWeekRowItem(
-                    rowDays[0], rowDays[1], rowDays[2], rowDays[3], rowDays[4], rowDays[5], rowDays[6]));
-            }
+            // Background pre-cache of adjacent months (current ± 1 month)
+            TriggerPreloadAdjacentMonths(current);
 
             await LoadWorkoutsForSelectedDateAsync();
         }
         finally
         {
-            IsLoading = false;
+            if (requestId == _refreshCalendarRequestId)
+            {
+                IsLoading = false;
+            }
+        }
+    }
+
+    private void ApplyIndicatorsToView(
+        DateTime current,
+        DateTime weekStart,
+        DateTime gridStart,
+        DateTime gridEnd,
+        IReadOnlyDictionary<DateTime, CalendarDayIndicators> indicators)
+    {
+        var dayNames = new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
+        for (int i = 0; i < 7; i++)
+        {
+            var d = weekStart.AddDays(i);
+            var item = WeekDays[i];
+            UpdateDayItem(item, d, dayNames[i], current.Month, indicators);
+        }
+
+        OnPropertyChanged(nameof(Day0));
+        OnPropertyChanged(nameof(Day1));
+        OnPropertyChanged(nameof(Day2));
+        OnPropertyChanged(nameof(Day3));
+        OnPropertyChanged(nameof(Day4));
+        OnPropertyChanged(nameof(Day5));
+        OnPropertyChanged(nameof(Day6));
+
+        var totalDays = (gridEnd - gridStart).Days + 1;
+        var numWeeks = totalDays / 7;
+        var curDate = gridStart;
+
+        while (MonthWeeks.Count < numWeeks)
+        {
+            MonthWeeks.Add(new CalendarWeekRowItem(
+                new CalendarDayItem(), new CalendarDayItem(), new CalendarDayItem(),
+                new CalendarDayItem(), new CalendarDayItem(), new CalendarDayItem(),
+                new CalendarDayItem()));
+        }
+        while (MonthWeeks.Count > numWeeks)
+        {
+            MonthWeeks.RemoveAt(MonthWeeks.Count - 1);
+        }
+
+        for (int w = 0; w < numWeeks; w++)
+        {
+            var row = MonthWeeks[w];
+            UpdateDayItem(row.Day0, curDate, dayNames[0], current.Month, indicators); curDate = curDate.AddDays(1);
+            UpdateDayItem(row.Day1, curDate, dayNames[1], current.Month, indicators); curDate = curDate.AddDays(1);
+            UpdateDayItem(row.Day2, curDate, dayNames[2], current.Month, indicators); curDate = curDate.AddDays(1);
+            UpdateDayItem(row.Day3, curDate, dayNames[3], current.Month, indicators); curDate = curDate.AddDays(1);
+            UpdateDayItem(row.Day4, curDate, dayNames[4], current.Month, indicators); curDate = curDate.AddDays(1);
+            UpdateDayItem(row.Day5, curDate, dayNames[5], current.Month, indicators); curDate = curDate.AddDays(1);
+            UpdateDayItem(row.Day6, curDate, dayNames[6], current.Month, indicators); curDate = curDate.AddDays(1);
+        }
+    }
+
+    private void TriggerPreloadAdjacentMonths(DateTime centerDate)
+    {
+        _preloadCts?.Cancel();
+        _preloadCts?.Dispose();
+        _preloadCts = new CancellationTokenSource();
+        var token = _preloadCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // Range covering center - 1 month to center + 1 month
+                var prevMonth = centerDate.AddMonths(-1);
+                var nextMonth = centerDate.AddMonths(1);
+
+                var start = new DateTime(prevMonth.Year, prevMonth.Month, 1).AddDays(-7);
+                var lastOfNext = new DateTime(nextMonth.Year, nextMonth.Month, DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month));
+                var end = lastOfNext.AddDays(7);
+
+                var adjacentIndicators = await _calendarService.GetIndicatorsForRangeAsync(start, end);
+                if (token.IsCancellationRequested) return;
+
+                foreach (var kvp in adjacentIndicators)
+                {
+                    _indicatorsCache[kvp.Key] = kvp.Value;
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ScheduleViewModel] Preload adjacent months failed: {ex.Message}");
+            }
+        }, token);
+    }
+
+    private void UpdateDayItem(
+        CalendarDayItem item,
+        DateTime date,
+        string dayName,
+        int currentMonth,
+        IReadOnlyDictionary<DateTime, CalendarDayIndicators> indicators)
+    {
+        item.Date = date;
+        item.DayName = dayName;
+        item.DayNumber = date.Day.ToString();
+        item.IsToday = date.Date == DateTime.Today;
+        item.IsSelected = date.Date == SelectedDate.Date;
+        item.IsCurrentMonth = date.Month == currentMonth;
+
+        if (indicators.TryGetValue(date.Date, out var ind))
+        {
+            item.HasCompletedWorkout = ind.HasCompleted;
+            item.HasPlannedWorkout = ind.HasPlanned;
+            item.HasMissedWorkout = ind.HasMissed;
+        }
+        else
+        {
+            item.HasCompletedWorkout = false;
+            item.HasPlannedWorkout = false;
+            item.HasMissedWorkout = false;
         }
     }
 
@@ -450,6 +535,9 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
     public async Task SelectDayAsync(CalendarDayItem? day)
     {
         if (day == null) return;
+        var oldDate = SelectedDate.Date;
+        var newDate = day.Date.Date;
+
         SelectedDate = day.Date;
 
         // If day belongs to another month, update CurrentPeriodDate
@@ -462,37 +550,43 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
 
         UpdateHeaders();
 
-        foreach (var d in WeekDays)
+        if (oldDate != newDate)
         {
-            d.IsSelected = d.Date.Date == SelectedDate.Date;
-            d.NotifyThemeChanged();
-        }
+            // Fine-grained selection update: only touch the two items whose IsSelected changed
+            foreach (var d in WeekDays)
+            {
+                if (d.Date.Date == oldDate) d.IsSelected = false;
+                else if (d.Date.Date == newDate) d.IsSelected = true;
+            }
 
-        foreach (var week in MonthWeeks)
-        {
-            week.Day0.IsSelected = week.Day0.Date.Date == SelectedDate.Date;
-            week.Day1.IsSelected = week.Day1.Date.Date == SelectedDate.Date;
-            week.Day2.IsSelected = week.Day2.Date.Date == SelectedDate.Date;
-            week.Day3.IsSelected = week.Day3.Date.Date == SelectedDate.Date;
-            week.Day4.IsSelected = week.Day4.Date.Date == SelectedDate.Date;
-            week.Day5.IsSelected = week.Day5.Date.Date == SelectedDate.Date;
-            week.Day6.IsSelected = week.Day6.Date.Date == SelectedDate.Date;
-
-            week.Day0.NotifyThemeChanged();
-            week.Day1.NotifyThemeChanged();
-            week.Day2.NotifyThemeChanged();
-            week.Day3.NotifyThemeChanged();
-            week.Day4.NotifyThemeChanged();
-            week.Day5.NotifyThemeChanged();
-            week.Day6.NotifyThemeChanged();
+            foreach (var week in MonthWeeks)
+            {
+                UpdateDaySelection(week.Day0, oldDate, newDate);
+                UpdateDaySelection(week.Day1, oldDate, newDate);
+                UpdateDaySelection(week.Day2, oldDate, newDate);
+                UpdateDaySelection(week.Day3, oldDate, newDate);
+                UpdateDaySelection(week.Day4, oldDate, newDate);
+                UpdateDaySelection(week.Day5, oldDate, newDate);
+                UpdateDaySelection(week.Day6, oldDate, newDate);
+            }
         }
 
         await LoadWorkoutsForSelectedDateAsync();
     }
 
+    private static void UpdateDaySelection(CalendarDayItem item, DateTime oldDate, DateTime newDate)
+    {
+        if (item.Date.Date == oldDate) item.IsSelected = false;
+        else if (item.Date.Date == newDate) item.IsSelected = true;
+    }
+
     private async Task LoadWorkoutsForSelectedDateAsync()
     {
-        var items = await _calendarService.GetWorkoutsForDateAsync(SelectedDate);
+        var targetDate = SelectedDate.Date;
+        var requestId = Interlocked.Increment(ref _loadWorkoutsRequestId);
+
+        var items = await _calendarService.GetWorkoutsForDateAsync(targetDate);
+        if (requestId != _loadWorkoutsRequestId) return;
 
         Workouts.Clear();
         foreach (var item in items)
@@ -685,6 +779,7 @@ public partial class ScheduleViewModel : ObservableObject, IDisposable
         await _scheduleRepo.RescheduleWorkoutAsync(workout.ProgramWorkoutId.Value, origDate, targetDate);
         SelectedDate = targetDate;
         CurrentPeriodDate = targetDate;
+        InvalidateCalendarCache();
         await RefreshCalendarAsync();
 
         await Shell.Current.DisplayAlertAsync(

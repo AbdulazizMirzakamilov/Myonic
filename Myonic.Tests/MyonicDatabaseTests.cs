@@ -158,6 +158,7 @@ public class MyonicDatabaseTests : IAsyncLifetime
     public async Task Migration6_OnExistingDatabaseWithData_PreservesExistingRecords()
     {
         var tempDbPath = Path.Combine(Path.GetTempPath(), $"myonic-mig-test-{Guid.NewGuid():N}.db3");
+        MyonicDatabase? upgradedDb = null;
         try
         {
             // 1. Создаем базу версии 5 вручную
@@ -195,12 +196,12 @@ public class MyonicDatabaseTests : IAsyncLifetime
 
             await rawConn.CloseAsync();
 
-            // 2. Открываем через MyonicDatabase - это должно накатить миграцию 6
-            var upgradedDb = new MyonicDatabase(tempDbPath);
+            // 2. Открываем через MyonicDatabase - это должно накатить миграции до актуальной версии
+            upgradedDb = new MyonicDatabase(tempDbPath);
             var upgradedConn = await upgradedDb.GetConnectionAsync();
 
-            var v6 = await upgradedConn.ExecuteScalarAsync<int>("PRAGMA user_version");
-            Assert.Equal(6, v6);
+            var currentVer = await upgradedConn.ExecuteScalarAsync<int>("PRAGMA user_version");
+            Assert.Equal(Myonic.Data.Migrations.Migrations.LatestVersion, currentVer);
 
             // Проверяем, что существующие данные не потерялись
             var count = await upgradedConn.Table<BodyMeasurement>().CountAsync();
@@ -215,14 +216,27 @@ public class MyonicDatabaseTests : IAsyncLifetime
 
             var fkErrors = await upgradedConn.QueryScalarsAsync<string>("PRAGMA foreign_key_check");
             Assert.Empty(fkErrors);
-
-            await upgradedDb.DisposeAsync();
         }
         finally
         {
+            if (upgradedDb != null)
+                await upgradedDb.DisposeAsync();
+
             if (File.Exists(tempDbPath))
                 File.Delete(tempDbPath);
         }
+    }
+
+    [Fact]
+    public async Task Migration7_CreatesPerformanceIndexes()
+    {
+        var indexes = await _conn.QueryScalarsAsync<string>(
+            "SELECT name FROM sqlite_master WHERE type='index'");
+
+        Assert.Contains("IX_WorkoutSession_FinishedAt", indexes);
+        Assert.Contains("IX_ScheduledWorkout_OriginalDate", indexes);
+        Assert.Contains("IX_PersonalRecord_AchievedAt", indexes);
+        Assert.Contains("IX_Goal_TargetDate", indexes);
     }
 
     private async Task<(Exercise, WorkoutSession, WorkoutExercise, SetEntry)> SeedWorkoutAsync()

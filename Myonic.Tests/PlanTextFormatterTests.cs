@@ -24,4 +24,15 @@ public class PlanTextFormatterTests
         var text = PlanTextFormatter.Format(3, 12, null, null, null, null);
         Assert.Equal("3 × 12", text);
     }
+
+    [Fact]
+    public void PlannedExerciseItem_TargetSummary_ReturnsPlanText()
+    {
+        var item = new Myonic.Core.Repositories.PlannedExerciseItem
+        {
+            ExerciseName = "Bench Press",
+            PlanText = "3 × 10, 80 кг"
+        };
+        Assert.Equal("3 × 10, 80 кг", item.TargetSummary);
+    }
 }

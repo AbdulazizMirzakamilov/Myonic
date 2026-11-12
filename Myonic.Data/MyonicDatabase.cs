@@ -37,6 +37,9 @@ public sealed class MyonicDatabase : IAsyncDisposable
 
             await connection.ExecuteAsync("PRAGMA foreign_keys = ON");
             await connection.ExecuteScalarAsync<string>("PRAGMA journal_mode = WAL");
+            await connection.ExecuteAsync("PRAGMA synchronous = NORMAL");
+            await connection.ExecuteAsync("PRAGMA temp_store = MEMORY");
+            await connection.ExecuteAsync("PRAGMA cache_size = -64000");
 
             // Единый механизм миграций: создание и версионирование всех таблиц схемы
             await Migrator.MigrateAsync(connection);

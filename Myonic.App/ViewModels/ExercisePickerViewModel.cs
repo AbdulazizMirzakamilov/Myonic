@@ -17,8 +17,11 @@ public sealed class ExercisePickerDisplayItem
 
 public partial class ExercisePickerViewModel : ObservableObject
 {
+    private const int PageSize = 30;
     private readonly IExerciseRepository _repository;
     private IReadOnlyList<Exercise> _allExercises = [];
+    private readonly List<ExercisePickerDisplayItem> _allFilteredPickerItems = [];
+    private int _loadedPickerCount;
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -86,6 +89,19 @@ public partial class ExercisePickerViewModel : ObservableObject
         ApplyFilter();
     }
 
+    [RelayCommand]
+    public void LoadMoreExercises()
+    {
+        if (_loadedPickerCount >= _allFilteredPickerItems.Count) return;
+
+        var countToTake = Math.Min(PageSize, _allFilteredPickerItems.Count - _loadedPickerCount);
+        for (int i = 0; i < countToTake; i++)
+        {
+            FilteredExercises.Add(_allFilteredPickerItems[_loadedPickerCount + i]);
+        }
+        _loadedPickerCount += countToTake;
+    }
+
     private void ApplyFilter()
     {
         var query = SearchText?.Trim() ?? string.Empty;
@@ -98,9 +114,16 @@ public partial class ExercisePickerViewModel : ObservableObject
             .OrderBy(e => e.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
-        FilteredExercises.Clear();
+        _allFilteredPickerItems.Clear();
         foreach (var ex in filtered)
-            FilteredExercises.Add(new ExercisePickerDisplayItem { Exercise = ex });
+            _allFilteredPickerItems.Add(new ExercisePickerDisplayItem { Exercise = ex });
+
+        FilteredExercises.Clear();
+        _loadedPickerCount = Math.Min(PageSize, _allFilteredPickerItems.Count);
+        for (int i = 0; i < _loadedPickerCount; i++)
+        {
+            FilteredExercises.Add(_allFilteredPickerItems[i]);
+        }
     }
 
     [RelayCommand]
